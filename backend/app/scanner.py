@@ -1,0 +1,66 @@
+import os
+from pathlib import Path
+from typing import Dict, List, Set, Optional, Tuple, Any
+from app.config import settings
+from app.parsers.factory import ParserFactory
+from app.parsers.symbol_types import FileAST
+from app.graph.graph_store import GraphStore
+from app.search.hybrid_search import HybridSearchEngine
+from app.analysis.metrics import CodeQualityAnalyzer
+
+
+class RepoScanner:
+    def __init__(self, root_dir: str):
+        self.root_dir = os.path.abspath(root_dir)
+        self.factory = ParserFactory()
+        self.file_asts: Dict[str, FileAST] = {}
+        self.graph_store = GraphStore(self.root_dir)
+        self.search_engine = HybridSearchEngine(self.root_dir)
+        self.analyzer = CodeQualityAnalyzer(self.graph_store)
+
+    def scan_and_index(self) -> Dict[str, Any]:
+        self.file_asts.clear()
+        
+        # Walk directory
+        for dirpath, dirnames, filenames in os.walk(self.root_dir):
+            # Prune ignored directories in-place
+            dirnames[:] = [
+                d for d in dirnames
+                if d not in settings.DEFAULT_IGNORE_DIRS and not d.startswith(".")
+            ]
+            
+            for filename in filenames:
+                file_path = os.path.join(dirpath, filename)
+                ext = Path(filename).suffix.lower()
+                
+                if ext in settings.SUPPORTED_EXTENSIONS:
+                    self._process_file(file_path)
+
+        # Update graph and search indexes
+        self.graph_store.set_file_asts(self.file_asts)
+        self.search_engine.index_repository(self.file_asts)
+        
+        return {
+            "root_dir": self.root_dir,
+            "total_files_parsed": len(self.file_asts),
+            "total_symbols": len(self.search_engine.symbols),
+            "total_chunks": len(self.search_engine.chunks),
+            "languages": list({ast.language for ast in self.file_asts.values()}),
+        }
+
+    def _process_file(self, file_path: str):
+        try:
+            stat = os.stat(file_path)
+            if stat.st_size > settings.MAX_FILE_SIZE_BYTES:
+                return
+
+            with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+
+            rel_path = os.path.relpath(file_path, self.root_dir)
+            parser = self.factory.get_parser_for_file(file_path)
+            if parser:
+                ast = parser.parse_file(file_path, rel_path, content)
+                self.file_asts[file_path] = ast
+        except Exception as e:
+            print(f"[Scanner] Error parsing {file_path}: {e}")

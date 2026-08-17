@@ -1,0 +1,4 @@
+/* App specific styles */
+.react-flow__attribution {
+  display: none !important;
+}
