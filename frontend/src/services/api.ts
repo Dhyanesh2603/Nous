@@ -7,6 +7,12 @@ import type {
   FileContentResponse,
   ViewMode,
   SampleItem,
+  GitChurnReport,
+  CloneReport,
+  RuleEvaluationReport,
+  SequenceDiagramResponse,
+  ArchitecturalSummary,
+  ArchitectureRule,
 } from '../types';
 
 const api = axios.create({
@@ -43,6 +49,49 @@ export const searchCodebase = async (
 
 export const getMetrics = async (): Promise<ArchitectureMetricsResponse> => {
   const res = await api.get<ArchitectureMetricsResponse>('/analysis/metrics');
+  return res.data;
+};
+
+export const getGitChurn = async (): Promise<GitChurnReport> => {
+  const res = await api.get<GitChurnReport>('/analysis/git-churn');
+  return res.data;
+};
+
+export const getCodeClones = async (): Promise<CloneReport> => {
+  const res = await api.get<CloneReport>('/analysis/clones');
+  return res.data;
+};
+
+export const getArchitectureRules = async (preset: string = 'clean_architecture'): Promise<RuleEvaluationReport> => {
+  const res = await api.get<RuleEvaluationReport>('/analysis/rules', {
+    params: { preset },
+  });
+  return res.data;
+};
+
+export const evaluateCustomRules = async (
+  preset?: string,
+  customRules?: ArchitectureRule[]
+): Promise<RuleEvaluationReport> => {
+  const res = await api.post<RuleEvaluationReport>('/analysis/rules/evaluate', {
+    preset,
+    custom_rules: customRules,
+  });
+  return res.data;
+};
+
+export const getSequenceDiagram = async (
+  symbolId: string,
+  maxDepth: number = 5
+): Promise<SequenceDiagramResponse> => {
+  const res = await api.get<SequenceDiagramResponse>('/analysis/sequence', {
+    params: { symbol_id: symbolId, max_depth: maxDepth },
+  });
+  return res.data;
+};
+
+export const getDesignPatterns = async (): Promise<ArchitecturalSummary> => {
+  const res = await api.get<ArchitecturalSummary>('/analysis/patterns');
   return res.data;
 };
 

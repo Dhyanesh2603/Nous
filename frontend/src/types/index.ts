@@ -166,3 +166,142 @@ export interface SampleItem {
   name: string;
   path: string;
 }
+
+// Git Churn & Hotspot Types
+export interface FileChurnMetric {
+  file_path: string;
+  relative_path: string;
+  total_commits: number;
+  lines_added: number;
+  lines_deleted: number;
+  total_churn: number;
+  author_count: number;
+  top_author?: string;
+  last_modified_date?: string;
+  complexity: number;
+  hotspot_score: number;
+  quadrant: 'critical_hotspot' | 'complex_legacy' | 'frequent_churn' | 'stable';
+}
+
+export interface GitChurnReport {
+  is_git_repo: boolean;
+  total_commits_analyzed: number;
+  total_authors: number;
+  files: FileChurnMetric[];
+  critical_hotspots_count: number;
+  complex_legacy_count: number;
+  frequent_churn_count: number;
+  stable_count: number;
+}
+
+// Code Clone Types
+export interface CloneInstance {
+  id: string;
+  file_path: string;
+  relative_path: string;
+  symbol_name?: string;
+  start_line: number;
+  end_line: number;
+  line_count: number;
+  snippet: string;
+}
+
+export interface CloneGroup {
+  group_id: string;
+  clone_type: string;
+  similarity_score: number;
+  duplicated_lines: number;
+  instances_count: number;
+  instances: CloneInstance[];
+}
+
+export interface CloneReport {
+  total_clone_groups: number;
+  total_duplicated_lines: number;
+  clone_groups: CloneGroup[];
+}
+
+// Architecture Rules Types
+export interface ArchitectureRule {
+  id: string;
+  name: string;
+  description: string;
+  source_pattern: string;
+  target_pattern: string;
+  action: 'deny' | 'allow';
+  severity: 'error' | 'warning';
+  preset?: string;
+}
+
+export interface RuleViolation {
+  rule_id: string;
+  rule_name: string;
+  source_file: string;
+  source_relative: string;
+  target_file: string;
+  target_relative: string;
+  imported_symbols: string[];
+  severity: string;
+  explanation: string;
+}
+
+export interface RuleEvaluationReport {
+  total_rules_evaluated: number;
+  violations_count: number;
+  is_compliant: boolean;
+  preset_applied?: string;
+  violations: RuleViolation[];
+}
+
+// Sequence Diagram Types
+export interface SequenceStep {
+  step: number;
+  depth: number;
+  caller_id: string;
+  caller_label: string;
+  caller_participant: string;
+  callee_id: string;
+  callee_label: string;
+  callee_participant: string;
+  raw_call: string;
+  line_number: number;
+  file_path: string;
+}
+
+export interface SequenceParticipant {
+  id: string;
+  name: string;
+  type: string;
+  file_path?: string;
+}
+
+export interface SequenceDiagramResponse {
+  entry_symbol_id: string;
+  entry_symbol_name: string;
+  mermaid_markdown: string;
+  total_steps: number;
+  participants: SequenceParticipant[];
+  steps: SequenceStep[];
+}
+
+// Design Pattern Types
+export interface DetectedPattern {
+  id: string;
+  pattern_name: string;
+  category: string;
+  symbol_name: string;
+  symbol_kind: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  confidence: number;
+  evidence: string;
+}
+
+export interface ArchitecturalSummary {
+  primary_architecture_style: string;
+  patterns_count: number;
+  detected_patterns: DetectedPattern[];
+  module_roles: Record<string, string>;
+  recommendations: string[];
+}

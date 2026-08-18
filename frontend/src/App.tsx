@@ -13,6 +13,9 @@ import { ArchitectureCanvas } from './components/canvas/ArchitectureCanvas';
 import { NodeInspector } from './components/inspector/NodeInspector';
 import { SearchModal } from './components/search/SearchModal';
 import { AnalyticsDrawer } from './components/analytics/AnalyticsDrawer';
+import { SequenceModal } from './components/sequence/SequenceModal';
+import { RulesModal } from './components/rules/RulesModal';
+import { ClonesModal } from './components/clones/ClonesModal';
 import './App.css';
 
 export function App() {
@@ -20,8 +23,15 @@ export function App() {
   const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
   const [graphData, setGraphData] = useState<GraphStructureResponse | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
+  
+  // Modals & Drawers
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [isSequenceOpen, setIsSequenceOpen] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isClonesOpen, setIsClonesOpen] = useState(false);
+  const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
+
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
   const [status, setStatus] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +68,6 @@ export function App() {
     try {
       const res = await getBlastRadius(nodeId);
       setBlastRadiusData(res);
-      // Select the target node
       const targetNode = res.subgraph_nodes.find((n) => n.data.isTarget);
       if (targetNode) {
         setSelectedNode(targetNode.data);
@@ -68,13 +77,18 @@ export function App() {
     }
   };
 
+  // Trace sequence flow from a symbol
+  const handleTraceSequence = (symbolId: string) => {
+    setSequenceTargetSymbol(symbolId);
+    setIsSequenceOpen(true);
+  };
+
   // Search selection handler
   const handleSelectSearchResult = (result: SearchResultItem) => {
     const matchedNode = graphData?.nodes.find((n) => n.id === result.node_id);
     if (matchedNode) {
       setSelectedNode(matchedNode.data);
     } else {
-      // Fallback node data
       setSelectedNode({
         id: result.node_id,
         name: result.symbol_name || result.relative_path,
@@ -111,6 +125,9 @@ export function App() {
         onViewModeChange={handleViewModeChange}
         onOpenSearch={() => setIsSearchOpen(true)}
         onToggleAnalytics={() => setIsAnalyticsOpen((prev) => !prev)}
+        onOpenSequence={() => setIsSequenceOpen(true)}
+        onOpenRules={() => setIsRulesOpen(true)}
+        onOpenClones={() => setIsClonesOpen(true)}
         onRefreshGraph={() => {
           setBlastRadiusData(null);
           loadGraph();
@@ -155,6 +172,7 @@ export function App() {
           node={selectedNode}
           onClose={() => setSelectedNode(null)}
           onCalculateBlastRadius={handleCalculateBlastRadius}
+          onTraceSequence={handleTraceSequence}
         />
 
         {/* Analytics Left Drawer */}
@@ -178,6 +196,28 @@ export function App() {
           onClose={() => setIsSearchOpen(false)}
           onSelectResult={handleSelectSearchResult}
           onCalculateBlastRadius={handleCalculateBlastRadius}
+        />
+
+        {/* Sequence Diagram Modal */}
+        <SequenceModal
+          isOpen={isSequenceOpen}
+          onClose={() => {
+            setIsSequenceOpen(false);
+            setSequenceTargetSymbol(undefined);
+          }}
+          targetSymbolId={sequenceTargetSymbol}
+        />
+
+        {/* Architecture Rules Linter Modal */}
+        <RulesModal
+          isOpen={isRulesOpen}
+          onClose={() => setIsRulesOpen(false)}
+        />
+
+        {/* AST Duplicate Code & Clones Modal */}
+        <ClonesModal
+          isOpen={isClonesOpen}
+          onClose={() => setIsClonesOpen(false)}
         />
       </main>
     </div>

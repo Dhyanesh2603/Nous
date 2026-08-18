@@ -7,6 +7,7 @@ import {
   Layers,
   Copy,
   Check,
+  Workflow,
 } from 'lucide-react';
 import type { GraphNodeData, FileContentResponse } from '../../types';
 import { getFileContent } from '../../services/api';
@@ -16,12 +17,14 @@ interface NodeInspectorProps {
   node: GraphNodeData | null;
   onClose: () => void;
   onCalculateBlastRadius: (nodeId: string) => void;
+  onTraceSequence?: (symbolId: string) => void;
 }
 
 export const NodeInspector: React.FC<NodeInspectorProps> = ({
   node,
   onClose,
   onCalculateBlastRadius,
+  onTraceSequence,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'code'>('overview');
   const [fileContent, setFileContent] = useState<FileContentResponse | null>(null);
@@ -98,30 +101,40 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       <div className="p-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2">
         <button
           onClick={() => onCalculateBlastRadius(node.id)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition shadow-sm"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition shadow-sm truncate"
         >
-          <Zap className="w-3.5 h-3.5 text-rose-400" />
-          Calculate Blast Radius
+          <Zap className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+          <span className="truncate">Blast Radius</span>
         </button>
+
+        {isSymbol && onTraceSequence && (
+          <button
+            onClick={() => onTraceSequence(node.id)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition shadow-sm truncate"
+          >
+            <Workflow className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+            <span className="truncate">Trace Flow</span>
+          </button>
+        )}
 
         {/* Tab Switcher */}
         {!isModule && (
           <div className="flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs font-mono">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-3 py-1.5 rounded-md transition ${
+              className={`px-2.5 py-1.5 rounded-md transition ${
                 activeTab === 'overview' ? 'bg-slate-800 text-cyan-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Overview
+              Info
             </button>
             <button
               onClick={() => setActiveTab('code')}
-              className={`px-3 py-1.5 rounded-md transition ${
+              className={`px-2.5 py-1.5 rounded-md transition ${
                 activeTab === 'code' ? 'bg-slate-800 text-cyan-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Source Code
+              Code
             </button>
           </div>
         )}

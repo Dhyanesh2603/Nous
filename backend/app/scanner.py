@@ -7,6 +7,11 @@ from app.parsers.symbol_types import FileAST
 from app.graph.graph_store import GraphStore
 from app.search.hybrid_search import HybridSearchEngine
 from app.analysis.metrics import CodeQualityAnalyzer
+from app.analysis.git_analytics import GitChurnAnalyzer
+from app.analysis.clone_detector import CodeCloneDetector
+from app.graph.sequence_generator import SequenceDiagramGenerator
+from app.analysis.rules_engine import ArchitectureRulesEngine
+from app.analysis.pattern_detector import DesignPatternDetector
 
 
 class RepoScanner:
@@ -17,6 +22,11 @@ class RepoScanner:
         self.graph_store = GraphStore(self.root_dir)
         self.search_engine = HybridSearchEngine(self.root_dir)
         self.analyzer = CodeQualityAnalyzer(self.graph_store)
+        self.git_analyzer = GitChurnAnalyzer(self.root_dir, self.graph_store)
+        self.clone_detector = CodeCloneDetector(self.graph_store)
+        self.sequence_generator = SequenceDiagramGenerator(self.graph_store)
+        self.rules_engine = ArchitectureRulesEngine(self.graph_store)
+        self.pattern_detector = DesignPatternDetector(self.graph_store)
 
     def scan_and_index(self) -> Dict[str, Any]:
         self.file_asts.clear()

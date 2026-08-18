@@ -7,6 +7,9 @@ import {
   FileCode,
   Code2,
   Boxes,
+  Workflow,
+  ShieldCheck,
+  Files,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { getSamples, ingestSample, ingestRepository } from '../../services/api';
@@ -16,6 +19,9 @@ interface HeaderProps {
   onViewModeChange: (mode: ViewMode) => void;
   onOpenSearch: () => void;
   onToggleAnalytics: () => void;
+  onOpenSequence: () => void;
+  onOpenRules: () => void;
+  onOpenClones: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
   isIndexing?: boolean;
@@ -26,6 +32,9 @@ export const Header: React.FC<HeaderProps> = ({
   onViewModeChange,
   onOpenSearch,
   onToggleAnalytics,
+  onOpenSequence,
+  onOpenRules,
+  onOpenClones,
   onRefreshGraph,
   currentRepoPath,
   isIndexing = false,
@@ -70,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between gap-4 select-none z-30 sticky top-0">
+    <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between gap-3 select-none z-30 sticky top-0 font-mono text-xs">
       {/* Brand & Logo */}
       <div className="flex items-center gap-3 flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -78,13 +87,13 @@ export const Header: React.FC<HeaderProps> = ({
             <Brain className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-sm text-slate-100 tracking-tight">NOUS</span>
+            <span className="font-bold text-sm text-slate-100 tracking-tight font-sans">NOUS</span>
             <span className="text-[10px] text-cyan-400 block font-mono leading-none">Codebase Intelligence</span>
           </div>
         </div>
 
         {/* View Mode Switcher */}
-        <div className="hidden lg:flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5 text-xs font-mono">
+        <div className="hidden xl:flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5">
           <button
             onClick={() => onViewModeChange('module')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
@@ -122,12 +131,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Center: Repository Ingest & Demo Selector */}
-      <div className="flex items-center gap-2 flex-1 max-w-xl">
+      <div className="flex items-center gap-2 flex-1 max-w-lg">
         {/* Sample selector dropdown */}
         <select
           onChange={(e) => e.target.value && handleSelectSample(e.target.value)}
           defaultValue=""
-          className="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 outline-none font-mono focus:border-cyan-500/60"
+          className="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1.5 outline-none font-mono focus:border-cyan-500/60"
         >
           <option value="" disabled>Load Demo Project...</option>
           {samples.map((s) => (
@@ -143,13 +152,13 @@ export const Header: React.FC<HeaderProps> = ({
             type="text"
             value={customPath}
             onChange={(e) => setCustomPath(e.target.value)}
-            placeholder={currentRepoPath ? `Active: ...${currentRepoPath.slice(-30)}` : "Ingest repository directory path (e.g. D:\\MyProject)..."}
-            className="flex-1 bg-slate-900/90 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 font-mono outline-none focus:border-cyan-500/60"
+            placeholder={currentRepoPath ? `Active: ...${currentRepoPath.slice(-25)}` : "Ingest repo path..."}
+            className="flex-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 font-mono outline-none focus:border-cyan-500/60"
           />
           <button
             type="submit"
             disabled={isIngesting || isIndexing || !customPath.trim()}
-            className="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-semibold transition disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0"
+            className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold transition disabled:opacity-50 flex items-center gap-1 flex-shrink-0"
           >
             {isIngesting || isIndexing ? (
               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-cyan-400"></div>
@@ -161,16 +170,46 @@ export const Header: React.FC<HeaderProps> = ({
         </form>
       </div>
 
-      {/* Right Action Controls */}
-      <div className="flex items-center gap-2 flex-shrink-0 font-mono text-xs">
+      {/* Right Action Tools Toolbar */}
+      <div className="flex items-center gap-1.5 flex-shrink-0 font-mono">
+        {/* Sequence Tracer button */}
+        <button
+          onClick={onOpenSequence}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
+          title="Sequence Diagram & Call Stack Tracer"
+        >
+          <Workflow className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="hidden md:inline">Sequence</span>
+        </button>
+
+        {/* Architecture Rules Linter button */}
+        <button
+          onClick={onOpenRules}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-emerald-300 hover:border-slate-700 transition"
+          title="Architecture Rules & Drift Linter"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="hidden md:inline">Rules</span>
+        </button>
+
+        {/* Code Clones button */}
+        <button
+          onClick={onOpenClones}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-slate-700 transition"
+          title="AST Duplicate Code & Clones Explorer"
+        >
+          <Files className="w-3.5 h-3.5 text-amber-400" />
+          <span className="hidden md:inline">Clones</span>
+        </button>
+
         {/* Search button */}
         <button
           onClick={onOpenSearch}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700 transition"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700 transition"
         >
           <Search className="w-3.5 h-3.5 text-cyan-400" />
           <span className="hidden sm:inline">Search</span>
-          <kbd className="px-1.5 py-0.2 rounded bg-slate-950 text-[10px] text-slate-500 border border-slate-800">
+          <kbd className="px-1 py-0.2 rounded bg-slate-950 text-[9px] text-slate-500 border border-slate-800">
             Ctrl+K
           </kbd>
         </button>
@@ -178,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Analytics button */}
         <button
           onClick={onToggleAnalytics}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
         >
           <Activity className="w-3.5 h-3.5 text-cyan-400" />
           <span className="hidden sm:inline">Analytics</span>

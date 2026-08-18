@@ -38,6 +38,8 @@ class Settings(BaseModel):
         ".tsx": "tsx",
         ".js": "javascript",
         ".jsx": "javascript",
+        ".go": "go",
+        ".rs": "rust",
     }
     
     MAX_FILE_SIZE_BYTES: int = 2 * 1024 * 1024  # 2MB limit per source file

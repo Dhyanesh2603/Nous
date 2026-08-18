@@ -82,41 +82,33 @@ class TypeScriptASTParser(BaseASTParser):
         imports: List[ASTImport],
         exports: List[ASTExport],
     ):
-        cursor = root.walk()
-        visited_children = False
-        
-        while True:
-            if not visited_children:
-                node = cursor.node
-                if node.type == "import_statement":
-                    self._parse_import_statement(node, source_bytes, file_path, imports)
-                elif node.type == "export_statement":
-                    self._parse_export_statement(node, source_bytes, file_path, exports)
-                elif node.type == "call_expression":
-                    # Check for require('...')
-                    fn = node.child_by_field_name("function")
-                    if fn and self.get_node_text(fn, source_bytes) == "require":
-                        args = node.child_by_field_name("arguments")
-                        if args and len(args.children) > 1:
-                            req_path = self.get_node_text(args.children[1], source_bytes).strip("'\"`")
-                            imports.append(
-                                ASTImport(
-                                    file_path=file_path,
-                                    source_module=req_path,
-                                    imported_symbols=[ImportedSymbol(name="*")],
-                                    is_default=True,
-                                    line_number=node.start_point.row + 1,
-                                )
+        # Python stack-based traversal (100% memory safe)
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            if node.type == "import_statement":
+                self._parse_import_statement(node, source_bytes, file_path, imports)
+            elif node.type in ("export_statement", "export_clause"):
+                self._parse_export_statement(node, source_bytes, file_path, exports)
+            elif node.type == "call_expression":
+                # Check for require('...')
+                fn = node.child_by_field_name("function")
+                if fn and self.get_node_text(fn, source_bytes) == "require":
+                    args = node.child_by_field_name("arguments")
+                    if args and len(args.children) > 1:
+                        req_path = self.get_node_text(args.children[1], source_bytes).strip("'\"`")
+                        imports.append(
+                            ASTImport(
+                                file_path=file_path,
+                                source_module=req_path,
+                                imported_symbols=[ImportedSymbol(name="*")],
+                                is_default=True,
+                                line_number=node.start_point.row + 1,
                             )
-                
-                if cursor.goto_first_child():
-                    continue
-            if cursor.goto_next_sibling():
-                visited_children = False
-            elif cursor.goto_parent():
-                visited_children = True
-            else:
-                break
+                        )
+
+            for child in reversed(node.children):
+                stack.append(child)
 
     def _parse_import_statement(self, node: Node, source_bytes: bytes, file_path: str, imports: List[ASTImport]):
         line_no = node.start_point.row + 1
@@ -131,11 +123,9 @@ class TypeScriptASTParser(BaseASTParser):
             if child.type == "import_clause":
                 for clause_child in child.children:
                     if clause_child.type == "identifier":
-                        # default import: import Foo from './foo'
                         imported_symbols.append(ImportedSymbol(name=self.get_node_text(clause_child, source_bytes)))
                         is_default = True
                     elif clause_child.type == "named_imports":
-                        # { a, b as c }
                         for spec in clause_child.children:
                             if spec.type == "import_specifier":
                                 name_n = spec.child_by_field_name("name")
@@ -145,7 +135,6 @@ class TypeScriptASTParser(BaseASTParser):
                                 if name:
                                     imported_symbols.append(ImportedSymbol(name=name, alias=alias))
                     elif clause_child.type == "namespace_import":
-                        # * as ns
                         is_wildcard = True
                         for ns_child in clause_child.children:
                             if ns_child.type == "identifier":
@@ -169,22 +158,24 @@ class TypeScriptASTParser(BaseASTParser):
         line_no = node.start_point.row + 1
         is_default = any(c.type == "default" for c in node.children)
         
-        declaration = node.child_by_field_name("declaration")
-        if declaration:
-            name_node = declaration.child_by_field_name("name")
-            if name_node:
-                exports.append(
-                    ASTExport(
-                        file_path=file_path,
-                        symbol_name=self.get_node_text(name_node, source_bytes),
-                        is_default=is_default,
-                        line_number=line_no,
+        # Check for declaration export: export const Foo = ..., export function Bar() ..., export class Baz ...
+        decl = node.child_by_field_name("declaration")
+        if decl:
+            if decl.type in ("function_declaration", "class_declaration", "interface_declaration", "type_alias_declaration", "enum_declaration"):
+                name_n = decl.child_by_field_name("name")
+                if name_n:
+                    exports.append(
+                        ASTExport(
+                            file_path=file_path,
+                            symbol_name=self.get_node_text(name_n, source_bytes),
+                            is_default=is_default,
+                            line_number=line_no,
+                        )
                     )
-                )
-            elif declaration.type in ("lexical_declaration", "variable_declaration"):
-                for decl in declaration.children:
-                    if decl.type == "variable_declarator":
-                        name_n = decl.child_by_field_name("name")
+            elif decl.type in ("lexical_declaration", "variable_declaration"):
+                for var_decl in decl.children:
+                    if var_decl.type == "variable_declarator":
+                        name_n = var_decl.child_by_field_name("name")
                         if name_n:
                             exports.append(
                                 ASTExport(
@@ -194,19 +185,19 @@ class TypeScriptASTParser(BaseASTParser):
                                     line_number=line_no,
                                 )
                             )
-            elif declaration.type in ("function_declaration", "class_declaration", "interface_declaration", "type_alias_declaration", "enum_declaration"):
-                for c in declaration.children:
-                    if c.type in ("identifier", "type_identifier"):
-                        exports.append(
-                            ASTExport(
-                                file_path=file_path,
-                                symbol_name=self.get_node_text(c, source_bytes),
-                                is_default=is_default,
-                                line_number=line_no,
-                            )
-                        )
-                        break
-        
+                            
+        # Check for export default <identifier>;
+        value_node = node.child_by_field_name("value")
+        if value_node and is_default:
+            exports.append(
+                ASTExport(
+                    file_path=file_path,
+                    symbol_name=self.get_node_text(value_node, source_bytes),
+                    is_default=True,
+                    line_number=line_no,
+                )
+            )
+
         # Named export clause: export { a, b as c }
         for child in node.children:
             if child.type == "export_clause":
@@ -278,20 +269,34 @@ class TypeScriptASTParser(BaseASTParser):
                 )
                 continue
 
-            # 2. Variable declarator holding arrow_function or function_expression (const foo = () => {})
+            # 2. Variable declarator holding arrow_function or function_expression or memo() wrapper
             elif child.type in ("lexical_declaration", "variable_declaration"):
+                matched_var = False
                 for decl in child.children:
                     if decl.type == "variable_declarator":
                         name_node = decl.child_by_field_name("name")
                         val_node = decl.child_by_field_name("value")
-                        if name_node and val_node and val_node.type in ("arrow_function", "function_expression"):
+                        
+                        target_fn_node = None
+                        if val_node:
+                            if val_node.type in ("arrow_function", "function_expression"):
+                                target_fn_node = val_node
+                            elif val_node.type == "call_expression":
+                                args = val_node.child_by_field_name("arguments")
+                                if args:
+                                    for a in args.children:
+                                        if a.type in ("arrow_function", "function_expression"):
+                                            target_fn_node = a
+                                            break
+
+                        if name_node and target_fn_node:
                             var_name = self.get_node_text(name_node, source_bytes)
                             symbol_id = f"{file_path}::{f'{current_scope}.' if current_scope else ''}{var_name}"
-                            params = self._extract_params(val_node, source_bytes)
-                            ret_node = val_node.child_by_field_name("return_type")
+                            params = self._extract_params(target_fn_node, source_bytes)
+                            ret_node = target_fn_node.child_by_field_name("return_type")
                             return_type = self.get_node_text(ret_node, source_bytes) if ret_node else None
                             signature = f"const {var_name} = ({', '.join(params)})" + (f": {return_type}" if return_type else "")
-                            complexity = self.calculate_cyclomatic_complexity(val_node, TS_BRANCH_NODES)
+                            complexity = self.calculate_cyclomatic_complexity(target_fn_node, TS_BRANCH_NODES)
                             
                             symbols.append(
                                 ASTSymbol(
@@ -312,7 +317,7 @@ class TypeScriptASTParser(BaseASTParser):
                                 )
                             )
                             self._extract_symbols_and_calls(
-                                val_node,
+                                target_fn_node,
                                 source_bytes,
                                 file_path,
                                 symbols,
@@ -320,7 +325,10 @@ class TypeScriptASTParser(BaseASTParser):
                                 current_scope=f"{current_scope}.{var_name}" if current_scope else var_name,
                                 current_symbol_id=symbol_id,
                             )
-                            continue
+                            matched_var = True
+
+                if matched_var:
+                    continue
 
             # 3. Class Declaration
             elif child.type == "class_declaration":
@@ -328,7 +336,6 @@ class TypeScriptASTParser(BaseASTParser):
                 class_name = self.get_node_text(name_node, source_bytes) if name_node else "AnonymousClass"
                 symbol_id = f"{file_path}::{f'{current_scope}.' if current_scope else ''}{class_name}"
                 
-                # Heritage / extends
                 heritage = []
                 for c in child.children:
                     if c.type == "class_heritage":
@@ -486,7 +493,7 @@ class TypeScriptASTParser(BaseASTParser):
                             )
                         )
 
-            # Traverse deeper
+            # Traverse deeper into unhandled statements (export_statement, statements, etc.)
             self._extract_symbols_and_calls(
                 child,
                 source_bytes,
