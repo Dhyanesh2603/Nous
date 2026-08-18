@@ -305,3 +305,66 @@ export interface ArchitecturalSummary {
   module_roles: Record<string, string>;
   recommendations: string[];
 }
+
+// RipEx Relational Fact Types
+export type FactKind =
+  | 'DEF_SYMBOL'
+  | 'CALL_REF'
+  | 'INSTANTIATES_REF'
+  | 'INHERITS_REF'
+  | 'TYPE_REF'
+  | 'ROUTE_HANDLER_DEF'
+  | 'IMPORT_REF'
+  | 'EXPORT_DEF'
+  | 'MEMBER_DEF';
+
+export interface CodeFact {
+  id: string;
+  kind: FactKind;
+  subject_id: string;
+  predicate: string;
+  object_id: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  span?: [number, number];
+  metadata: Record<string, any>;
+}
+
+export interface RouteFact {
+  id: string;
+  http_method: string;
+  route_path: string;
+  handler_symbol_id: string;
+  handler_name: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+}
+
+export interface FactSummary {
+  total_facts: number;
+  facts_by_kind: Record<string, number>;
+  total_routes_detected: number;
+  total_instantiations: number;
+  total_inheritance_relations: number;
+}
+
+export interface FactQueryResponse {
+  total_matches: number;
+  facts: CodeFact[];
+}
+
+export interface SymbolFactsResponse {
+  symbol_id: string;
+  short_name: string;
+  total_facts: number;
+  outgoing_facts: CodeFact[];
+  incoming_facts: CodeFact[];
+  calls_made: CodeFact[];
+  called_by: CodeFact[];
+  instantiates: CodeFact[];
+  instantiated_by: CodeFact[];
+  inherits_from: CodeFact[];
+  subclasses: CodeFact[];
+}

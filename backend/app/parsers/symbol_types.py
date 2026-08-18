@@ -55,6 +55,7 @@ class ASTImport(BaseModel):
     imported_symbols: List[ImportedSymbol] = Field(default_factory=list)
     is_default: bool = False
     is_wildcard: bool = False
+    is_relative: bool = False
     line_number: int = 1
 
 

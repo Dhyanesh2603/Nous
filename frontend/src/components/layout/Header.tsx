@@ -10,9 +10,10 @@ import {
   Workflow,
   ShieldCheck,
   Files,
+  Database,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
-import { getSamples, ingestSample, ingestRepository } from '../../services/api';
+import { fetchSamples, ingestSample, ingestRepository } from '../../services/api';
 
 interface HeaderProps {
   currentViewMode: ViewMode;
@@ -22,6 +23,7 @@ interface HeaderProps {
   onOpenSequence: () => void;
   onOpenRules: () => void;
   onOpenClones: () => void;
+  onOpenFacts: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
   isIndexing?: boolean;
@@ -35,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSequence,
   onOpenRules,
   onOpenClones,
+  onOpenFacts,
   onRefreshGraph,
   currentRepoPath,
   isIndexing = false,
@@ -44,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isIngesting, setIsIngesting] = useState(false);
 
   useEffect(() => {
-    getSamples()
+    fetchSamples()
       .then((res) => setSamples(res.samples))
       .catch((err) => console.error('Failed to load sample repos:', err));
   }, []);
@@ -172,6 +175,16 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Action Tools Toolbar */}
       <div className="flex items-center gap-1.5 flex-shrink-0 font-mono">
+        {/* RipEx Facts Explorer button */}
+        <button
+          onClick={onOpenFacts}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-indigo-300 hover:border-slate-700 transition"
+          title="RipEx Multi-Language Fact Engine & Relations"
+        >
+          <Database className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="hidden md:inline">Facts</span>
+        </button>
+
         {/* Sequence Tracer button */}
         <button
           onClick={onOpenSequence}

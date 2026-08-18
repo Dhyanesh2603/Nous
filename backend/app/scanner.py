@@ -12,6 +12,8 @@ from app.analysis.clone_detector import CodeCloneDetector
 from app.graph.sequence_generator import SequenceDiagramGenerator
 from app.analysis.rules_engine import ArchitectureRulesEngine
 from app.analysis.pattern_detector import DesignPatternDetector
+from app.facts.fact_extractor import FactExtractor
+from app.facts.fact_store import FactStore
 
 
 class RepoScanner:
@@ -27,6 +29,10 @@ class RepoScanner:
         self.sequence_generator = SequenceDiagramGenerator(self.graph_store)
         self.rules_engine = ArchitectureRulesEngine(self.graph_store)
         self.pattern_detector = DesignPatternDetector(self.graph_store)
+        
+        # RipEx Fact Extraction & Relational Store
+        self.fact_extractor = FactExtractor()
+        self.fact_store = FactStore()
 
     def scan_and_index(self) -> Dict[str, Any]:
         self.file_asts.clear()
@@ -49,12 +55,18 @@ class RepoScanner:
         # Update graph and search indexes
         self.graph_store.set_file_asts(self.file_asts)
         self.search_engine.index_repository(self.file_asts)
+
+        # RipEx Fact Extraction & Relational Store Loading
+        facts, routes = self.fact_extractor.extract_facts(self.file_asts)
+        self.fact_store.load_facts(facts, routes)
         
         return {
             "root_dir": self.root_dir,
             "total_files_parsed": len(self.file_asts),
             "total_symbols": len(self.search_engine.symbols),
             "total_chunks": len(self.search_engine.chunks),
+            "total_facts": len(self.fact_store.facts),
+            "total_routes": len(self.fact_store.routes),
             "languages": list({ast.language for ast in self.file_asts.values()}),
         }
 

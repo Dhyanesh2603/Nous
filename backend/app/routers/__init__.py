@@ -3,6 +3,7 @@ from app.routers.graph import router as graph_router
 from app.routers.search import router as search_router
 from app.routers.analysis import router as analysis_router
 from app.routers.files import router as files_router
+from app.routers.facts import router as facts_router
 
 __all__ = [
     "ingest_router",
@@ -10,4 +11,5 @@ __all__ = [
     "search_router",
     "analysis_router",
     "files_router",
+    "facts_router",
 ]

@@ -155,10 +155,35 @@ class PythonASTParser(BaseASTParser):
         exports: List[ASTExport],
         current_scope: Optional[str] = None,
         current_symbol_id: Optional[str] = None,
+        pending_decorators: Optional[List[str]] = None,
     ):
         for child in node.children:
+            # 0. Decorated Definition
+            if child.type == "decorated_definition":
+                decs = []
+                inner_node = None
+                for c in child.children:
+                    if c.type == "decorator":
+                        decs.append(self.get_node_text(c, source_bytes))
+                    elif c.type in ("function_definition", "async_function_definition", "class_definition"):
+                        inner_node = c
+
+                if inner_node:
+                    self._extract_symbols_and_calls(
+                        child,
+                        source_bytes,
+                        file_path,
+                        symbols,
+                        calls,
+                        exports,
+                        current_scope=current_scope,
+                        current_symbol_id=current_symbol_id,
+                        pending_decorators=decs,
+                    )
+                continue
+
             # 1. Class definition
-            if child.type == "class_definition":
+            elif child.type == "class_definition":
                 name_node = child.child_by_field_name("name")
                 class_name = self.get_node_text(name_node, source_bytes) if name_node else "AnonymousClass"
                 symbol_id = f"{file_path}::{f'{current_scope}.' if current_scope else ''}{class_name}"
@@ -199,6 +224,7 @@ class PythonASTParser(BaseASTParser):
                         docstring=docstring,
                         code_content=self.get_node_text(child, source_bytes),
                         parameters=superclasses,
+                        decorators=pending_decorators or [],
                     )
                 )
                 
@@ -231,8 +257,7 @@ class PythonASTParser(BaseASTParser):
                 return_type = self.get_node_text(ret_node, source_bytes) if ret_node else None
                 docstring = self._extract_docstring(child, source_bytes)
                 
-                decorators = []
-                # Check preceding sibling decorators or children
+                decorators = list(pending_decorators or [])
                 for c in child.children:
                     if c.type == "decorator":
                         decorators.append(self.get_node_text(c, source_bytes))
@@ -304,16 +329,17 @@ class PythonASTParser(BaseASTParser):
                     )
 
             # Traverse other child statements
-            self._extract_symbols_and_calls(
-                child,
-                source_bytes,
-                file_path,
-                symbols,
-                calls,
-                exports,
-                current_scope=current_scope,
-                current_symbol_id=current_symbol_id,
-            )
+            if child.type != "decorated_definition":
+                self._extract_symbols_and_calls(
+                    child,
+                    source_bytes,
+                    file_path,
+                    symbols,
+                    calls,
+                    exports,
+                    current_scope=current_scope,
+                    current_symbol_id=current_symbol_id,
+                )
 
     def _extract_parameters(self, func_node: Node, source_bytes: bytes) -> List[str]:
         params_node = func_node.child_by_field_name("parameters")

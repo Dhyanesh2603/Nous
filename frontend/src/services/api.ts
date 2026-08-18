@@ -5,125 +5,180 @@ import type {
   SearchResponse,
   ArchitectureMetricsResponse,
   FileContentResponse,
-  ViewMode,
   SampleItem,
   GitChurnReport,
   CloneReport,
+  ArchitectureRule,
   RuleEvaluationReport,
   SequenceDiagramResponse,
   ArchitecturalSummary,
-  ArchitectureRule,
+  FactSummary,
+  FactQueryResponse,
+  RouteFact,
+  SymbolFactsResponse,
 } from '../types';
 
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
 const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_BASE_URL,
+  timeout: 30000,
 });
 
-export const getGraphStructure = async (viewMode: ViewMode = 'file'): Promise<GraphStructureResponse> => {
-  const res = await api.get<GraphStructureResponse>('/graph/structure', {
-    params: { view_mode: viewMode },
-  });
+export const fetchGraphStructure = async (
+  viewMode: string = 'file',
+  moduleId?: string
+): Promise<GraphStructureResponse> => {
+  const params: Record<string, string> = { view_mode: viewMode };
+  if (moduleId) {
+    params.module_id = moduleId;
+  }
+  const res = await api.get<GraphStructureResponse>('/graph/structure', { params });
   return res.data;
 };
 
-export const getBlastRadius = async (nodeId: string, maxDepth: number = 4): Promise<BlastRadiusResponse> => {
+export const fetchBlastRadius = async (
+  targetId: string,
+  targetType: 'symbol' | 'file' = 'file',
+  maxDepth: number = 3
+): Promise<BlastRadiusResponse> => {
   const res = await api.get<BlastRadiusResponse>('/graph/blast-radius', {
-    params: { node_id: nodeId, max_depth: maxDepth },
+    params: {
+      target_id: targetId,
+      target_type: targetType,
+      max_depth: maxDepth,
+    },
   });
   return res.data;
 };
 
-export const searchCodebase = async (
+export const searchSymbols = async (
   query: string,
   limit: number = 20,
   kind?: string
 ): Promise<SearchResponse> => {
-  const res = await api.get<SearchResponse>('/search', {
-    params: { q: query, limit, kind },
-  });
+  const params: Record<string, any> = { q: query, limit };
+  if (kind) params.kind = kind;
+  const res = await api.get<SearchResponse>('/search', { params });
   return res.data;
 };
 
-export const getMetrics = async (): Promise<ArchitectureMetricsResponse> => {
+export const fetchArchitectureMetrics = async (): Promise<ArchitectureMetricsResponse> => {
   const res = await api.get<ArchitectureMetricsResponse>('/analysis/metrics');
   return res.data;
 };
 
-export const getGitChurn = async (): Promise<GitChurnReport> => {
+export const fetchGitChurnReport = async (): Promise<GitChurnReport> => {
   const res = await api.get<GitChurnReport>('/analysis/git-churn');
   return res.data;
 };
 
-export const getCodeClones = async (): Promise<CloneReport> => {
-  const res = await api.get<CloneReport>('/analysis/clones');
-  return res.data;
-};
-
-export const getArchitectureRules = async (preset: string = 'clean_architecture'): Promise<RuleEvaluationReport> => {
-  const res = await api.get<RuleEvaluationReport>('/analysis/rules', {
-    params: { preset },
+export const fetchCloneReport = async (
+  minTokens: number = 15,
+  similarityThreshold: number = 0.8
+): Promise<CloneReport> => {
+  const res = await api.get<CloneReport>('/analysis/clones', {
+    params: { min_tokens: minTokens, similarity_threshold: similarityThreshold },
   });
   return res.data;
 };
 
-export const evaluateCustomRules = async (
-  preset?: string,
-  customRules?: ArchitectureRule[]
-): Promise<RuleEvaluationReport> => {
-  const res = await api.post<RuleEvaluationReport>('/analysis/rules/evaluate', {
-    preset,
-    custom_rules: customRules,
-  });
+export const fetchArchitectureRules = async (preset?: string): Promise<RuleEvaluationReport> => {
+  const params: Record<string, string> = {};
+  if (preset) params.preset = preset;
+  const res = await api.get<RuleEvaluationReport>('/analysis/rules', { params });
   return res.data;
 };
 
-export const getSequenceDiagram = async (
-  symbolId: string,
-  maxDepth: number = 5
-): Promise<SequenceDiagramResponse> => {
+export const evaluateCustomRules = async (rules: ArchitectureRule[]): Promise<RuleEvaluationReport> => {
+  const res = await api.post<RuleEvaluationReport>('/analysis/rules/evaluate', rules);
+  return res.data;
+};
+
+export const fetchSequenceDiagram = async (symbolId: string, maxDepth: number = 5): Promise<SequenceDiagramResponse> => {
   const res = await api.get<SequenceDiagramResponse>('/analysis/sequence', {
     params: { symbol_id: symbolId, max_depth: maxDepth },
   });
   return res.data;
 };
 
-export const getDesignPatterns = async (): Promise<ArchitecturalSummary> => {
+export const fetchDesignPatterns = async (): Promise<ArchitecturalSummary> => {
   const res = await api.get<ArchitecturalSummary>('/analysis/patterns');
   return res.data;
 };
 
-export const getFileContent = async (
+export const fetchFileContent = async (
   filePath: string,
   startLine?: number,
   endLine?: number
 ): Promise<FileContentResponse> => {
-  const res = await api.get<FileContentResponse>('/files/content', {
-    params: { file_path: filePath, start_line: startLine, end_line: endLine },
-  });
+  const params: Record<string, any> = { file_path: filePath };
+  if (startLine !== undefined) params.start_line = startLine;
+  if (endLine !== undefined) params.end_line = endLine;
+  const res = await api.get<FileContentResponse>('/files/content', { params });
   return res.data;
 };
 
-export const ingestRepository = async (path: string) => {
+export const ingestRepository = async (path: string): Promise<any> => {
   const res = await api.post('/ingest', { path });
   return res.data;
 };
 
-export const ingestSample = async (sampleId: string) => {
-  const res = await api.post('/ingest/sample', { sample_id: sampleId });
+export const ingestSample = async (sampleName: string): Promise<any> => {
+  const res = await api.post(`/ingest/sample/${sampleName}`);
   return res.data;
 };
 
-export const getSamples = async (): Promise<{ samples: SampleItem[] }> => {
+export const fetchSamples = async (): Promise<{ samples: SampleItem[] }> => {
   const res = await api.get<{ samples: SampleItem[] }>('/ingest/samples');
   return res.data;
 };
 
-export const getIngestStatus = async () => {
+export const fetchIngestStatus = async (): Promise<any> => {
   const res = await api.get('/ingest/status');
   return res.data;
 };
+
+// RipEx Facts API Calls
+export const fetchFactSummary = async (): Promise<FactSummary> => {
+  const res = await api.get<FactSummary>('/facts/summary');
+  return res.data;
+};
+
+export const queryFacts = async (params: {
+  subject?: string;
+  predicate?: string;
+  object?: string;
+  kind?: string;
+  file_path?: string;
+  limit?: number;
+}): Promise<FactQueryResponse> => {
+  const res = await api.get<FactQueryResponse>('/facts/query', { params });
+  return res.data;
+};
+
+export const fetchApiRoutes = async (): Promise<RouteFact[]> => {
+  const res = await api.get<RouteFact[]>('/facts/routes');
+  return res.data;
+};
+
+export const fetchSymbolFacts = async (symbolId: string): Promise<SymbolFactsResponse> => {
+  const res = await api.get<SymbolFactsResponse>(`/facts/symbol/${encodeURIComponent(symbolId)}`);
+  return res.data;
+};
+
+// Aliases for compatibility
+export const getGraphStructure = fetchGraphStructure;
+export const getBlastRadius = fetchBlastRadius;
+export const searchCodebase = searchSymbols;
+export const getMetrics = fetchArchitectureMetrics;
+export const getGitChurn = fetchGitChurnReport;
+export const getCodeClones = fetchCloneReport;
+export const getArchitectureRules = fetchArchitectureRules;
+export const getSequenceDiagram = fetchSequenceDiagram;
+export const getDesignPatterns = fetchDesignPatterns;
+export const getFileContent = fetchFileContent;
+export const getSamples = fetchSamples;
+export const getIngestStatus = fetchIngestStatus;
 
 export default api;

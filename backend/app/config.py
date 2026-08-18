@@ -1,49 +1,54 @@
-import os
 from pathlib import Path
-from pydantic import BaseModel
+from typing import List, Set
+from pydantic import BaseModel, Field
 
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseModel):
     APP_NAME: str = "Nous Architecture Engine"
-    VERSION: str = "0.1.0"
+    VERSION: str = "0.3.0"
+    API_PREFIX: str = "/api"
     DEBUG: bool = True
     
-    # File scanner settings
-    DEFAULT_IGNORE_DIRS: set[str] = {
+    BASE_DIR: Path = Path(__file__).resolve().parent.parent
+    FIXTURES_DIR: Path = Path(__file__).resolve().parent.parent / "tests" / "fixtures"
+
+    # Supported Language File Extensions (via RipEx & Tree-sitter)
+    SUPPORTED_EXTENSIONS: Set[str] = {
+        # Python
+        ".py", ".pyi",
+        # TypeScript / JavaScript
+        ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts",
+        # Go
+        ".go",
+        # Rust
+        ".rs",
+        # C / C++
+        ".c", ".h", ".cpp", ".hpp", ".cc", ".cxx", ".hh", ".hxx",
+        # C#
+        ".cs",
+    }
+    
+    DEFAULT_IGNORE_DIRS: Set[str] = {
         "node_modules",
         ".git",
-        ".github",
-        "__pycache__",
         ".venv",
         "venv",
         "env",
+        "__pycache__",
         "dist",
         "build",
-        "out",
         ".next",
         ".nuxt",
-        ".turbo",
-        ".pytest_cache",
-        ".mypy_cache",
-        ".ruff_cache",
+        ".output",
         "coverage",
-        ".idea",
-        ".vscode",
+        ".pytest_cache",
+        "target",
+        ".system_generated",
+        "bin",
+        "obj",
     }
     
-    SUPPORTED_EXTENSIONS: dict[str, str] = {
-        ".py": "python",
-        ".ts": "typescript",
-        ".tsx": "tsx",
-        ".js": "javascript",
-        ".jsx": "javascript",
-        ".go": "go",
-        ".rs": "rust",
-    }
-    
-    MAX_FILE_SIZE_BYTES: int = 2 * 1024 * 1024  # 2MB limit per source file
-    
-    FIXTURES_DIR: Path = BASE_DIR / "tests" / "fixtures"
+    MAX_FILE_SIZE_BYTES: int = 1_000_000  # 1MB max per file
+
 
 settings = Settings()

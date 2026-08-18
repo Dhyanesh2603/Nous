@@ -6,7 +6,11 @@ import type {
   SearchResultItem,
   BlastRadiusResponse,
 } from './types';
-import { getGraphStructure, getBlastRadius, getIngestStatus } from './services/api';
+import {
+  fetchGraphStructure,
+  fetchBlastRadius,
+  fetchIngestStatus,
+} from './services/api';
 import { Header } from './components/layout/Header';
 import { FilterBar } from './components/layout/FilterBar';
 import { ArchitectureCanvas } from './components/canvas/ArchitectureCanvas';
@@ -16,6 +20,7 @@ import { AnalyticsDrawer } from './components/analytics/AnalyticsDrawer';
 import { SequenceModal } from './components/sequence/SequenceModal';
 import { RulesModal } from './components/rules/RulesModal';
 import { ClonesModal } from './components/clones/ClonesModal';
+import { FactsExplorerModal } from './components/facts/FactsExplorerModal';
 import './App.css';
 
 export function App() {
@@ -30,6 +35,7 @@ export function App() {
   const [isSequenceOpen, setIsSequenceOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isClonesOpen, setIsClonesOpen] = useState(false);
+  const [isFactsOpen, setIsFactsOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -40,9 +46,9 @@ export function App() {
   const loadGraph = useCallback(async (mode: ViewMode = viewMode) => {
     setIsLoading(true);
     try {
-      const data = await getGraphStructure(mode);
+      const data = await fetchGraphStructure(mode);
       setGraphData(data);
-      const statusRes = await getIngestStatus();
+      const statusRes = await fetchIngestStatus();
       setStatus(statusRes);
     } catch (err) {
       console.error('Failed to load graph structure:', err);
@@ -66,7 +72,7 @@ export function App() {
   // Blast radius calculation
   const handleCalculateBlastRadius = async (nodeId: string) => {
     try {
-      const res = await getBlastRadius(nodeId);
+      const res = await fetchBlastRadius(nodeId);
       setBlastRadiusData(res);
       const targetNode = res.subgraph_nodes.find((n) => n.data.isTarget);
       if (targetNode) {
@@ -128,6 +134,7 @@ export function App() {
         onOpenSequence={() => setIsSequenceOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenClones={() => setIsClonesOpen(true)}
+        onOpenFacts={() => setIsFactsOpen(true)}
         onRefreshGraph={() => {
           setBlastRadiusData(null);
           loadGraph();
@@ -218,6 +225,13 @@ export function App() {
         <ClonesModal
           isOpen={isClonesOpen}
           onClose={() => setIsClonesOpen(false)}
+        />
+
+        {/* RipEx Facts Explorer Modal */}
+        <FactsExplorerModal
+          isOpen={isFactsOpen}
+          onClose={() => setIsFactsOpen(false)}
+          onTraceSequence={handleTraceSequence}
         />
       </main>
     </div>
