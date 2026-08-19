@@ -19,12 +19,16 @@ from app.facts.fact_store import FactStore
 class RepoScanner:
     def __init__(self, root_dir: str):
         self.root_dir = os.path.abspath(root_dir)
+        self.is_single_file = os.path.isfile(self.root_dir)
         self.factory = ParserFactory()
         self.file_asts: Dict[str, FileAST] = {}
-        self.graph_store = GraphStore(self.root_dir)
-        self.search_engine = HybridSearchEngine(self.root_dir)
+        
+        # In single file mode, root_dir parent is used for path relativity
+        base_dir = os.path.dirname(self.root_dir) if self.is_single_file else self.root_dir
+        self.graph_store = GraphStore(base_dir)
+        self.search_engine = HybridSearchEngine(base_dir)
         self.analyzer = CodeQualityAnalyzer(self.graph_store)
-        self.git_analyzer = GitChurnAnalyzer(self.root_dir, self.graph_store)
+        self.git_analyzer = GitChurnAnalyzer(base_dir, self.graph_store)
         self.clone_detector = CodeCloneDetector(self.graph_store)
         self.sequence_generator = SequenceDiagramGenerator(self.graph_store)
         self.rules_engine = ArchitectureRulesEngine(self.graph_store)
@@ -37,20 +41,24 @@ class RepoScanner:
     def scan_and_index(self) -> Dict[str, Any]:
         self.file_asts.clear()
         
-        # Walk directory
-        for dirpath, dirnames, filenames in os.walk(self.root_dir):
-            # Prune ignored directories in-place
-            dirnames[:] = [
-                d for d in dirnames
-                if d not in settings.DEFAULT_IGNORE_DIRS and not d.startswith(".")
-            ]
-            
-            for filename in filenames:
-                file_path = os.path.join(dirpath, filename)
-                ext = Path(filename).suffix.lower()
+        # 1. Single file scan
+        if self.is_single_file:
+            self._process_file(self.root_dir)
+        else:
+            # 2. Directory walk
+            for dirpath, dirnames, filenames in os.walk(self.root_dir):
+                # Prune ignored directories in-place
+                dirnames[:] = [
+                    d for d in dirnames
+                    if d not in settings.DEFAULT_IGNORE_DIRS and not d.startswith(".")
+                ]
                 
-                if ext in settings.SUPPORTED_EXTENSIONS:
-                    self._process_file(file_path)
+                for filename in filenames:
+                    file_path = os.path.join(dirpath, filename)
+                    ext = Path(filename).suffix.lower()
+                    
+                    if ext in settings.SUPPORTED_EXTENSIONS:
+                        self._process_file(file_path)
 
         # Update graph and search indexes
         self.graph_store.set_file_asts(self.file_asts)
@@ -62,6 +70,7 @@ class RepoScanner:
         
         return {
             "root_dir": self.root_dir,
+            "is_single_file": self.is_single_file,
             "total_files_parsed": len(self.file_asts),
             "total_symbols": len(self.search_engine.symbols),
             "total_chunks": len(self.search_engine.chunks),
@@ -79,7 +88,8 @@ class RepoScanner:
             with open(file_path, "r", encoding="utf-8", errors="replace") as f:
                 content = f.read()
 
-            rel_path = os.path.relpath(file_path, self.root_dir)
+            base_dir = os.path.dirname(self.root_dir) if self.is_single_file else self.root_dir
+            rel_path = os.path.relpath(file_path, base_dir)
             parser = self.factory.get_parser_for_file(file_path)
             if parser:
                 ast = parser.parse_file(file_path, rel_path, content)

@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   X,
   FolderGit2,
   Play,
   Sparkles,
   HardDrive,
+  Globe,
+  Upload,
+  FileCode,
   CheckCircle2,
+  GitBranch,
 } from 'lucide-react';
-import { ingestRepository, ingestSample } from '../../services/api';
+import {
+  ingestRepository,
+  ingestGitRepository,
+  uploadFileForIngest,
+  ingestSample,
+} from '../../services/api';
 import type { SampleItem } from '../../types';
 
 interface IngestModalProps {
@@ -25,36 +34,101 @@ export const IngestModal: React.FC<IngestModalProps> = ({
   samples,
   currentRepoPath,
 }) => {
-  const [repoPath, setRepoPath] = useState('');
+  const [activeTab, setActiveTab] = useState<'local' | 'git' | 'upload'>('local');
+
+  // Local folder / file state
+  const [localPath, setLocalPath] = useState('');
+
+  // Git state
+  const [gitUrl, setGitUrl] = useState('');
+  const [gitBranch, setGitBranch] = useState('');
+
+  // File upload state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [isScanning, setIsScanning] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleScanCustomPath = async (e: React.FormEvent) => {
+  // 1. Scan Local Path (folder or single file)
+  const handleScanLocal = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!repoPath.trim()) return;
+    if (!localPath.trim()) return;
 
     setIsScanning(true);
     setErrorMsg(null);
+    setStatusMessage('Scanning and parsing files with RipEx v0.3.0...');
     try {
-      await ingestRepository(repoPath.trim());
+      await ingestRepository(localPath.trim());
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error('Ingest error:', err);
+      console.error('Local ingest error:', err);
       setErrorMsg(
         err?.response?.data?.detail ||
-          `Could not ingest repository at '${repoPath}'. Please verify the folder path exists on your computer.`
+          `Could not ingest path '${localPath}'. Please verify the folder or file path exists.`
       );
     } finally {
       setIsScanning(false);
+      setStatusMessage(null);
+    }
+  };
+
+  // 2. Clone and Scan Remote Git Repository
+  const handleScanGit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gitUrl.trim()) return;
+
+    setIsScanning(true);
+    setErrorMsg(null);
+    setStatusMessage(`Cloning ${gitUrl.trim()} (shallow clone --depth 1)...`);
+    try {
+      await ingestGitRepository(gitUrl.trim(), gitBranch.trim() || undefined);
+      setStatusMessage('Parsing cloned repository with RipEx v0.3.0...');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error('Git ingest error:', err);
+      setErrorMsg(
+        err?.response?.data?.detail ||
+          `Failed to clone git repository from '${gitUrl}'. Please verify the URL and network connection.`
+      );
+    } finally {
+      setIsScanning(false);
+      setStatusMessage(null);
+    }
+  };
+
+  // 3. Upload and Parse Single File
+  const handleUploadFile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) return;
+
+    setIsScanning(true);
+    setErrorMsg(null);
+    setStatusMessage(`Uploading and parsing ${selectedFile.name}...`);
+    try {
+      await uploadFileForIngest(selectedFile);
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error('File upload ingest error:', err);
+      setErrorMsg(
+        err?.response?.data?.detail || `Failed to upload and parse '${selectedFile.name}'.`
+      );
+    } finally {
+      setIsScanning(false);
+      setStatusMessage(null);
     }
   };
 
   const handleSelectSample = async (sampleId: string) => {
     setIsScanning(true);
     setErrorMsg(null);
+    setStatusMessage('Loading demo project...');
     try {
       await ingestSample(sampleId);
       onSuccess();
@@ -64,12 +138,20 @@ export const IngestModal: React.FC<IngestModalProps> = ({
       setErrorMsg(`Failed to load sample project.`);
     } finally {
       setIsScanning(false);
+      setStatusMessage(null);
+    }
+  };
+
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setSelectedFile(e.dataTransfer.files[0]);
     }
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
@@ -83,9 +165,14 @@ export const IngestModal: React.FC<IngestModalProps> = ({
               <FolderGit2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">Scan & Ingest Codebase</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-100">Scan & Ingest Codebase</h2>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> RipEx v0.3.0
+                </span>
+              </div>
               <p className="text-xs text-slate-400">
-                Parse your local project folder with native RipEx v0.3.0 & Tree-sitter.
+                Analyze local folders, single source files, or remote GitHub repositories.
               </p>
             </div>
           </div>
@@ -97,51 +184,210 @@ export const IngestModal: React.FC<IngestModalProps> = ({
           </button>
         </div>
 
+        {/* Ingest Source Tabs */}
+        <div className="px-6 py-2.5 bg-slate-950/40 border-b border-slate-800 flex items-center gap-2 text-xs font-mono">
+          <button
+            onClick={() => setActiveTab('local')}
+            className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
+              activeTab === 'local'
+                ? 'bg-cyan-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <HardDrive className="w-3.5 h-3.5" />
+            Local Folder / File
+          </button>
+          <button
+            onClick={() => setActiveTab('git')}
+            className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
+              activeTab === 'git'
+                ? 'bg-cyan-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            Git Repo URL
+          </button>
+          <button
+            onClick={() => setActiveTab('upload')}
+            className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
+              activeTab === 'upload'
+                ? 'bg-cyan-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Upload Single File
+          </button>
+        </div>
+
         {/* Modal Body */}
         <div className="p-6 space-y-6">
-          {/* Custom Path Ingest Form */}
-          <form onSubmit={handleScanCustomPath} className="space-y-3">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-              Local Repository Folder Path
-            </label>
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <HardDrive className="w-4 h-4 absolute left-3 top-3 text-cyan-400 pointer-events-none" />
-                <input
-                  type="text"
-                  autoFocus
-                  value={repoPath}
-                  onChange={(e) => setRepoPath(e.target.value)}
-                  placeholder="e.g. D:\projects\my-app or C:\Users\name\my-repo"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-                />
+          {/* TAB 1: Local Folder or Single File */}
+          {activeTab === 'local' && (
+            <form onSubmit={handleScanLocal} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Local Folder or File Path
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <HardDrive className="w-4 h-4 absolute left-3 top-3 text-cyan-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      autoFocus
+                      value={localPath}
+                      onChange={(e) => setLocalPath(e.target.value)}
+                      placeholder="e.g. D:\my-repo or C:\Users\name\project\main.py"
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isScanning || !localPath.trim()}
+                    className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-cyan-900/30 flex-shrink-0"
+                  >
+                    {isScanning ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                    )}
+                    <span>Scan Path</span>
+                  </button>
+                </div>
               </div>
-              <button
-                type="submit"
-                disabled={isScanning || !repoPath.trim()}
-                className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-cyan-900/30 flex-shrink-0"
+
+              {currentRepoPath && (
+                <p className="text-[11px] font-mono text-slate-500 truncate">
+                  Active codebase: <span className="text-slate-400">{currentRepoPath}</span>
+                </p>
+              )}
+            </form>
+          )}
+
+          {/* TAB 2: Remote Git Clone URL */}
+          {activeTab === 'git' && (
+            <form onSubmit={handleScanGit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Remote Git Repository URL
+                </label>
+                <div className="relative">
+                  <Globe className="w-4 h-4 absolute left-3 top-3 text-cyan-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    autoFocus
+                    value={gitUrl}
+                    onChange={(e) => setGitUrl(e.target.value)}
+                    placeholder="e.g. https://github.com/fastapi/fastapi or git@github.com:owner/repo.git"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1">
+                  <GitBranch className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={gitBranch}
+                    onChange={(e) => setGitBranch(e.target.value)}
+                    placeholder="Branch or Tag (optional, default: HEAD)"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-500 transition"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isScanning || !gitUrl.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-cyan-900/30 flex-shrink-0"
+                >
+                  {isScanning ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
+                  <span>Clone & Scan</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 3: Upload Single File */}
+          {activeTab === 'upload' && (
+            <form onSubmit={handleUploadFile} className="space-y-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept=".py,.ts,.tsx,.js,.jsx,.go,.rs,.c,.cpp,.h,.hpp,.cs"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setSelectedFile(e.target.files[0]);
+                  }
+                }}
+              />
+
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleFileDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-slate-700 hover:border-cyan-500 rounded-2xl p-6 text-center cursor-pointer transition bg-slate-950/40 space-y-2 group"
               >
-                {isScanning ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="w-10 h-10 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto group-hover:scale-110 transition">
+                  <Upload className="w-5 h-5" />
+                </div>
+                {selectedFile ? (
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-100 font-mono flex items-center justify-center gap-1.5">
+                      <FileCode className="w-4 h-4 text-cyan-400" />
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-mono">
+                      {(selectedFile.size / 1024).toFixed(1)} KB · Click or drag to change
+                    </p>
+                  </div>
                 ) : (
-                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <div>
+                    <p className="text-xs font-semibold text-slate-200">
+                      Drag & Drop a single source file here, or <span className="text-cyan-400 underline">Browse</span>
+                    </p>
+                    <p className="text-[11px] text-slate-500 font-mono mt-1">
+                      Supports: Python (.py), TypeScript (.ts, .tsx), JavaScript (.js), Go (.go), Rust (.rs), C/C++ (.c, .cpp), C# (.cs)
+                    </p>
+                  </div>
                 )}
-                <span>Scan Codebase</span>
-              </button>
-            </div>
-
-            {currentRepoPath && (
-              <p className="text-[11px] font-mono text-slate-500 truncate">
-                Current active repo: <span className="text-slate-400">{currentRepoPath}</span>
-              </p>
-            )}
-
-            {errorMsg && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-mono">
-                {errorMsg}
               </div>
-            )}
-          </form>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isScanning || !selectedFile}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-cyan-900/30"
+                >
+                  {isScanning ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
+                  <span>Parse Uploaded File</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Progress / Status feedback */}
+          {statusMessage && (
+            <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-300 text-xs font-mono flex items-center gap-2">
+              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400"></div>
+              <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-mono">
+              {errorMsg}
+            </div>
+          )}
 
           {/* Sample Projects Section */}
           <div className="pt-4 border-t border-slate-800 space-y-3">
@@ -176,10 +422,10 @@ export const IngestModal: React.FC<IngestModalProps> = ({
 
         {/* Modal Footer */}
         <div className="px-6 py-3 bg-slate-950/40 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-          <span>Supported: Python, TS, JS, Go, Rust, C, C++, C#</span>
+          <span>Supported: Python, TS/JS, Go, Rust, C, C++, C#</span>
           <div className="flex items-center gap-1.5 text-emerald-400">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>RipEx v0.3.0 Engine Ready</span>
+            <span>RipEx v0.3.0 Engine Active</span>
           </div>
         </div>
       </div>

@@ -1,17 +1,22 @@
 import os
+import shutil
 from pathlib import Path
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, UploadFile, File, Form
 from pydantic import BaseModel
 
 from app.state import app_state
 from app.config import settings
+from app.git_cloner import GitCloner
 
 router = APIRouter(prefix="/api/ingest", tags=["Ingest"])
+git_cloner = GitCloner()
 
 
 class IngestRequest(BaseModel):
-    path: str
+    path: Optional[str] = None
+    git_url: Optional[str] = None
+    branch: Optional[str] = None
 
 
 class IngestSampleRequest(BaseModel):
@@ -20,11 +25,62 @@ class IngestSampleRequest(BaseModel):
 
 @router.post("")
 def ingest_repository(req: IngestRequest):
+    # 1. Handle Remote Git Repository URL
+    if req.git_url or (req.path and git_cloner.is_git_url(req.path)):
+        url_to_clone = req.git_url or req.path
+        try:
+            cloned_dir, repo_name = git_cloner.clone_repository(url_to_clone, branch=req.branch)
+            stats = app_state.load_repository(cloned_dir)
+            return {
+                "status": "success",
+                "mode": "git_clone",
+                "git_url": url_to_clone,
+                "repo_name": repo_name,
+                "local_path": cloned_dir,
+                "stats": stats,
+            }
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Git clone error: {str(e)}")
+
+    # 2. Handle Local File / Directory Path
+    if not req.path:
+        raise HTTPException(status_code=400, detail="Either 'path' or 'git_url' must be provided.")
+
     if not os.path.exists(req.path):
-        raise HTTPException(status_code=400, detail=f"Directory path does not exist: {req.path}")
+        raise HTTPException(status_code=400, detail=f"Local path does not exist: {req.path}")
     
     stats = app_state.load_repository(req.path)
-    return {"status": "success", "stats": stats}
+    return {
+        "status": "success",
+        "mode": "single_file" if os.path.isfile(req.path) else "local_dir",
+        "local_path": req.path,
+        "stats": stats,
+    }
+
+
+@router.post("/file-upload")
+async def upload_and_ingest_file(file: UploadFile = File(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided.")
+
+    upload_dir = Path(__file__).resolve().parent.parent.parent / ".file_uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    target_file = upload_dir / file.filename
+    try:
+        with open(target_file, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {str(e)}")
+
+    stats = app_state.load_repository(str(target_file.resolve()))
+    return {
+        "status": "success",
+        "mode": "single_file",
+        "filename": file.filename,
+        "local_path": str(target_file.resolve()),
+        "stats": stats,
+    }
 
 
 @router.get("/status")
@@ -34,6 +90,7 @@ def get_ingest_status():
             "is_loaded": False,
             "is_indexing": app_state.is_indexing,
             "current_repo_path": None,
+            "is_single_file": False,
             "files_count": 0,
             "symbols_count": 0,
         }
@@ -42,6 +99,7 @@ def get_ingest_status():
         "is_loaded": True,
         "is_indexing": app_state.is_indexing,
         "current_repo_path": app_state.current_repo_path,
+        "is_single_file": app_state.scanner.is_single_file,
         "files_count": len(app_state.scanner.file_asts),
         "symbols_count": len(app_state.scanner.search_engine.symbols),
         "chunks_count": len(app_state.scanner.search_engine.chunks),

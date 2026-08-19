@@ -22,7 +22,7 @@ const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 60000, // 60s for git clones
 });
 
 export const fetchGraphStructure = async (
@@ -124,8 +124,24 @@ export const ingestRepository = async (path: string): Promise<any> => {
   return res.data;
 };
 
+export const ingestGitRepository = async (gitUrl: string, branch?: string): Promise<any> => {
+  const res = await api.post('/ingest', { git_url: gitUrl, branch });
+  return res.data;
+};
+
+export const uploadFileForIngest = async (file: File): Promise<any> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await api.post('/ingest/file-upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};
+
 export const ingestSample = async (sampleName: string): Promise<any> => {
-  const res = await api.post(`/ingest/sample/${sampleName}`);
+  const res = await api.post('/ingest/sample', { sample_id: sampleName });
   return res.data;
 };
 
