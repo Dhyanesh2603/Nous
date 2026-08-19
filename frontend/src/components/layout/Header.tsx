@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Files,
   Database,
+  FolderGit2,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples, ingestSample, ingestRepository } from '../../services/api';
@@ -75,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
       onRefreshGraph();
     } catch (err) {
       console.error('Failed to ingest custom repo:', err);
-      alert(`Could not ingest repository at '${customPath}'. Please check path.`);
+      alert(`Could not ingest repository at '${customPath}'. Please check that the folder path exists.`);
     } finally {
       setIsIngesting(false);
     }
@@ -134,12 +135,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Center: Repository Ingest & Demo Selector */}
-      <div className="flex items-center gap-2 flex-1 max-w-lg">
+      <div className="flex items-center gap-2 flex-1 max-w-xl">
         {/* Sample selector dropdown */}
         <select
           onChange={(e) => e.target.value && handleSelectSample(e.target.value)}
           defaultValue=""
-          className="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg px-2 py-1.5 outline-none font-mono focus:border-cyan-500/60"
+          className="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 outline-none font-mono focus:border-cyan-500/60 hidden md:block"
         >
           <option value="" disabled>Load Demo Project...</option>
           {samples.map((s) => (
@@ -150,25 +151,29 @@ export const Header: React.FC<HeaderProps> = ({
         </select>
 
         {/* Custom repo path form */}
-        <form onSubmit={handleIngestCustomPath} className="flex-1 flex items-center gap-1">
-          <input
-            type="text"
-            value={customPath}
-            onChange={(e) => setCustomPath(e.target.value)}
-            placeholder={currentRepoPath ? `Active: ...${currentRepoPath.slice(-25)}` : "Ingest repo path..."}
-            className="flex-1 bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 font-mono outline-none focus:border-cyan-500/60"
-          />
+        <form onSubmit={handleIngestCustomPath} className="flex-1 flex items-center gap-1.5">
+          <div className="relative flex-1 flex items-center">
+            <FolderGit2 className="w-4 h-4 absolute left-2.5 text-cyan-400 pointer-events-none" />
+            <input
+              type="text"
+              value={customPath}
+              onChange={(e) => setCustomPath(e.target.value)}
+              placeholder="Paste local repo folder path (e.g. D:\my-repo)..."
+              title={currentRepoPath ? `Current active repo: ${currentRepoPath}` : "Paste folder path to analyze"}
+              className="w-full bg-slate-900 border border-slate-700/80 hover:border-slate-600 focus:border-cyan-500 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-400 font-mono outline-none shadow-inner transition-colors"
+            />
+          </div>
           <button
             type="submit"
             disabled={isIngesting || isIndexing || !customPath.trim()}
-            className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold transition disabled:opacity-50 flex items-center gap-1 flex-shrink-0"
+            className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white border border-cyan-400 font-semibold transition disabled:opacity-40 flex items-center gap-1.5 flex-shrink-0 shadow-sm"
           >
             {isIngesting || isIndexing ? (
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-cyan-400"></div>
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
             ) : (
-              <Play className="w-3 h-3" />
+              <Play className="w-3 h-3 fill-current" />
             )}
-            Scan
+            <span>Scan</span>
           </button>
         </form>
       </div>
