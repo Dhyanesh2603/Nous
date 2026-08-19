@@ -1,4 +1,4 @@
-export type ViewMode = 'module' | 'file' | 'symbol' | 'combined';
+export type ViewMode = 'module' | 'file' | 'symbol' | 'combined' | 'frontend' | 'backend';
 
 export interface GraphNodeData {
   id: string;

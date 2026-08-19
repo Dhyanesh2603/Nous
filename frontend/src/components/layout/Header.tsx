@@ -14,12 +14,16 @@ import {
   ShieldAlert,
   Sparkles,
   Layers,
+  LayoutDashboard,
+  Network,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
 import { IngestModal } from '../ingest/IngestModal';
 
 interface HeaderProps {
+  activeScreen: 'dashboard' | 'graph';
+  onNavigateScreen: (screen: 'dashboard' | 'graph') => void;
   currentViewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   onOpenSearch: () => void;
@@ -37,6 +41,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  activeScreen,
+  onNavigateScreen,
   currentViewMode,
   onViewModeChange,
   onOpenSearch,
@@ -64,10 +70,13 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between gap-3 select-none z-30 sticky top-0 font-mono text-xs">
-        {/* Left: Brand & View Mode Switcher */}
+        {/* Left: Brand & Main Navigation Toggle */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+          <div
+            onClick={() => onNavigateScreen('dashboard')}
+            className="flex items-center gap-2 cursor-pointer group"
+          >
+            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 group-hover:scale-105 transition">
               <Brain className="w-5 h-5" />
             </div>
             <div>
@@ -76,42 +85,92 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* View Mode Switcher */}
-          <div className="hidden 2xl:flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5">
+          {/* Screen Switcher: Dashboard vs Architecture Graph */}
+          <div className="flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5 ml-2">
             <button
-              onClick={() => onViewModeChange('module')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
-                currentViewMode === 'module'
-                  ? 'bg-slate-800 text-cyan-300 font-semibold border border-slate-700 shadow-sm'
+              onClick={() => onNavigateScreen('dashboard')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
+                activeScreen === 'dashboard'
+                  ? 'bg-cyan-600 text-white font-semibold shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Boxes className="w-3.5 h-3.5" />
-              Modules
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Overview</span>
             </button>
             <button
-              onClick={() => onViewModeChange('file')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
-                currentViewMode === 'file'
-                  ? 'bg-slate-800 text-cyan-300 font-semibold border border-slate-700 shadow-sm'
+              onClick={() => onNavigateScreen('graph')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
+                activeScreen === 'graph'
+                  ? 'bg-cyan-600 text-white font-semibold shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <FileCode className="w-3.5 h-3.5" />
-              Files
-            </button>
-            <button
-              onClick={() => onViewModeChange('symbol')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
-                currentViewMode === 'symbol'
-                  ? 'bg-slate-800 text-cyan-300 font-semibold border border-slate-700 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Code2 className="w-3.5 h-3.5" />
-              Call Graph
+              <Network className="w-3.5 h-3.5" />
+              <span>Graph</span>
             </button>
           </div>
+
+          {/* View Mode Switcher (Visible when in Graph view) */}
+          {activeScreen === 'graph' && (
+            <div className="hidden 2xl:flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5">
+              <button
+                onClick={() => onViewModeChange('file')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
+                  currentViewMode === 'file'
+                    ? 'bg-slate-800 text-cyan-300 font-semibold border border-slate-700 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <FileCode className="w-3.5 h-3.5" />
+                All Files
+              </button>
+              <button
+                onClick={() => onViewModeChange('frontend')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
+                  currentViewMode === 'frontend'
+                    ? 'bg-slate-800 text-purple-300 font-semibold border border-slate-700 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Frontend
+              </button>
+              <button
+                onClick={() => onViewModeChange('backend')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
+                  currentViewMode === 'backend'
+                    ? 'bg-slate-800 text-emerald-300 font-semibold border border-slate-700 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Boxes className="w-3.5 h-3.5" />
+                Backend
+              </button>
+              <button
+                onClick={() => onViewModeChange('module')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
+                  currentViewMode === 'module'
+                    ? 'bg-slate-800 text-cyan-300 font-semibold border border-slate-700 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Boxes className="w-3.5 h-3.5" />
+                Modules
+              </button>
+              <button
+                onClick={() => onViewModeChange('symbol')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
+                  currentViewMode === 'symbol'
+                    ? 'bg-slate-800 text-cyan-300 font-semibold border border-slate-700 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Code2 className="w-3.5 h-3.5" />
+                Call Graph
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Center: Open / Ingest Repository */}

@@ -26,9 +26,13 @@ import { SecurityModal } from './components/security/SecurityModal';
 import { HealthScoreModal } from './components/health/HealthScoreModal';
 import { CopilotModal } from './components/copilot/CopilotModal';
 import { FrameworkModal } from './components/framework/FrameworkModal';
+import { IngestModal } from './components/ingest/IngestModal';
+import { RepositoryDashboard } from './components/dashboard/RepositoryDashboard';
 import './App.css';
 
 export function App() {
+  // Navigation Screens: 'dashboard' (landing overview) vs 'graph' (interactive visual architecture canvas)
+  const [activeScreen, setActiveScreen] = useState<'dashboard' | 'graph'>('dashboard');
   const [viewMode, setViewMode] = useState<ViewMode>('file');
   const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
   const [graphData, setGraphData] = useState<GraphStructureResponse | null>(null);
@@ -46,6 +50,7 @@ export function App() {
   const [isHealthOpen, setIsHealthOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isFrameworkOpen, setIsFrameworkOpen] = useState(false);
+  const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -91,6 +96,7 @@ export function App() {
         setIsHealthOpen(false);
         setIsCopilotOpen(false);
         setIsFrameworkOpen(false);
+        setIsIngestModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -103,6 +109,13 @@ export function App() {
     loadGraph(mode);
   };
 
+  const handleNavigateToGraph = (mode: ViewMode) => {
+    setViewMode(mode);
+    setBlastRadiusData(null);
+    loadGraph(mode);
+    setActiveScreen('graph');
+  };
+
   const handleNodeClick = (nodeData: GraphNodeData) => {
     setSelectedNode(nodeData);
   };
@@ -111,6 +124,7 @@ export function App() {
     try {
       const blast = await fetchBlastRadius(targetId, targetType);
       setBlastRadiusData(blast);
+      setActiveScreen('graph');
     } catch (err) {
       console.error('Blast radius calculation failed:', err);
     }
@@ -120,6 +134,7 @@ export function App() {
     const node = graphData?.nodes.find((n) => n.id === result.node_id || n.data.filePath === result.file_path);
     if (node) {
       setSelectedNode(node.data);
+      setActiveScreen('graph');
     }
   };
 
@@ -132,6 +147,8 @@ export function App() {
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
       {/* Top Navigation Bar */}
       <Header
+        activeScreen={activeScreen}
+        onNavigateScreen={setActiveScreen}
         currentViewMode={viewMode}
         onViewModeChange={handleViewModeChange}
         onOpenSearch={() => setIsSearchOpen(true)}
@@ -151,46 +168,71 @@ export function App() {
         currentRepoPath={status?.current_repo_path}
       />
 
-      {/* Main Workspace */}
+      {/* Main Workspace: Either Repository Dashboard OR Architecture Graph */}
       <main className="flex-1 relative flex overflow-hidden">
-        {/* Left Filter & Controls Toolbar */}
-        <FilterBar
-          summary={graphData?.summary}
-          layoutDirection={layoutDirection}
-          onToggleLayoutDirection={() =>
-            setLayoutDirection((prev) => (prev === 'TB' ? 'LR' : 'TB'))
-          }
-          isBlastRadiusActive={!!blastRadiusData}
-          onResetBlastRadius={() => setBlastRadiusData(null)}
-          currentViewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
-        />
-
-        {/* Central Graph Canvas */}
-        <div className="flex-1 relative h-full">
-          {isLoading ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-20 gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
-              <span className="text-xs font-mono text-slate-400">Building architecture topology...</span>
-            </div>
-          ) : null}
-
-          <ArchitectureCanvas
-            nodes={blastRadiusData ? blastRadiusData.subgraph_nodes : (graphData?.nodes || [])}
-            edges={blastRadiusData ? blastRadiusData.subgraph_edges : (graphData?.edges || [])}
-            onSelectNode={handleNodeClick}
-            layoutDirection={layoutDirection}
-            isBlastRadiusActive={!!blastRadiusData}
+        {activeScreen === 'dashboard' ? (
+          <RepositoryDashboard
+            currentRepoPath={status?.current_repo_path}
+            summary={graphData?.summary}
+            onNavigateToGraph={handleNavigateToGraph}
+            onOpenDatabase={() => setIsDatabaseOpen(true)}
+            onOpenSecurity={() => setIsSecurityOpen(true)}
+            onOpenHealth={() => setIsHealthOpen(true)}
+            onOpenCopilot={() => setIsCopilotOpen(true)}
+            onOpenFramework={() => setIsFrameworkOpen(true)}
+            onOpenFacts={() => setIsFactsOpen(true)}
+            onOpenSequence={() => {
+              setSequenceTargetSymbol(undefined);
+              setIsSequenceOpen(true);
+            }}
+            onOpenRules={() => setIsRulesOpen(true)}
+            onOpenClones={() => setIsClonesOpen(true)}
+            onOpenSearch={() => setIsSearchOpen(true)}
+            onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+            onOpenIngestModal={() => setIsIngestModalOpen(true)}
           />
-        </div>
+        ) : (
+          <>
+            {/* Left Filter & Controls Toolbar */}
+            <FilterBar
+              summary={graphData?.summary}
+              layoutDirection={layoutDirection}
+              onToggleLayoutDirection={() =>
+                setLayoutDirection((prev) => (prev === 'TB' ? 'LR' : 'TB'))
+              }
+              isBlastRadiusActive={!!blastRadiusData}
+              onResetBlastRadius={() => setBlastRadiusData(null)}
+              currentViewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
 
-        {/* Right Inspector Drawer */}
-        <NodeInspector
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-          onCalculateBlastRadius={(nodeId) => handleCalculateBlastRadius(nodeId, 'file')}
-          onTraceSequence={handleTraceSequence}
-        />
+            {/* Central Graph Canvas */}
+            <div className="flex-1 relative h-full">
+              {isLoading ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-20 gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
+                  <span className="text-xs font-mono text-slate-400">Building architecture topology...</span>
+                </div>
+              ) : null}
+
+              <ArchitectureCanvas
+                nodes={blastRadiusData ? blastRadiusData.subgraph_nodes : (graphData?.nodes || [])}
+                edges={blastRadiusData ? blastRadiusData.subgraph_edges : (graphData?.edges || [])}
+                onSelectNode={handleNodeClick}
+                layoutDirection={layoutDirection}
+                isBlastRadiusActive={!!blastRadiusData}
+              />
+            </div>
+
+            {/* Right Inspector Drawer */}
+            <NodeInspector
+              node={selectedNode}
+              onClose={() => setSelectedNode(null)}
+              onCalculateBlastRadius={(nodeId) => handleCalculateBlastRadius(nodeId, 'file')}
+              onTraceSequence={handleTraceSequence}
+            />
+          </>
+        )}
 
         {/* Analytics Left Drawer */}
         <AnalyticsDrawer
@@ -200,6 +242,7 @@ export function App() {
             const node = graphData?.nodes.find((n) => n.id === symId);
             if (node) {
               setSelectedNode(node.data);
+              setActiveScreen('graph');
             }
           }}
           onHighlightCycle={(_cycleFiles) => {
@@ -272,6 +315,7 @@ export function App() {
             );
             if (node) {
               setSelectedNode(node.data);
+              setActiveScreen('graph');
               setIsCopilotOpen(false);
             }
           }}
@@ -281,6 +325,17 @@ export function App() {
         <FrameworkModal
           isOpen={isFrameworkOpen}
           onClose={() => setIsFrameworkOpen(false)}
+        />
+
+        {/* Ingest Modal */}
+        <IngestModal
+          isOpen={isIngestModalOpen}
+          onClose={() => setIsIngestModalOpen(false)}
+          onSuccess={() => {
+            loadGraph();
+          }}
+          samples={[]}
+          currentRepoPath={status?.current_repo_path}
         />
       </main>
     </div>

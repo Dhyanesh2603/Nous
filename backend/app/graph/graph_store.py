@@ -93,6 +93,8 @@ class GraphStore:
             nodes, edges = self._build_symbol_view()
         elif view_mode == "combined":
             nodes, edges = self._build_combined_view()
+        elif view_mode in ("frontend", "backend"):
+            nodes, edges = self._build_scoped_file_view(view_mode)
         else:  # default: file view
             nodes, edges = self._build_file_view()
 
@@ -212,6 +214,39 @@ class GraphStore:
                 )
 
         return nodes, edges
+
+    def _build_scoped_file_view(self, scope: str) -> Tuple[List[ReactFlowNode], List[ReactFlowEdge]]:
+        all_nodes, all_edges = self._build_file_view()
+        
+        frontend_extensions = {".tsx", ".jsx", ".vue", ".svelte", ".html", ".css", ".scss"}
+        frontend_keywords = {"component", "views", "pages", "hooks", "layouts", "frontend", "ui", "context"}
+        
+        scoped_nodes = []
+        scoped_node_ids = set()
+
+        for node in all_nodes:
+            rel = (node.data.get("relativePath") or "").lower()
+            ext = os.path.splitext(rel)[1]
+            is_fe = ext in frontend_extensions or any(k in rel for k in frontend_keywords)
+            
+            if scope == "frontend" and is_fe:
+                scoped_nodes.append(node)
+                scoped_node_ids.add(node.id)
+            elif scope == "backend" and not is_fe:
+                scoped_nodes.append(node)
+                scoped_node_ids.add(node.id)
+
+        # Filter edges to only include those where both source and target are in scoped_nodes
+        scoped_edges = [
+            e for e in all_edges
+            if e.source in scoped_node_ids and e.target in scoped_node_ids
+        ]
+
+        # If scoped filtering produced empty results (e.g. backend-only repo), fallback gracefully
+        if not scoped_nodes:
+            return all_nodes, all_edges
+
+        return scoped_nodes, scoped_edges
 
     def _build_symbol_view(self) -> Tuple[List[ReactFlowNode], List[ReactFlowEdge]]:
         nodes: List[ReactFlowNode] = []

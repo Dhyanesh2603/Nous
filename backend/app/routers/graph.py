@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/graph", tags=["Graph"])
 
 
 @router.get("/structure", response_model=GraphStructureResponse)
-def get_graph_structure(view_mode: str = Query("file", pattern="^(file|module|symbol|combined)$")):
+def get_graph_structure(view_mode: str = Query("file", pattern="^(file|module|symbol|combined|frontend|backend)$")):
     if not app_state.scanner:
         raise HTTPException(status_code=400, detail="No repository currently loaded. Please ingest a repository first.")
     
