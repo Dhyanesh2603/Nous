@@ -47,3 +47,9 @@ dist-ssr/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Nous Ingestion Caches
+.cloned_repos/
+.file_uploads/
+backend/.cloned_repos/
+backend/.file_uploads/
