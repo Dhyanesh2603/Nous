@@ -9,6 +9,7 @@ import {
   FileCode,
   Copy,
   Check,
+  RotateCcw,
 } from 'lucide-react';
 import {
   queryCopilot,
@@ -21,12 +22,14 @@ interface CopilotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectFile?: (file: string) => void;
+  currentRepoPath?: string;
 }
 
 export const CopilotModal: React.FC<CopilotModalProps> = ({
   isOpen,
   onClose,
   onSelectFile,
+  currentRepoPath,
 }) => {
   const [activeTab, setActiveTab] = useState<'chat' | 'onboarding' | 'docs'>('chat');
   const [inputQuery, setInputQuery] = useState('');
@@ -36,10 +39,18 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
   const [docsMarkdown, setDocsMarkdown] = useState<string>('');
   const [copiedDocs, setCopiedDocs] = useState(false);
 
+  // When repo changes or modal opens, reset and load fresh data for active repository
+  useEffect(() => {
+    setMessages([]);
+    setInputQuery('');
+    setOnboarding(null);
+    setDocsMarkdown('');
+  }, [currentRepoPath]);
+
   useEffect(() => {
     if (!isOpen) return;
 
-    // Pre-load onboarding roadmap and generated docs
+    // Load fresh onboarding roadmap and generated docs for the active repo
     fetchOnboardingRoadmap()
       .then((res: OnboardingRoadmap) => setOnboarding(res))
       .catch((err: unknown) => console.error('Onboarding load error:', err));
@@ -47,7 +58,7 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
     fetchGeneratedDocs()
       .then((res) => setDocsMarkdown(res.documentation_markdown))
       .catch((err: unknown) => console.error('Docs load error:', err));
-  }, [isOpen]);
+  }, [isOpen, currentRepoPath]);
 
   if (!isOpen) return null;
 
@@ -74,6 +85,11 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClearChat = () => {
+    setMessages([]);
+    setInputQuery('');
   };
 
   const handleCopyDocs = () => {
@@ -146,6 +162,17 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
                 Auto Docs
               </button>
             </div>
+
+            {activeTab === 'chat' && messages.length > 0 && (
+              <button
+                onClick={handleClearChat}
+                title="Reset / Clear Chat"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
+
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"

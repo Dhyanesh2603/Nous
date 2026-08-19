@@ -309,6 +309,7 @@ export function App() {
         <CopilotModal
           isOpen={isCopilotOpen}
           onClose={() => setIsCopilotOpen(false)}
+          currentRepoPath={status?.current_repo_path}
           onSelectFile={(f) => {
             const node = graphData?.nodes.find(
               (n) => n.data.relativePath === f || n.data.filePath?.endsWith(f)
