@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import os
 from pathlib import Path
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -56,6 +57,18 @@ app.include_router(search_router)
 app.include_router(analysis_router)
 app.include_router(files_router)
 app.include_router(facts_router)
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "Welcome to Nous Codebase Intelligence & RipEx Fact Engine",
+        "version": "0.3.0",
+        "docs_url": "/docs",
+        "health_url": "/api/health",
+        "facts_summary_url": "/api/facts/summary",
+        "frontend_url": "http://127.0.0.1:5173",
+    }
 
 
 @app.get("/api/health")
