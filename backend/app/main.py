@@ -13,6 +13,12 @@ from app.routers import (
     analysis_router,
     files_router,
     facts_router,
+    database_router,
+    security_router,
+    performance_router,
+    framework_router,
+    health_score_router,
+    copilot_router,
 )
 from app.state import app_state
 
@@ -36,8 +42,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.3.0",
-    description="Multi-language codebase intelligence, RipEx & Tree-sitter AST parser, graph architecture visualizer & semantic fact retrieval engine.",
+    version="0.4.0",
+    description="Complete Software Intelligence Platform: RipEx & Tree-sitter AST, Interactive Architecture Graphs, ERD Database Analysis, Security & Performance Scanners, and AI Repository Copilot.",
     lifespan=lifespan,
 )
 
@@ -57,16 +63,25 @@ app.include_router(search_router)
 app.include_router(analysis_router)
 app.include_router(files_router)
 app.include_router(facts_router)
+app.include_router(database_router)
+app.include_router(security_router)
+app.include_router(performance_router)
+app.include_router(framework_router)
+app.include_router(health_score_router)
+app.include_router(copilot_router)
 
 
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to Nous Codebase Intelligence & RipEx Fact Engine",
-        "version": "0.3.0",
+        "message": "Welcome to Nous Software Intelligence Platform",
+        "version": "0.4.0",
         "docs_url": "/docs",
         "health_url": "/api/health",
         "facts_summary_url": "/api/facts/summary",
+        "database_schema_url": "/api/database/schema",
+        "security_audit_url": "/api/security/audit",
+        "performance_insights_url": "/api/performance/insights",
         "frontend_url": "http://127.0.0.1:5173",
     }
 
@@ -76,7 +91,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "version": "0.3.0",
+        "version": "0.4.0",
         "has_active_repo": app_state.scanner is not None,
     }
 

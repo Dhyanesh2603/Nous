@@ -16,13 +16,21 @@ import type {
   FactQueryResponse,
   RouteFact,
   SymbolFactsResponse,
+  DatabaseSchemaReport,
+  SecurityAuditReport,
+  PerformanceReport,
+  FrameworkOverviewReport,
+  RepositoryHealthScorecard,
+  CopilotAnswer,
+  ImpactPredictionReport,
+  OnboardingRoadmap,
 } from '../types';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // 60s for git clones
+  timeout: 60000, // 60s for git clones and large repos
 });
 
 export const fetchGraphStructure = async (
@@ -140,6 +148,17 @@ export const uploadFileForIngest = async (file: File): Promise<any> => {
   return res.data;
 };
 
+export const uploadZipForIngest = async (file: File): Promise<any> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await api.post('/ingest/zip', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};
+
 export const ingestSample = async (sampleName: string): Promise<any> => {
   const res = await api.post('/ingest/sample', { sample_id: sampleName });
   return res.data;
@@ -180,6 +199,57 @@ export const fetchApiRoutes = async (): Promise<RouteFact[]> => {
 
 export const fetchSymbolFacts = async (symbolId: string): Promise<SymbolFactsResponse> => {
   const res = await api.get<SymbolFactsResponse>(`/facts/symbol/${encodeURIComponent(symbolId)}`);
+  return res.data;
+};
+
+// Database Schema & ERD
+export const fetchDatabaseSchema = async (): Promise<DatabaseSchemaReport> => {
+  const res = await api.get<DatabaseSchemaReport>('/database/schema');
+  return res.data;
+};
+
+// Security Audit
+export const fetchSecurityAudit = async (): Promise<SecurityAuditReport> => {
+  const res = await api.get<SecurityAuditReport>('/security/audit');
+  return res.data;
+};
+
+// Performance Insights
+export const fetchPerformanceInsights = async (): Promise<PerformanceReport> => {
+  const res = await api.get<PerformanceReport>('/performance/insights');
+  return res.data;
+};
+
+// Framework Overview
+export const fetchFrameworkOverview = async (): Promise<FrameworkOverviewReport> => {
+  const res = await api.get<FrameworkOverviewReport>('/framework/overview');
+  return res.data;
+};
+
+// Health Scorecard
+export const fetchHealthScorecard = async (): Promise<RepositoryHealthScorecard> => {
+  const res = await api.get<RepositoryHealthScorecard>('/analysis/health-scorecard');
+  return res.data;
+};
+
+// AI Copilot
+export const queryCopilot = async (query: string): Promise<CopilotAnswer> => {
+  const res = await api.post<CopilotAnswer>('/copilot/query', { query });
+  return res.data;
+};
+
+export const predictImpact = async (target: string): Promise<ImpactPredictionReport> => {
+  const res = await api.post<ImpactPredictionReport>('/copilot/impact', { target });
+  return res.data;
+};
+
+export const fetchOnboardingRoadmap = async (): Promise<OnboardingRoadmap> => {
+  const res = await api.get<OnboardingRoadmap>('/copilot/onboarding');
+  return res.data;
+};
+
+export const fetchGeneratedDocs = async (): Promise<{ documentation_markdown: string }> => {
+  const res = await api.get<{ documentation_markdown: string }>('/copilot/docs');
   return res.data;
 };
 

@@ -368,3 +368,188 @@ export interface SymbolFactsResponse {
   inherits_from: CodeFact[];
   subclasses: CodeFact[];
 }
+
+// Database Analysis Types
+export interface ColumnDefinition {
+  name: string;
+  data_type: string;
+  is_primary_key: boolean;
+  is_foreign_key: boolean;
+  is_nullable: boolean;
+  references_table?: string;
+  references_column?: string;
+}
+
+export interface TableRelationship {
+  source_table: string;
+  target_table: string;
+  relationship_type: string;
+  foreign_key?: string;
+  references_key?: string;
+}
+
+export interface TableDefinition {
+  name: string;
+  schema_type: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  columns: ColumnDefinition[];
+  primary_keys: string[];
+}
+
+export interface DatabaseSchemaReport {
+  detected: boolean;
+  schema_type?: string;
+  tables_count: number;
+  relationships_count: number;
+  tables: TableDefinition[];
+  relationships: TableRelationship[];
+  mermaid_erd: string;
+}
+
+// Security Audit Types
+export interface SecurityVulnerability {
+  id: string;
+  title: string;
+  category: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  matched_snippet: string;
+  remediation: string;
+  cwe?: string;
+}
+
+export interface SecurityAuditReport {
+  security_score: number;
+  grade: string;
+  total_issues: number;
+  critical_count: number;
+  high_count: number;
+  medium_count: number;
+  low_count: number;
+  vulnerabilities: SecurityVulnerability[];
+}
+
+// Performance Insights Types
+export interface PerformanceIssue {
+  id: string;
+  title: string;
+  issue_type: string;
+  severity: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  matched_snippet: string;
+  explanation: string;
+  optimization_tip: string;
+}
+
+export interface PerformanceReport {
+  performance_score: number;
+  grade: string;
+  total_issues: number;
+  n_plus_one_count: number;
+  blocking_io_count: number;
+  nested_loop_count: number;
+  issues: PerformanceIssue[];
+}
+
+// Framework Intelligence Types
+export interface ComponentInfo {
+  name: string;
+  framework: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  props: string[];
+  hooks_used: string[];
+  child_components: string[];
+}
+
+export interface BackendLayerMap {
+  controllers: Array<{ name: string; file: string; symbols: string[]; endpoints_count: number }>;
+  services: Array<{ name: string; file: string; symbols: string[] }>;
+  repositories: Array<{ name: string; file: string; symbols: string[] }>;
+  middleware_chain: string[];
+}
+
+export interface FrameworkOverviewReport {
+  detected_frameworks: string[];
+  frontend_components: ComponentInfo[];
+  backend_layers: BackendLayerMap;
+  routes_map: Array<Record<string, any>>;
+}
+
+// Repository Health & Technical Debt Types
+export interface HealthRadarMetrics {
+  architecture_score: number;
+  maintainability_score: number;
+  security_score: number;
+  performance_score: number;
+  testability_score: number;
+}
+
+export interface RefactoringRecommendation {
+  priority: string;
+  category: string;
+  title: string;
+  impact: string;
+  remediation: string;
+}
+
+export interface RepositoryHealthScorecard {
+  overall_score: number;
+  overall_grade: string;
+  technical_debt_hours: number;
+  technical_debt_level: string;
+  radar: HealthRadarMetrics;
+  total_loc: number;
+  total_files: number;
+  total_symbols: number;
+  circular_cycles_count: number;
+  duplicated_lines_count: number;
+  recommendations: RefactoringRecommendation[];
+}
+
+// AI Copilot & Onboarding Types
+export interface CopilotAnswer {
+  query: string;
+  summary: string;
+  markdown_response: string;
+  cited_files: string[];
+  cited_symbols: string[];
+  suggested_actions: string[];
+}
+
+export interface ImpactPredictionReport {
+  target: string;
+  target_type: string;
+  breaking_change_probability: number;
+  risk_level: string;
+  affected_files_count: number;
+  affected_symbols_count: number;
+  affected_routes: string[];
+  affected_tables: string[];
+  affected_files: string[];
+  suggested_tests: string[];
+}
+
+export interface OnboardingStep {
+  step_number: number;
+  title: string;
+  description: string;
+  key_files: string[];
+  key_symbols: string[];
+  learning_goal: string;
+}
+
+export interface OnboardingRoadmap {
+  repo_name: string;
+  primary_languages: string[];
+  estimated_reading_time_minutes: number;
+  total_steps: number;
+  steps: OnboardingStep[];
+}

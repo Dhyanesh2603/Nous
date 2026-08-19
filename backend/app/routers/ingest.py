@@ -1,5 +1,6 @@
 import os
 import shutil
+import zipfile
 from pathlib import Path
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, BackgroundTasks, UploadFile, File, Form
@@ -54,6 +55,46 @@ def ingest_repository(req: IngestRequest):
         "status": "success",
         "mode": "single_file" if os.path.isfile(req.path) else "local_dir",
         "local_path": req.path,
+        "stats": stats,
+    }
+
+
+@router.post("/zip")
+async def upload_and_ingest_zip(file: UploadFile = File(...)):
+    if not file.filename or not file.filename.lower().endswith(".zip"):
+        raise HTTPException(status_code=400, detail="Uploaded file must be a valid .zip archive.")
+
+    cache_dir = Path(__file__).resolve().parent.parent.parent / ".cloned_repos" / f"zip_{Path(file.filename).stem}"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    
+    temp_zip = cache_dir / "temp_archive.zip"
+    try:
+        with open(temp_zip, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Extract safely
+        with zipfile.ZipFile(temp_zip, "r") as zip_ref:
+            # Check for path traversal vulnerabilities
+            for member in zip_ref.namelist():
+                if member.startswith("/") or ".." in member:
+                    continue
+                zip_ref.extract(member, cache_dir)
+                
+        if temp_zip.exists():
+            temp_zip.unlink()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to extract zip archive: {str(e)}")
+
+    # If the zip extracted into a single top-level directory (e.g. repo-main/), use that
+    extracted_items = [p for p in cache_dir.iterdir() if p.is_dir() and not p.name.startswith(".")]
+    target_scan_dir = extracted_items[0] if len(extracted_items) == 1 else cache_dir
+
+    stats = app_state.load_repository(str(target_scan_dir.resolve()))
+    return {
+        "status": "success",
+        "mode": "zip_archive",
+        "filename": file.filename,
+        "local_path": str(target_scan_dir.resolve()),
         "stats": stats,
     }
 

@@ -10,11 +10,13 @@ import {
   FileCode,
   CheckCircle2,
   GitBranch,
+  Archive,
 } from 'lucide-react';
 import {
   ingestRepository,
   ingestGitRepository,
   uploadFileForIngest,
+  uploadZipForIngest,
   ingestSample,
 } from '../../services/api';
 import type { SampleItem } from '../../types';
@@ -43,7 +45,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
   const [gitUrl, setGitUrl] = useState('');
   const [gitBranch, setGitBranch] = useState('');
 
-  // File upload state
+  // File / Zip upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,16 +104,25 @@ export const IngestModal: React.FC<IngestModalProps> = ({
     }
   };
 
-  // 3. Upload and Parse Single File
+  // 3. Upload and Parse Single File or ZIP Archive
   const handleUploadFile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
 
     setIsScanning(true);
     setErrorMsg(null);
-    setStatusMessage(`Uploading and parsing ${selectedFile.name}...`);
+    const isZip = selectedFile.name.toLowerCase().endsWith('.zip');
+    setStatusMessage(
+      isZip
+        ? `Extracting and indexing ZIP archive ${selectedFile.name}...`
+        : `Uploading and parsing ${selectedFile.name}...`
+    );
     try {
-      await uploadFileForIngest(selectedFile);
+      if (isZip) {
+        await uploadZipForIngest(selectedFile);
+      } else {
+        await uploadFileForIngest(selectedFile);
+      }
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -172,7 +183,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Analyze local folders, single source files, or remote GitHub repositories.
+                Analyze local folders, single source files, ZIP archives, or remote GitHub repositories.
               </p>
             </div>
           </div>
@@ -217,7 +228,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
-            Upload Single File
+            Upload File / ZIP
           </button>
         </div>
 
@@ -312,14 +323,14 @@ export const IngestModal: React.FC<IngestModalProps> = ({
             </form>
           )}
 
-          {/* TAB 3: Upload Single File */}
+          {/* TAB 3: Upload Single File or ZIP Archive */}
           {activeTab === 'upload' && (
             <form onSubmit={handleUploadFile} className="space-y-4">
               <input
                 ref={fileInputRef}
                 type="file"
                 className="hidden"
-                accept=".py,.ts,.tsx,.js,.jsx,.go,.rs,.c,.cpp,.h,.hpp,.cs"
+                accept=".zip,.py,.ts,.tsx,.js,.jsx,.go,.rs,.c,.cpp,.h,.hpp,.cs"
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
                     setSelectedFile(e.target.files[0]);
@@ -339,7 +350,11 @@ export const IngestModal: React.FC<IngestModalProps> = ({
                 {selectedFile ? (
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-100 font-mono flex items-center justify-center gap-1.5">
-                      <FileCode className="w-4 h-4 text-cyan-400" />
+                      {selectedFile.name.toLowerCase().endsWith('.zip') ? (
+                        <Archive className="w-4 h-4 text-amber-400" />
+                      ) : (
+                        <FileCode className="w-4 h-4 text-cyan-400" />
+                      )}
                       {selectedFile.name}
                     </p>
                     <p className="text-[11px] text-slate-400 font-mono">
@@ -349,10 +364,10 @@ export const IngestModal: React.FC<IngestModalProps> = ({
                 ) : (
                   <div>
                     <p className="text-xs font-semibold text-slate-200">
-                      Drag & Drop a single source file here, or <span className="text-cyan-400 underline">Browse</span>
+                      Drag & Drop a <span className="text-cyan-400 font-bold">.ZIP repository archive</span> or single source file here
                     </p>
                     <p className="text-[11px] text-slate-500 font-mono mt-1">
-                      Supports: Python (.py), TypeScript (.ts, .tsx), JavaScript (.js), Go (.go), Rust (.rs), C/C++ (.c, .cpp), C# (.cs)
+                      Supports: .ZIP archives, Python (.py), TypeScript (.ts, .tsx), JavaScript (.js), Go (.go), Rust (.rs), C/C++, C#
                     </p>
                   </div>
                 )}
@@ -369,7 +384,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
                   ) : (
                     <Play className="w-3.5 h-3.5 fill-current" />
                   )}
-                  <span>Parse Uploaded File</span>
+                  <span>{selectedFile?.name.toLowerCase().endsWith('.zip') ? 'Extract & Ingest ZIP' : 'Parse File'}</span>
                 </button>
               </div>
             </form>

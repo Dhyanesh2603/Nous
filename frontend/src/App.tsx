@@ -21,6 +21,11 @@ import { SequenceModal } from './components/sequence/SequenceModal';
 import { RulesModal } from './components/rules/RulesModal';
 import { ClonesModal } from './components/clones/ClonesModal';
 import { FactsExplorerModal } from './components/facts/FactsExplorerModal';
+import { DatabaseModal } from './components/database/DatabaseModal';
+import { SecurityModal } from './components/security/SecurityModal';
+import { HealthScoreModal } from './components/health/HealthScoreModal';
+import { CopilotModal } from './components/copilot/CopilotModal';
+import { FrameworkModal } from './components/framework/FrameworkModal';
 import './App.css';
 
 export function App() {
@@ -36,6 +41,11 @@ export function App() {
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isClonesOpen, setIsClonesOpen] = useState(false);
   const [isFactsOpen, setIsFactsOpen] = useState(false);
+  const [isDatabaseOpen, setIsDatabaseOpen] = useState(false);
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [isHealthOpen, setIsHealthOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [isFrameworkOpen, setIsFrameworkOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -62,90 +72,88 @@ export function App() {
     loadGraph();
   }, [loadGraph]);
 
-  // Mode change handler
-  const handleViewModeChange = (newMode: ViewMode) => {
-    setViewMode(newMode);
-    setBlastRadiusData(null);
-    loadGraph(newMode);
-  };
-
-  // Blast radius calculation
-  const handleCalculateBlastRadius = async (nodeId: string) => {
-    try {
-      const res = await fetchBlastRadius(nodeId);
-      setBlastRadiusData(res);
-      const targetNode = res.subgraph_nodes.find((n) => n.data.isTarget);
-      if (targetNode) {
-        setSelectedNode(targetNode.data);
-      }
-    } catch (err) {
-      console.error('Failed to calculate blast radius:', err);
-    }
-  };
-
-  // Trace sequence flow from a symbol
-  const handleTraceSequence = (symbolId: string) => {
-    setSequenceTargetSymbol(symbolId);
-    setIsSequenceOpen(true);
-  };
-
-  // Search selection handler
-  const handleSelectSearchResult = (result: SearchResultItem) => {
-    const matchedNode = graphData?.nodes.find((n) => n.id === result.node_id);
-    if (matchedNode) {
-      setSelectedNode(matchedNode.data);
-    } else {
-      setSelectedNode({
-        id: result.node_id,
-        name: result.symbol_name || result.relative_path,
-        kind: result.symbol_kind,
-        relativePath: result.relative_path,
-        filePath: result.file_path,
-        startLine: result.start_line,
-        endLine: result.end_line,
-      });
-    }
-  };
-
-  // Keyboard shortcut listener (Ctrl+K / Cmd+K)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setIsAnalyticsOpen(false);
+        setIsSequenceOpen(false);
+        setIsRulesOpen(false);
+        setIsClonesOpen(false);
+        setIsFactsOpen(false);
+        setIsDatabaseOpen(false);
+        setIsSecurityOpen(false);
+        setIsHealthOpen(false);
+        setIsCopilotOpen(false);
+        setIsFrameworkOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Compute active nodes and edges (standard or blast radius mode)
-  const activeNodes = blastRadiusData ? blastRadiusData.subgraph_nodes : graphData?.nodes || [];
-  const activeEdges = blastRadiusData ? blastRadiusData.subgraph_edges : graphData?.edges || [];
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    setBlastRadiusData(null);
+    loadGraph(mode);
+  };
+
+  const handleNodeClick = (nodeData: GraphNodeData) => {
+    setSelectedNode(nodeData);
+  };
+
+  const handleCalculateBlastRadius = async (targetId: string, targetType: 'symbol' | 'file' = 'file') => {
+    try {
+      const blast = await fetchBlastRadius(targetId, targetType);
+      setBlastRadiusData(blast);
+    } catch (err) {
+      console.error('Blast radius calculation failed:', err);
+    }
+  };
+
+  const handleSelectSearchResult = (result: SearchResultItem) => {
+    const node = graphData?.nodes.find((n) => n.id === result.node_id || n.data.filePath === result.file_path);
+    if (node) {
+      setSelectedNode(node.data);
+    }
+  };
+
+  const handleTraceSequence = (symbolId: string) => {
+    setSequenceTargetSymbol(symbolId);
+    setIsSequenceOpen(true);
+  };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden select-none font-sans">
-      {/* Top Header */}
+    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+      {/* Top Navigation Bar */}
       <Header
         currentViewMode={viewMode}
         onViewModeChange={handleViewModeChange}
         onOpenSearch={() => setIsSearchOpen(true)}
-        onToggleAnalytics={() => setIsAnalyticsOpen((prev) => !prev)}
-        onOpenSequence={() => setIsSequenceOpen(true)}
+        onOpenSequence={() => {
+          setSequenceTargetSymbol(undefined);
+          setIsSequenceOpen(true);
+        }}
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenClones={() => setIsClonesOpen(true)}
         onOpenFacts={() => setIsFactsOpen(true)}
-        onRefreshGraph={() => {
-          setBlastRadiusData(null);
-          loadGraph();
-        }}
+        onOpenDatabase={() => setIsDatabaseOpen(true)}
+        onOpenSecurity={() => setIsSecurityOpen(true)}
+        onOpenHealth={() => setIsHealthOpen(true)}
+        onOpenCopilot={() => setIsCopilotOpen(true)}
+        onOpenFramework={() => setIsFrameworkOpen(true)}
+        onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
-        isIndexing={status?.is_indexing}
       />
 
-      {/* Main Canvas Area */}
-      <main className="flex-1 relative overflow-hidden">
-        {/* Floating Controls */}
+      {/* Main Workspace */}
+      <main className="flex-1 relative flex overflow-hidden">
+        {/* Left Filter & Controls Toolbar */}
         <FilterBar
           summary={graphData?.summary}
           layoutDirection={layoutDirection}
@@ -158,27 +166,29 @@ export function App() {
           onViewModeChange={handleViewModeChange}
         />
 
-        {/* Loading Spinner */}
-        {isLoading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mb-3"></div>
-            <p className="text-xs font-mono text-slate-400">Loading codebase architecture graph...</p>
-          </div>
-        ) : (
+        {/* Central Graph Canvas */}
+        <div className="flex-1 relative h-full">
+          {isLoading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-20 gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
+              <span className="text-xs font-mono text-slate-400">Building architecture topology...</span>
+            </div>
+          ) : null}
+
           <ArchitectureCanvas
-            nodes={activeNodes}
-            edges={activeEdges}
-            onSelectNode={(nodeData) => setSelectedNode(nodeData)}
+            nodes={blastRadiusData ? blastRadiusData.subgraph_nodes : (graphData?.nodes || [])}
+            edges={blastRadiusData ? blastRadiusData.subgraph_edges : (graphData?.edges || [])}
+            onSelectNode={handleNodeClick}
             layoutDirection={layoutDirection}
             isBlastRadiusActive={!!blastRadiusData}
           />
-        )}
+        </div>
 
-        {/* Inspector Side Drawer */}
+        {/* Right Inspector Drawer */}
         <NodeInspector
           node={selectedNode}
           onClose={() => setSelectedNode(null)}
-          onCalculateBlastRadius={handleCalculateBlastRadius}
+          onCalculateBlastRadius={(nodeId) => handleCalculateBlastRadius(nodeId, 'file')}
           onTraceSequence={handleTraceSequence}
         />
 
@@ -202,7 +212,7 @@ export function App() {
           isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
           onSelectResult={handleSelectSearchResult}
-          onCalculateBlastRadius={handleCalculateBlastRadius}
+          onCalculateBlastRadius={(nodeId) => handleCalculateBlastRadius(nodeId, 'file')}
         />
 
         {/* Sequence Diagram Modal */}
@@ -232,6 +242,45 @@ export function App() {
           isOpen={isFactsOpen}
           onClose={() => setIsFactsOpen(false)}
           onTraceSequence={handleTraceSequence}
+        />
+
+        {/* Database ERD Modal */}
+        <DatabaseModal
+          isOpen={isDatabaseOpen}
+          onClose={() => setIsDatabaseOpen(false)}
+        />
+
+        {/* Security Audit Modal */}
+        <SecurityModal
+          isOpen={isSecurityOpen}
+          onClose={() => setIsSecurityOpen(false)}
+        />
+
+        {/* Health Scorecard Modal */}
+        <HealthScoreModal
+          isOpen={isHealthOpen}
+          onClose={() => setIsHealthOpen(false)}
+        />
+
+        {/* AI Copilot Modal */}
+        <CopilotModal
+          isOpen={isCopilotOpen}
+          onClose={() => setIsCopilotOpen(false)}
+          onSelectFile={(f) => {
+            const node = graphData?.nodes.find(
+              (n) => n.data.relativePath === f || n.data.filePath?.endsWith(f)
+            );
+            if (node) {
+              setSelectedNode(node.data);
+              setIsCopilotOpen(false);
+            }
+          }}
+        />
+
+        {/* Framework & Layers Modal */}
+        <FrameworkModal
+          isOpen={isFrameworkOpen}
+          onClose={() => setIsFrameworkOpen(false)}
         />
       </main>
     </div>
