@@ -16,6 +16,12 @@ import {
   HardDrive,
   Flame,
   Search,
+  Clock,
+  Globe,
+  Package,
+  GitCompare,
+  Eye,
+  Radio,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -29,6 +35,8 @@ import {
   fetchFrameworkOverview,
   fetchGitChurnReport,
   queryCopilot,
+  toggleWatchMode,
+  fetchWatchStatus,
 } from '../../services/api';
 
 interface RepositoryDashboardProps {
@@ -47,6 +55,11 @@ interface RepositoryDashboardProps {
   onOpenSearch: () => void;
   onOpenAnalytics: () => void;
   onOpenIngestModal: () => void;
+  onOpenTimeline: () => void;
+  onOpenApiFlow: () => void;
+  onOpenDependencies: () => void;
+  onOpenCompare: () => void;
+  onOpenReview: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -65,12 +78,18 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenSearch,
   onOpenAnalytics,
   onOpenIngestModal,
+  onOpenTimeline,
+  onOpenApiFlow,
+  onOpenDependencies,
+  onOpenCompare,
+  onOpenReview,
 }) => {
   const [healthScorecard, setHealthScorecard] = useState<RepositoryHealthScorecard | null>(null);
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
   const [aiSummary, setAiSummary] = useState<string>('');
   const [loadingSummary, setLoadingSummary] = useState(true);
+  const [isWatching, setIsWatching] = useState(false);
 
   const repoName = currentRepoPath
     ? currentRepoPath.split(/[/\\]/).filter(Boolean).pop() || 'Repository'
@@ -89,12 +108,25 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
       .then((res) => setGitChurn(res))
       .catch((err) => console.error('Failed to load git churn:', err));
 
+    fetchWatchStatus()
+      .then((res) => setIsWatching(res.is_watching))
+      .catch(() => {});
+
     setLoadingSummary(true);
     queryCopilot('Summarize architecture overview')
       .then((res) => setAiSummary(res.summary))
       .catch((err) => console.error('Failed to load copilot summary:', err))
       .finally(() => setLoadingSummary(false));
   }, [currentRepoPath]);
+
+  const handleToggleWatch = async () => {
+    try {
+      const res = await toggleWatchMode();
+      setIsWatching(res.is_watching);
+    } catch (err) {
+      console.error('Failed to toggle watch mode:', err);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-950 text-slate-100 font-sans p-6 lg:p-10 space-y-8 select-none">
@@ -116,6 +148,18 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
                   {fw}
                 </span>
               ))}
+              <button
+                onClick={handleToggleWatch}
+                className={`text-[11px] font-mono px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition ${
+                  isWatching
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse'
+                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                }`}
+                title="Detects local file modifications and updates ASTs in real-time"
+              >
+                {isWatching ? <Radio className="w-3.5 h-3.5 text-emerald-400" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>{isWatching ? 'Live Watch Active' : 'Live Watch Mode'}</span>
+              </button>
             </div>
 
             <div>
@@ -309,70 +353,104 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
 
         {/* Second Row of Visualizations */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Card 5: Module Clustering */}
+          {/* Card 5: Timeline Replay */}
           <div
-            onClick={() => onNavigateToGraph('module')}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
-              <Boxes className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-indigo-300 transition">
-                Module Clustering
-              </h4>
-              <p className="text-[11px] text-slate-400">High-level package boundary graph.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-
-          {/* Card 6: Call Graph */}
-          <div
-            onClick={() => onNavigateToGraph('symbol')}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
+            onClick={onOpenTimeline}
+            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
           >
             <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <Code2 className="w-5 h-5" />
+              <Clock className="w-5 h-5" />
             </div>
             <div className="flex-1">
               <h4 className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">
-                Symbol Call Graph
+                Timeline Replay (DevTrace)
               </h4>
-              <p className="text-[11px] text-slate-400">Function invocation network.</p>
+              <p className="text-[11px] text-slate-400">Replay commit growth & history.</p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
           </div>
 
-          {/* Card 7: Sequence Diagram Tracer */}
+          {/* Card 6: API Request Flow */}
           <div
-            onClick={onOpenSequence}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
+            onClick={onOpenApiFlow}
+            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-xs font-bold text-slate-200 group-hover:text-emerald-300 transition">
+                API Request Lifecycle
+              </h4>
+              <p className="text-[11px] text-slate-400">Middleware & handler pipelines.</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
+          </div>
+
+          {/* Card 7: Supply Chain Packages */}
+          <div
+            onClick={onOpenDependencies}
+            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
+              <Package className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition">
+                Supply Chain & Packages
+              </h4>
+              <p className="text-[11px] text-slate-400">Licenses & third-party packages.</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
+          </div>
+
+          {/* Card 8: Architecture Diff */}
+          <div
+            onClick={onOpenCompare}
+            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
           >
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
-              <Workflow className="w-5 h-5" />
+              <GitCompare className="w-5 h-5" />
             </div>
             <div className="flex-1">
               <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition">
-                Sequence Tracer
+                Architecture Diff & Drift
               </h4>
-              <p className="text-[11px] text-slate-400">Static execution call tracer.</p>
+              <p className="text-[11px] text-slate-400">Compare refs and PR changes.</p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
           </div>
 
-          {/* Card 8: Framework Layers */}
+          {/* Card 9: Sequence Execution Tracer */}
+          <div
+            onClick={onOpenSequence}
+            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400">
+              <Workflow className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">
+                Sequence Diagram Tracer
+              </h4>
+              <p className="text-[11px] text-slate-400">Dynamic execution trace generator.</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
+          </div>
+
+          {/* Card 10: Framework & Architecture Layers */}
           <div
             onClick={onOpenFramework}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
+            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
           >
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
               <Layers className="w-5 h-5" />
             </div>
             <div className="flex-1">
               <h4 className="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition">
-                Architecture Layers
+                Component & Layer Tree
               </h4>
-              <p className="text-[11px] text-slate-400">Controllers, services, & hooks.</p>
+              <p className="text-[11px] text-slate-400">Controllers, services, & components.</p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
           </div>
@@ -386,7 +464,7 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
           <p className="text-xs text-slate-400">Automated static code diagnostics, security scanning, and reasoning tools.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
           {/* Tool 1: AI Copilot & Onboarding */}
           <div
             onClick={onOpenCopilot}
@@ -402,15 +480,38 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                AI Repository Copilot & Onboarding
+                AI Repository Copilot
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Ask architectural questions, trace authentication logic, and generate step-by-step reading roadmaps.
+                Ask architectural questions and generate onboarding roadmaps.
               </p>
             </div>
           </div>
 
-          {/* Tool 2: Security & SAST Audit */}
+          {/* Tool 2: AI Automated Code Review */}
+          <div
+            onClick={onOpenReview}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                PR Reviewer
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
+                Automated Code Review
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Audit function size, complexity smells, and generate test plans.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 3: Security & SAST Audit */}
           <div
             onClick={onOpenSecurity}
             className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition cursor-pointer group space-y-3"
@@ -425,15 +526,15 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-rose-300 transition">
-                Security & Vulnerability Audit
+                Security & SAST Audit
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Scan for hardcoded credentials, SQL injection patterns, unsafe code evaluation, and sensitive logging.
+                Scan for hardcoded credentials, SQL injection, and unsafe code eval.
               </p>
             </div>
           </div>
 
-          {/* Tool 3: RipEx Relational Facts */}
+          {/* Tool 4: RipEx Relational Facts */}
           <div
             onClick={onOpenFacts}
             className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition cursor-pointer group space-y-3"
@@ -443,43 +544,23 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
                 <Code2 className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                RipEx v0.3.0 Engine
+                RipEx Engine
               </span>
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition">
-                RipEx Fact Engine & API Catalog
+                RipEx Relational Facts
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Multi-language relational fact store index across calls, inheritance, instantiations, and REST routes.
+                Multi-language relational fact store index across calls & inheritance.
               </p>
             </div>
           </div>
+        </div>
 
-          {/* Tool 4: Git Churn & Hotspot Matrix */}
-          <div
-            onClick={onOpenAnalytics}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Flame className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                4-Quadrant Matrix
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
-                Git Churn & Hotspot Analysis
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Correlate commit frequency with code complexity to uncover high-risk maintenance hotspots.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 5: Architecture Rules Linter */}
+        {/* Second Row of Diagnostics Tools */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+          {/* Tool 5: Architecture Boundary Linter */}
           <div
             onClick={onOpenRules}
             className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
@@ -494,10 +575,10 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Architecture Boundary Linter
+                Architecture Rules
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Enforce architectural layer boundaries and prevent illegal cross-layer dependency leaks.
+                Enforce architectural layer boundaries and prevent cross-layer leaks.
               </p>
             </div>
           </div>
@@ -512,20 +593,43 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
                 <Files className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">
-                Type-1 & 2 AST
+                AST Clones
               </span>
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition">
-                AST Clone & Duplicate Logic
+                Code Clones Explorer
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Identify duplicated code blocks, copy-pasted implementations, and structural clone groups.
+                Identify duplicated code blocks, copy-pasted implementations, and clone groups.
               </p>
             </div>
           </div>
 
-          {/* Tool 7: Code Search */}
+          {/* Tool 7: Git Churn & Hotspot Analysis */}
+          <div
+            onClick={onOpenAnalytics}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Flame className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                Hotspots
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
+                Git Churn & Hotspots
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Correlate commit frequency with code complexity to uncover high-risk files.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 8: Code Search */}
           <div
             onClick={onOpenSearch}
             className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
@@ -540,10 +644,10 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                Hybrid Semantic & Symbol Search
+                Hybrid Code Search
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Search functions, classes, interfaces, and keywords with BM25 + reciprocal rank fusion.
+                Search functions, classes, interfaces, and keywords with BM25 fusion.
               </p>
             </div>
           </div>

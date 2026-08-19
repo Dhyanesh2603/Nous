@@ -553,3 +553,135 @@ export interface OnboardingRoadmap {
   total_steps: number;
   steps: OnboardingStep[];
 }
+
+// Timeline & Evolution Types
+export interface TimelineCommitSnapshot {
+  commit_sha: string;
+  short_sha: string;
+  author_name: string;
+  commit_date: string;
+  message: string;
+  files_changed_count: number;
+  lines_added: number;
+  lines_deleted: number;
+  cumulative_files_estimate: number;
+  architectural_impact: string;
+  affected_modules: string[];
+}
+
+export interface FeatureEvolutionMilestone {
+  feature_name: string;
+  first_introduced_commit?: string;
+  last_modified_date?: string;
+  total_revisions: number;
+  active_files: string[];
+  lifecycle_stage: string;
+}
+
+export interface RepositoryTimelineReport {
+  is_git_repo: boolean;
+  total_commits: number;
+  first_commit_date?: string;
+  latest_commit_date?: string;
+  timeline_snapshots: TimelineCommitSnapshot[];
+  feature_milestones: FeatureEvolutionMilestone[];
+}
+
+// API Lifecycle & Flow Types
+export interface ApiPipelineStep {
+  step_number: number;
+  stage: string;
+  title: string;
+  description: string;
+  file_path?: string;
+  line_number?: number;
+  symbol_name?: string;
+}
+
+export interface EndpointLifecycle {
+  id: string;
+  http_method: string;
+  route_path: string;
+  handler_name: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  summary: string;
+  middleware_chain: string[];
+  auth_required: boolean;
+  database_models_touched: string[];
+  downstream_services: string[];
+  pipeline_steps: ApiPipelineStep[];
+}
+
+export interface ApiFlowCatalog {
+  total_endpoints: number;
+  endpoints: EndpointLifecycle[];
+}
+
+// Third-Party Supply Chain Types
+export interface ThirdPartyDependency {
+  name: string;
+  version_spec: string;
+  ecosystem: string;
+  manifest_file: string;
+  license_category: string;
+  is_dev_dependency: boolean;
+  usage_count_in_code: number;
+  imported_in_files: string[];
+}
+
+export interface SupplyChainReport {
+  manifests_found: string[];
+  total_dependencies: number;
+  direct_dependencies_count: number;
+  dev_dependencies_count: number;
+  copyleft_licenses_count: number;
+  dependencies: ThirdPartyDependency[];
+}
+
+// Comparison & Architecture Diff Types
+export interface SymbolDiffItem {
+  name: string;
+  kind: string;
+  change_type: string;
+  file_path: string;
+}
+
+export interface ArchitectureDiffReport {
+  base_ref: string;
+  target_ref: string;
+  files_added_count: number;
+  files_removed_count: number;
+  files_modified_count: number;
+  breaking_changes_count: number;
+  symbols_diff: SymbolDiffItem[];
+  new_dependencies: string[];
+  architectural_drift_summary: string;
+}
+
+// Code Review & Risk Types
+export interface CodeReviewFinding {
+  id: string;
+  rule_name: string;
+  category: string;
+  severity: 'critical' | 'warning' | 'info';
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  matched_code: string;
+  review_comment: string;
+  suggested_refactor: string;
+}
+
+export interface CodeReviewReport {
+  review_status: string;
+  maintainability_rating: string;
+  total_findings: number;
+  critical_findings_count: number;
+  warning_findings_count: number;
+  info_findings_count: number;
+  suggested_test_suites: string[];
+  findings: CodeReviewFinding[];
+}
+

@@ -253,6 +253,47 @@ export const fetchGeneratedDocs = async (): Promise<{ documentation_markdown: st
   return res.data;
 };
 
+// Timeline & Evolution
+export const fetchTimelineEvolution = async (maxCommits: number = 40): Promise<any> => {
+  const res = await api.get('/timeline/evolution', { params: { max_commits: maxCommits } });
+  return res.data;
+};
+
+// API Lifecycle & Flow
+export const fetchApiFlowCatalog = async (): Promise<any> => {
+  const res = await api.get('/api-flow/catalog');
+  return res.data;
+};
+
+// Supply Chain & Dependencies
+export const fetchSupplyChain = async (): Promise<any> => {
+  const res = await api.get('/dependencies/supply-chain');
+  return res.data;
+};
+
+// Architecture Comparison & Diff
+export const compareRepositoryDiff = async (baseRef: string = 'HEAD~1', targetRef: string = 'HEAD'): Promise<any> => {
+  const res = await api.post('/compare/diff', { base_ref: baseRef, target_ref: targetRef });
+  return res.data;
+};
+
+// Automated Code Review
+export const fetchCodeReview = async (): Promise<any> => {
+  const res = await api.get('/review/audit');
+  return res.data;
+};
+
+// Watch Mode
+export const toggleWatchMode = async (): Promise<{ is_watching: boolean; watched_path: string | null }> => {
+  const res = await api.post('/ingest/watch/toggle');
+  return res.data;
+};
+
+export const fetchWatchStatus = async (): Promise<{ is_watching: boolean; watched_path: string | null }> => {
+  const res = await api.get('/ingest/watch/status');
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;

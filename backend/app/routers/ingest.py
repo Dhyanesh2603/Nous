@@ -185,3 +185,27 @@ def ingest_sample(req: IngestSampleRequest):
         
     stats = app_state.load_repository(target_path)
     return {"status": "success", "sample_id": req.sample_id, "stats": stats}
+
+
+@router.post("/watch/toggle")
+def toggle_watch_mode():
+    from app.watcher import repo_watcher
+    if not app_state.current_repo_path:
+        raise HTTPException(status_code=400, detail="No active repository to watch.")
+
+    if repo_watcher.is_watching:
+        repo_watcher.stop_watching()
+        return {"is_watching": False, "watched_path": None}
+    else:
+        repo_watcher.start_watching(app_state.current_repo_path)
+        return {"is_watching": True, "watched_path": app_state.current_repo_path}
+
+
+@router.get("/watch/status")
+def get_watch_status():
+    from app.watcher import repo_watcher
+    return {
+        "is_watching": repo_watcher.is_watching,
+        "watched_path": repo_watcher.watched_path,
+    }
+

@@ -340,7 +340,7 @@ Generated automatically by **Nous Software Intelligence Platform (RipEx v0.3.0 E
 """
         for mod_name, cluster in self.scanner.graph_store.modules.items():
             doc += f"### Module: `{mod_name}`\n"
-            doc += f"- **Files ({len(cluster.files)})**: {', '.join([f'`{os.path.basename(f)}`' for f in cluster.files[:5]])}\n"
+            doc += f"- **Files ({len(cluster.file_paths)})**: {', '.join([f'`{os.path.basename(f)}`' for f in cluster.file_paths[:5]])}\n"
             doc += f"- **Afferent Coupling (Ca)**: `{cluster.afferent_coupling}` | **Efferent Coupling (Ce)**: `{cluster.efferent_coupling}` | **Instability**: `{cluster.instability:.2f}`\n\n"
 
         if self.scanner.fact_store.routes:

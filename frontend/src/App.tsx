@@ -28,6 +28,11 @@ import { CopilotModal } from './components/copilot/CopilotModal';
 import { FrameworkModal } from './components/framework/FrameworkModal';
 import { IngestModal } from './components/ingest/IngestModal';
 import { RepositoryDashboard } from './components/dashboard/RepositoryDashboard';
+import { TimelineModal } from './components/timeline/TimelineModal';
+import { ApiFlowModal } from './components/apiflow/ApiFlowModal';
+import { DependencyModal } from './components/dependencies/DependencyModal';
+import { CompareModal } from './components/compare/CompareModal';
+import { CodeReviewModal } from './components/review/CodeReviewModal';
 import './App.css';
 
 export function App() {
@@ -51,6 +56,11 @@ export function App() {
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isFrameworkOpen, setIsFrameworkOpen] = useState(false);
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+  const [isApiFlowOpen, setIsApiFlowOpen] = useState(false);
+  const [isDependenciesOpen, setIsDependenciesOpen] = useState(false);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -97,6 +107,11 @@ export function App() {
         setIsCopilotOpen(false);
         setIsFrameworkOpen(false);
         setIsIngestModalOpen(false);
+        setIsTimelineOpen(false);
+        setIsApiFlowOpen(false);
+        setIsDependenciesOpen(false);
+        setIsCompareOpen(false);
+        setIsReviewOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -190,6 +205,11 @@ export function App() {
             onOpenSearch={() => setIsSearchOpen(true)}
             onOpenAnalytics={() => setIsAnalyticsOpen(true)}
             onOpenIngestModal={() => setIsIngestModalOpen(true)}
+            onOpenTimeline={() => setIsTimelineOpen(true)}
+            onOpenApiFlow={() => setIsApiFlowOpen(true)}
+            onOpenDependencies={() => setIsDependenciesOpen(true)}
+            onOpenCompare={() => setIsCompareOpen(true)}
+            onOpenReview={() => setIsReviewOpen(true)}
           />
         ) : (
           <>
@@ -326,6 +346,41 @@ export function App() {
         <FrameworkModal
           isOpen={isFrameworkOpen}
           onClose={() => setIsFrameworkOpen(false)}
+        />
+
+        {/* Timeline Replay Modal */}
+        <TimelineModal
+          isOpen={isTimelineOpen}
+          onClose={() => setIsTimelineOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* API Flow & Lifecycle Modal */}
+        <ApiFlowModal
+          isOpen={isApiFlowOpen}
+          onClose={() => setIsApiFlowOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Supply Chain & Dependencies Modal */}
+        <DependencyModal
+          isOpen={isDependenciesOpen}
+          onClose={() => setIsDependenciesOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Architecture Diff & Comparison Modal */}
+        <CompareModal
+          isOpen={isCompareOpen}
+          onClose={() => setIsCompareOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Automated Code Review Modal */}
+        <CodeReviewModal
+          isOpen={isReviewOpen}
+          onClose={() => setIsReviewOpen(false)}
+          currentRepoPath={status?.current_repo_path}
         />
 
         {/* Ingest Modal */}

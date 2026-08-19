@@ -19,6 +19,11 @@ from app.routers import (
     framework_router,
     health_score_router,
     copilot_router,
+    timeline_router,
+    api_flow_router,
+    dependencies_router,
+    compare_router,
+    code_review_router,
 )
 from app.state import app_state
 
@@ -42,8 +47,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.4.0",
-    description="Complete Software Intelligence Platform: RipEx & Tree-sitter AST, Interactive Architecture Graphs, ERD Database Analysis, Security & Performance Scanners, and AI Repository Copilot.",
+    version="0.5.0",
+    description="Software Intelligence Platform with RipEx AST, Timeline Replay, API Flow, Supply Chain, and AI Copilot.",
     lifespan=lifespan,
 )
 
@@ -69,19 +74,20 @@ app.include_router(performance_router)
 app.include_router(framework_router)
 app.include_router(health_score_router)
 app.include_router(copilot_router)
+app.include_router(timeline_router)
+app.include_router(api_flow_router)
+app.include_router(dependencies_router)
+app.include_router(compare_router)
+app.include_router(code_review_router)
 
 
 @app.get("/")
 def root():
     return {
         "message": "Welcome to Nous Software Intelligence Platform",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "docs_url": "/docs",
         "health_url": "/api/health",
-        "facts_summary_url": "/api/facts/summary",
-        "database_schema_url": "/api/database/schema",
-        "security_audit_url": "/api/security/audit",
-        "performance_insights_url": "/api/performance/insights",
         "frontend_url": "http://127.0.0.1:5173",
     }
 
@@ -91,7 +97,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "version": "0.4.0",
+        "version": "0.5.0",
         "has_active_repo": app_state.scanner is not None,
     }
 

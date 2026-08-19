@@ -10,6 +10,11 @@ from app.routers.performance import router as performance_router
 from app.routers.framework import router as framework_router
 from app.routers.health_score import router as health_score_router
 from app.routers.copilot import router as copilot_router
+from app.routers.timeline import router as timeline_router
+from app.routers.api_flow import router as api_flow_router
+from app.routers.dependencies import router as dependencies_router
+from app.routers.compare import router as compare_router
+from app.routers.code_review import router as code_review_router
 
 __all__ = [
     "ingest_router",
@@ -24,4 +29,9 @@ __all__ = [
     "framework_router",
     "health_score_router",
     "copilot_router",
+    "timeline_router",
+    "api_flow_router",
+    "dependencies_router",
+    "compare_router",
+    "code_review_router",
 ]
