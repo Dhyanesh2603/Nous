@@ -28,6 +28,10 @@ from app.routers.doc_gen import router as doc_gen_router
 from app.routers.pr_analyzer import router as pr_analyzer_router
 from app.routers.nl_search import router as nl_search_router
 from app.routers.test_advisor import router as test_advisor_router
+from app.routers.time_machine import router as time_machine_router
+from app.routers.playback import router as playback_router
+from app.routers.knowledge_graph import router as knowledge_graph_router
+from app.routers.migration_planner import router as migration_planner_router
 
 __all__ = [
     "ingest_router",
@@ -60,4 +64,8 @@ __all__ = [
     "pr_analyzer_router",
     "nl_search_router",
     "test_advisor_router",
+    "time_machine_router",
+    "playback_router",
+    "knowledge_graph_router",
+    "migration_planner_router",
 ]

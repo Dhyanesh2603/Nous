@@ -34,6 +34,9 @@ import {
   BookOpen,
   GitPullRequest,
   TestTube2,
+  History,
+  Play,
+  Compass,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -85,6 +88,10 @@ interface RepositoryDashboardProps {
   onOpenPRImpact: () => void;
   onOpenNLSearch: () => void;
   onOpenTestAdvisor: () => void;
+  onOpenTimeMachine: () => void;
+  onOpenPlayback: () => void;
+  onOpenKnowledgeGraph: () => void;
+  onOpenMigration: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -121,6 +128,10 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenPRImpact,
   onOpenNLSearch,
   onOpenTestAdvisor,
+  onOpenTimeMachine,
+  onOpenPlayback,
+  onOpenKnowledgeGraph,
+  onOpenMigration,
 }) => {
   const [healthScorecard, setHealthScorecard] = useState<RepositoryHealthScorecard | null>(null);
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
@@ -994,6 +1005,101 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 Identify untested high-risk functions and synthesize unit test stubs with mocks and assertions.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Sixth Row: Enterprise & WOW Features (Phase 4) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+          {/* Tool 22: Repository Time Machine */}
+          <div
+            onClick={onOpenTimeMachine}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-violet-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                <History className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/30">
+                Git Scrubber
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-violet-300 transition">
+                Repository Time Machine
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Scrub through git evolution history, velocity trajectory curves, and codebase LOC growth frames.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 23: Interactive Execution Playback */}
+          <div
+            onClick={onOpenPlayback}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Play className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                Call Stepper
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
+                Execution Flow Playback
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Step-by-step function call animation with runtime payloads, branch decisions, and stack traces.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 24: Unified Repository Knowledge Graph */}
+          <div
+            onClick={onOpenKnowledgeGraph}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                <Network className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/30">
+                Knowledge Graph
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-teal-300 transition">
+                Unified Knowledge Graph
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Interconnect files, modules, AST symbols, database entities, and HTTP routes into a unified graph.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 25: AI Refactoring & Migration Planner */}
+          <div
+            onClick={onOpenMigration}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-orange-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                <Compass className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-300 border border-orange-500/30">
+                Migration AI
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-orange-300 transition">
+                Migration & Modernization
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Modernization roadmaps for TypeScript adoption, Async concurrency, and type-safe API contracts.
               </p>
             </div>
           </div>

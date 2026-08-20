@@ -46,6 +46,10 @@ import { DocumentationModal } from './components/docs/DocumentationModal';
 import { PRImpactModal } from './components/pr/PRImpactModal';
 import { NLSearchModal } from './components/nlsearch/NLSearchModal';
 import { TestAdvisorModal } from './components/testadvisor/TestAdvisorModal';
+import { TimeMachineModal } from './components/timemachine/TimeMachineModal';
+import { ExecutionPlaybackModal } from './components/playback/ExecutionPlaybackModal';
+import { KnowledgeGraphModal } from './components/knowledge/KnowledgeGraphModal';
+import { MigrationPlannerModal } from './components/migration/MigrationPlannerModal';
 import './App.css';
 
 export function App() {
@@ -87,6 +91,10 @@ export function App() {
   const [isPRImpactOpen, setIsPRImpactOpen] = useState(false);
   const [isNLSearchOpen, setIsNLSearchOpen] = useState(false);
   const [isTestAdvisorOpen, setIsTestAdvisorOpen] = useState(false);
+  const [isTimeMachineOpen, setIsTimeMachineOpen] = useState(false);
+  const [isPlaybackOpen, setIsPlaybackOpen] = useState(false);
+  const [isKnowledgeGraphOpen, setIsKnowledgeGraphOpen] = useState(false);
+  const [isMigrationOpen, setIsMigrationOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -151,6 +159,10 @@ export function App() {
         setIsPRImpactOpen(false);
         setIsNLSearchOpen(false);
         setIsTestAdvisorOpen(false);
+        setIsTimeMachineOpen(false);
+        setIsPlaybackOpen(false);
+        setIsKnowledgeGraphOpen(false);
+        setIsMigrationOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -262,6 +274,10 @@ export function App() {
             onOpenPRImpact={() => setIsPRImpactOpen(true)}
             onOpenNLSearch={() => setIsNLSearchOpen(true)}
             onOpenTestAdvisor={() => setIsTestAdvisorOpen(true)}
+            onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
+            onOpenPlayback={() => setIsPlaybackOpen(true)}
+            onOpenKnowledgeGraph={() => setIsKnowledgeGraphOpen(true)}
+            onOpenMigration={() => setIsMigrationOpen(true)}
           />
         ) : (
           <>
@@ -553,6 +569,34 @@ export function App() {
               setIsTestAdvisorOpen(false);
             }
           }}
+        />
+
+        {/* Repository Time Machine Modal */}
+        <TimeMachineModal
+          isOpen={isTimeMachineOpen}
+          onClose={() => setIsTimeMachineOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Interactive Execution Playback Modal */}
+        <ExecutionPlaybackModal
+          isOpen={isPlaybackOpen}
+          onClose={() => setIsPlaybackOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Unified Repository Knowledge Graph Modal */}
+        <KnowledgeGraphModal
+          isOpen={isKnowledgeGraphOpen}
+          onClose={() => setIsKnowledgeGraphOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* AI Refactoring & Migration Planner Modal */}
+        <MigrationPlannerModal
+          isOpen={isMigrationOpen}
+          onClose={() => setIsMigrationOpen(false)}
+          currentRepoPath={status?.current_repo_path}
         />
 
         {/* Ingest Modal */}

@@ -1144,5 +1144,129 @@ export interface TestAdvisorReport {
   untested_candidates: UntestedFunctionItem[];
 }
 
+// ==========================================
+// PHASE 4 — ENTERPRISE & WOW FEATURES TYPES
+// ==========================================
+
+// 16. Repository Time Machine
+export interface CommitFrame {
+  frame_index: number;
+  commit_hash: string;
+  short_hash: string;
+  author_name: string;
+  author_email: string;
+  date: string;
+  timestamp: number;
+  message: string;
+  files_changed: number;
+  additions: number;
+  deletions: number;
+  cumulative_loc: number;
+  active_branch: string;
+  tags: string[];
+}
+
+export interface TimeMachineReport {
+  repository_name: string;
+  total_frames: number;
+  total_authors: number;
+  oldest_commit_date: string;
+  latest_commit_date: string;
+  average_velocity_commits_per_week: number;
+  frames: CommitFrame[];
+}
+
+// 17. Interactive Execution Playback
+export interface ExecutionStep {
+  step_number: number;
+  call_depth: number;
+  symbol_name: string;
+  symbol_kind: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  action_type: string;
+  state_payload: Record<string, any>;
+  expression_snippet: string;
+  explanation: string;
+}
+
+export interface ExecutionPlaybackTrace {
+  entry_point_name: string;
+  entry_file: string;
+  total_steps: number;
+  max_call_depth: number;
+  total_db_operations: number;
+  total_external_calls: number;
+  steps: ExecutionStep[];
+}
+
+export interface ExecutionCandidate {
+  id: string;
+  name: string;
+  kind: string;
+  relative_path: string;
+  line_number: number;
+  is_route_handler: boolean;
+}
+
+// 18. Unified Repository Knowledge Graph
+export interface KnowledgeNode {
+  id: string;
+  label: string;
+  entity_type: 'file' | 'module' | 'function' | 'class' | 'route' | 'table' | 'vulnerability';
+  file_path?: string;
+  relative_path?: string;
+  line_number?: number;
+  metadata: Record<string, any>;
+}
+
+export interface KnowledgeEdge {
+  id: string;
+  source: string;
+  target: string;
+  relation_type: string;
+  label?: string;
+}
+
+export interface KnowledgeGraphReport {
+  total_nodes: number;
+  total_edges: number;
+  entity_counts: Record<string, number>;
+  nodes: KnowledgeNode[];
+  edges: KnowledgeEdge[];
+}
+
+// 20. AI Refactoring & Migration Planner
+export interface MigrationChecklistItem {
+  step_number: number;
+  title: string;
+  target_files_count: number;
+  estimated_hours: number;
+  command_or_codemod?: string;
+  description: string;
+}
+
+export interface MigrationPlan {
+  id: string;
+  title: string;
+  source_framework: string;
+  target_framework: string;
+  readiness_score: number;
+  risk_level: string;
+  total_estimated_hours: number;
+  affected_files_count: number;
+  rationale: string;
+  benefits: string[];
+  checklist: MigrationChecklistItem[];
+}
+
+export interface MigrationPlannerReport {
+  total_plans: number;
+  recommended_plan_id: string;
+  plans: MigrationPlan[];
+}
+
+
 
 

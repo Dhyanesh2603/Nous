@@ -37,6 +37,10 @@ from app.routers import (
     pr_analyzer_router,
     nl_search_router,
     test_advisor_router,
+    time_machine_router,
+    playback_router,
+    knowledge_graph_router,
+    migration_planner_router,
 )
 from app.state import app_state
 
@@ -60,8 +64,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.8.0",
-    description="Software Intelligence Platform with AI Engineering Assistant, Codebase Copilot, Doc Gen, and PR Blast Radius.",
+    version="1.0.0",
+    description="Enterprise Software Intelligence Platform with Time Machine, Execution Playback, Multi-Entity Knowledge Graph, and Migration Planner.",
     lifespan=lifespan,
 )
 
@@ -74,7 +78,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount API routers
+# Mount API routers (Total 30 routers)
 app.include_router(ingest_router)
 app.include_router(graph_router)
 app.include_router(search_router)
@@ -105,13 +109,17 @@ app.include_router(doc_gen_router)
 app.include_router(pr_analyzer_router)
 app.include_router(nl_search_router)
 app.include_router(test_advisor_router)
+app.include_router(time_machine_router)
+app.include_router(playback_router)
+app.include_router(knowledge_graph_router)
+app.include_router(migration_planner_router)
 
 
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to Nous Software Intelligence Platform",
-        "version": "0.8.0",
+        "message": "Welcome to Nous Enterprise Software Intelligence Platform",
+        "version": "1.0.0",
         "docs_url": "/docs",
         "health_url": "/api/health",
         "frontend_url": "http://127.0.0.1:5173",
@@ -123,7 +131,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "version": "0.8.0",
+        "version": "1.0.0",
         "has_active_repo": app_state.scanner is not None,
     }
 

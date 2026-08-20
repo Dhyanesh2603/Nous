@@ -402,6 +402,39 @@ export const fetchTestAdvice = async (): Promise<any> => {
   return res.data;
 };
 
+// ==========================================
+// PHASE 4 — ENTERPRISE & WOW FEATURES APIs
+// ==========================================
+
+// 16. Repository Time Machine
+export const fetchTimeMachineFrames = async (maxFrames: number = 30): Promise<any> => {
+  const res = await api.get('/analysis/time-machine/frames', { params: { max_frames: maxFrames } });
+  return res.data;
+};
+
+// 17. Interactive Execution Playback
+export const fetchPlaybackCandidates = async (): Promise<any> => {
+  const res = await api.get('/analysis/execution-playback/candidates');
+  return res.data;
+};
+
+export const tracePlaybackExecution = async (entryIdOrName: string): Promise<any> => {
+  const res = await api.post('/analysis/execution-playback/trace', { entry_id_or_name: entryIdOrName });
+  return res.data;
+};
+
+// 18. Unified Repository Knowledge Graph
+export const fetchUnifiedKnowledgeGraph = async (): Promise<any> => {
+  const res = await api.get('/analysis/knowledge-graph');
+  return res.data;
+};
+
+// 20. AI Refactoring & Migration Planner
+export const fetchMigrationPlans = async (): Promise<any> => {
+  const res = await api.get('/analysis/migration-plans');
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;
