@@ -19,6 +19,11 @@ from app.routers.dead_code import router as dead_code_router
 from app.routers.impact import router as impact_router
 from app.routers.data_flow import router as data_flow_router
 from app.routers.api_mapper import router as api_mapper_router
+from app.routers.architecture import router as architecture_router
+from app.routers.drift import router as drift_router
+from app.routers.tech_debt import router as tech_debt_router
+from app.routers.module_health import router as module_health_router
+from app.routers.refactoring import router as refactoring_router
 
 __all__ = [
     "ingest_router",
@@ -42,4 +47,9 @@ __all__ = [
     "impact_router",
     "data_flow_router",
     "api_mapper_router",
+    "architecture_router",
+    "drift_router",
+    "tech_debt_router",
+    "module_health_router",
+    "refactoring_router",
 ]

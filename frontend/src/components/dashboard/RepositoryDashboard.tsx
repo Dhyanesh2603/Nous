@@ -26,6 +26,11 @@ import {
   Zap,
   GitBranch,
   Network,
+  Building2,
+  TrendingUp,
+  Scale,
+  HeartPulse,
+  Wrench,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -68,6 +73,11 @@ interface RepositoryDashboardProps {
   onOpenImpact: () => void;
   onOpenDataFlow: () => void;
   onOpenApiMapper: () => void;
+  onOpenArchitectureStyle: () => void;
+  onOpenDrift: () => void;
+  onOpenTechDebt: () => void;
+  onOpenModuleHealth: () => void;
+  onOpenRefactoring: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -95,6 +105,11 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenImpact,
   onOpenDataFlow,
   onOpenApiMapper,
+  onOpenArchitectureStyle,
+  onOpenDrift,
+  onOpenTechDebt,
+  onOpenModuleHealth,
+  onOpenRefactoring,
 }) => {
   const [healthScorecard, setHealthScorecard] = useState<RepositoryHealthScorecard | null>(null);
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
@@ -755,6 +770,124 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 Map REST, GraphQL, gRPC, WebSockets, and internal cross-module client invocations.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Fourth Row: Architecture Intelligence (Phase 2) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
+          {/* Tool 13: Architecture Style Detection */}
+          <div
+            onClick={onOpenArchitectureStyle}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                Style Classifier
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition">
+                Architecture Detection
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Identify MVC, Clean Architecture, Hexagonal, DDD, Onion, Layered, and Microservices.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 14: Architecture Drift Timeline */}
+          <div
+            onClick={onOpenDrift}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                Git Timeline
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
+                Architecture Drift
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Visualize structural evolution, coupling trends, and architectural degradation over Git history.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 15: Technical Debt Engine */}
+          <div
+            onClick={onOpenTechDebt}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Scale className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                8-Dimension Score
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
+                Technical Debt Engine
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Quantify technical debt across complexity, churn, cycles, clones, file sizing, and maintainability.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 16: Module Health Dashboard */}
+          <div
+            onClick={onOpenModuleHealth}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <HeartPulse className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                Package Metrics
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
+                Module Health
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Analyze cohesion, coupling (Ca/Ce), instability (I), DAG depth, test, and doc coverage.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 17: Refactoring Advisor */}
+          <div
+            onClick={onOpenRefactoring}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-sky-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                <Wrench className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/30">
+                Advisor
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-sky-300 transition">
+                Refactoring Advisor
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Automated recommendations to extract methods, break cycles, split files, and reduce complexity.
               </p>
             </div>
           </div>

@@ -340,6 +340,40 @@ export const fetchApiDependencies = async (): Promise<any> => {
   return res.data;
 };
 
+// ==========================================
+// PHASE 2 — ARCHITECTURE INTELLIGENCE APIs
+// ==========================================
+
+// 6. Automatic Architecture Detection
+export const fetchArchitectureStyle = async (): Promise<any> => {
+  const res = await api.get('/analysis/architecture-style');
+  return res.data;
+};
+
+// 7. Architecture Drift Timeline
+export const fetchArchitectureDrift = async (maxSamples: number = 12): Promise<any> => {
+  const res = await api.get('/analysis/architecture-drift', { params: { max_samples: maxSamples } });
+  return res.data;
+};
+
+// 8. Technical Debt Engine
+export const fetchTechnicalDebt = async (): Promise<any> => {
+  const res = await api.get('/analysis/tech-debt');
+  return res.data;
+};
+
+// 9. Module Health Dashboard
+export const fetchModuleHealth = async (): Promise<any> => {
+  const res = await api.get('/analysis/module-health');
+  return res.data;
+};
+
+// 10. Intelligent Refactoring Advisor
+export const fetchRefactoringSuggestions = async (): Promise<any> => {
+  const res = await api.get('/analysis/refactoring-suggestions');
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;

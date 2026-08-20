@@ -876,3 +876,158 @@ export interface ApiDependencyGraphReport {
   graph_edges: any[];
 }
 
+// ==========================================
+// PHASE 2 — ARCHITECTURE INTELLIGENCE TYPES
+// ==========================================
+
+// 6. Architecture Style Detection Types
+export interface DetectedStyle {
+  style: string;
+  confidence_score: number;
+  matched_patterns: string[];
+  evidence_directories: string[];
+  evidence_files: string[];
+  description: string;
+}
+
+export interface LayerItem {
+  layer_name: string;
+  file_count: number;
+  files: string[];
+  description: string;
+}
+
+export interface LayerBoundaryViolation {
+  from_layer: string;
+  to_layer: string;
+  from_file: string;
+  to_file: string;
+  rule_description: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface ArchitectureDetectionReport {
+  primary_style: string;
+  primary_confidence: number;
+  detected_styles: DetectedStyle[];
+  architectural_layers: LayerItem[];
+  layer_boundary_violations: LayerBoundaryViolation[];
+  recommendations: string[];
+}
+
+// 7. Architecture Drift Types
+export interface DriftCheckpoint {
+  commit_hash: string;
+  short_hash: string;
+  author: string;
+  date: string;
+  message: string;
+  file_count: number;
+  dependency_count: number;
+  module_count: number;
+  coupling_index: number;
+  cyclomatic_avg: number;
+  circular_cycles: number;
+  architectural_status: 'Healthy' | 'Drifting' | 'Degrading';
+}
+
+export interface ArchitectureDriftReport {
+  total_checkpoints: number;
+  oldest_commit_date: string;
+  latest_commit_date: string;
+  initial_coupling: number;
+  current_coupling: number;
+  coupling_growth_rate: number;
+  dependency_growth_rate: number;
+  degradation_alerts: string[];
+  checkpoints: DriftCheckpoint[];
+}
+
+// 8. Technical Debt Engine Types
+export interface DebtDimension {
+  dimension_name: string;
+  weight: number;
+  score: number;
+  debt_hours: number;
+  description: string;
+}
+
+export interface DebtHotspot {
+  id: string;
+  title: string;
+  category: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  estimated_hours_to_fix: number;
+  remediation_rationale: string;
+}
+
+export interface TechnicalDebtReport {
+  overall_debt_score: number;
+  debt_grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  total_debt_hours: number;
+  total_debt_cost_estimate_usd: number;
+  maintainability_index: number;
+  dimensions: DebtDimension[];
+  top_debt_hotspots: DebtHotspot[];
+  recommendations: string[];
+}
+
+// 9. Module Health Dashboard Types
+export interface ModuleHealthCard {
+  module_id: string;
+  name: string;
+  relative_dir: string;
+  file_count: number;
+  line_count: number;
+  symbol_count: number;
+  cohesion_score: number;
+  afferent_coupling: number;
+  efferent_coupling: number;
+  instability: number;
+  maintainability_rating: string;
+  dependency_depth: number;
+  average_complexity: number;
+  test_coverage_pct: number;
+  documentation_coverage_pct: number;
+  health_score: number;
+  risk_level: 'Low' | 'Moderate' | 'High' | 'Critical';
+  file_paths: string[];
+}
+
+export interface ModuleHealthReport {
+  total_modules: number;
+  overall_health_score: number;
+  average_cohesion: number;
+  average_instability: number;
+  modules: ModuleHealthCard[];
+}
+
+// 10. Intelligent Refactoring Advisor Types
+export interface RefactorRecommendation {
+  id: string;
+  category: string;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  title: string;
+  target_symbol_or_file: string;
+  relative_path: string;
+  line_number: number;
+  estimated_effort_hours: number;
+  description: string;
+  code_snippet?: string;
+  suggested_transformation: string;
+}
+
+export interface RefactoringReport {
+  total_recommendations: number;
+  critical_count: number;
+  high_count: number;
+  medium_count: number;
+  low_count: number;
+  total_estimated_effort_hours: number;
+  recommendations: RefactorRecommendation[];
+}
+
+

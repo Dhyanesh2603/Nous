@@ -37,6 +37,11 @@ import { DeadCodeModal } from './components/deadcode/DeadCodeModal';
 import { ImpactSimulatorModal } from './components/impact/ImpactSimulatorModal';
 import { DataFlowModal } from './components/dataflow/DataFlowModal';
 import { ApiMapperModal } from './components/apimapper/ApiMapperModal';
+import { ArchitectureStyleModal } from './components/architecture/ArchitectureStyleModal';
+import { ArchitectureDriftModal } from './components/drift/ArchitectureDriftModal';
+import { TechDebtModal } from './components/techdebt/TechDebtModal';
+import { ModuleHealthModal } from './components/modulehealth/ModuleHealthModal';
+import { RefactoringModal } from './components/refactoring/RefactoringModal';
 import './App.css';
 
 export function App() {
@@ -69,6 +74,11 @@ export function App() {
   const [isImpactOpen, setIsImpactOpen] = useState(false);
   const [isDataFlowOpen, setIsDataFlowOpen] = useState(false);
   const [isApiMapperOpen, setIsApiMapperOpen] = useState(false);
+  const [isArchitectureStyleOpen, setIsArchitectureStyleOpen] = useState(false);
+  const [isDriftOpen, setIsDriftOpen] = useState(false);
+  const [isTechDebtOpen, setIsTechDebtOpen] = useState(false);
+  const [isModuleHealthOpen, setIsModuleHealthOpen] = useState(false);
+  const [isRefactoringOpen, setIsRefactoringOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -124,6 +134,11 @@ export function App() {
         setIsImpactOpen(false);
         setIsDataFlowOpen(false);
         setIsApiMapperOpen(false);
+        setIsArchitectureStyleOpen(false);
+        setIsDriftOpen(false);
+        setIsTechDebtOpen(false);
+        setIsModuleHealthOpen(false);
+        setIsRefactoringOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -226,6 +241,11 @@ export function App() {
             onOpenImpact={() => setIsImpactOpen(true)}
             onOpenDataFlow={() => setIsDataFlowOpen(true)}
             onOpenApiMapper={() => setIsApiMapperOpen(true)}
+            onOpenArchitectureStyle={() => setIsArchitectureStyleOpen(true)}
+            onOpenDrift={() => setIsDriftOpen(true)}
+            onOpenTechDebt={() => setIsTechDebtOpen(true)}
+            onOpenModuleHealth={() => setIsModuleHealthOpen(true)}
+            onOpenRefactoring={() => setIsRefactoringOpen(true)}
           />
         ) : (
           <>
@@ -438,6 +458,41 @@ export function App() {
         <ApiMapperModal
           isOpen={isApiMapperOpen}
           onClose={() => setIsApiMapperOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Automatic Architecture Style Detection Modal */}
+        <ArchitectureStyleModal
+          isOpen={isArchitectureStyleOpen}
+          onClose={() => setIsArchitectureStyleOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Architecture Drift Timeline Modal */}
+        <ArchitectureDriftModal
+          isOpen={isDriftOpen}
+          onClose={() => setIsDriftOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Technical Debt Engine Modal */}
+        <TechDebtModal
+          isOpen={isTechDebtOpen}
+          onClose={() => setIsTechDebtOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Module Health Dashboard Modal */}
+        <ModuleHealthModal
+          isOpen={isModuleHealthOpen}
+          onClose={() => setIsModuleHealthOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Intelligent Refactoring Advisor Modal */}
+        <RefactoringModal
+          isOpen={isRefactoringOpen}
+          onClose={() => setIsRefactoringOpen(false)}
           currentRepoPath={status?.current_repo_path}
         />
 

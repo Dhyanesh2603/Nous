@@ -28,6 +28,11 @@ from app.routers import (
     impact_router,
     data_flow_router,
     api_mapper_router,
+    architecture_router,
+    drift_router,
+    tech_debt_router,
+    module_health_router,
+    refactoring_router,
 )
 from app.state import app_state
 
@@ -51,8 +56,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.6.0",
-    description="Software Intelligence Platform with RipEx AST, Impact Simulation, Data Flow, Dead Code Intelligence, and Security Auditing.",
+    version="0.7.0",
+    description="Software Intelligence Platform with RipEx AST, Architecture Intelligence, Tech Debt Engine, and Refactoring Advisor.",
     lifespan=lifespan,
 )
 
@@ -87,13 +92,18 @@ app.include_router(dead_code_router)
 app.include_router(impact_router)
 app.include_router(data_flow_router)
 app.include_router(api_mapper_router)
+app.include_router(architecture_router)
+app.include_router(drift_router)
+app.include_router(tech_debt_router)
+app.include_router(module_health_router)
+app.include_router(refactoring_router)
 
 
 @app.get("/")
 def root():
     return {
         "message": "Welcome to Nous Software Intelligence Platform",
-        "version": "0.6.0",
+        "version": "0.7.0",
         "docs_url": "/docs",
         "health_url": "/api/health",
         "frontend_url": "http://127.0.0.1:5173",
@@ -105,7 +115,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "version": "0.6.0",
+        "version": "0.7.0",
         "has_active_repo": app_state.scanner is not None,
     }
 
