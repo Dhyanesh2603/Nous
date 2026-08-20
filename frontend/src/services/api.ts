@@ -248,7 +248,7 @@ export const fetchOnboardingRoadmap = async (): Promise<OnboardingRoadmap> => {
   return res.data;
 };
 
-export const fetchGeneratedDocs = async (): Promise<{ documentation_markdown: string }> => {
+export const fetchCopilotDocs = async (): Promise<{ documentation_markdown: string }> => {
   const res = await api.get<{ documentation_markdown: string }>('/copilot/docs');
   return res.data;
 };
@@ -371,6 +371,34 @@ export const fetchModuleHealth = async (): Promise<any> => {
 // 10. Intelligent Refactoring Advisor
 export const fetchRefactoringSuggestions = async (): Promise<any> => {
   const res = await api.get('/analysis/refactoring-suggestions');
+  return res.data;
+};
+
+// ==========================================
+// PHASE 3 — AI ENGINEERING ASSISTANT APIs
+// ==========================================
+
+// 12. Automatic Documentation Generator
+export const fetchGeneratedDocs = async (): Promise<any> => {
+  const res = await api.get('/analysis/generate-docs');
+  return res.data;
+};
+
+// 13. PR Impact Analyzer
+export const fetchPRImpactReport = async (diffTarget: string = 'HEAD~1'): Promise<any> => {
+  const res = await api.get('/analysis/pr-impact', { params: { diff_target: diffTarget } });
+  return res.data;
+};
+
+// 14. Natural Language Code Search
+export const searchNaturalLanguage = async (query: string): Promise<any> => {
+  const res = await api.get('/analysis/nl-search', { params: { q: query } });
+  return res.data;
+};
+
+// 15. Intelligent Test Advisor
+export const fetchTestAdvice = async (): Promise<any> => {
+  const res = await api.get('/analysis/test-advice');
   return res.data;
 };
 

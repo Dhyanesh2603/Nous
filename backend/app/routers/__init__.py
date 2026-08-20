@@ -24,6 +24,10 @@ from app.routers.drift import router as drift_router
 from app.routers.tech_debt import router as tech_debt_router
 from app.routers.module_health import router as module_health_router
 from app.routers.refactoring import router as refactoring_router
+from app.routers.doc_gen import router as doc_gen_router
+from app.routers.pr_analyzer import router as pr_analyzer_router
+from app.routers.nl_search import router as nl_search_router
+from app.routers.test_advisor import router as test_advisor_router
 
 __all__ = [
     "ingest_router",
@@ -52,4 +56,8 @@ __all__ = [
     "tech_debt_router",
     "module_health_router",
     "refactoring_router",
+    "doc_gen_router",
+    "pr_analyzer_router",
+    "nl_search_router",
+    "test_advisor_router",
 ]

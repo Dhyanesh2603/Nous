@@ -1030,4 +1030,119 @@ export interface RefactoringReport {
   recommendations: RefactorRecommendation[];
 }
 
+// ==========================================
+// PHASE 3 — AI ENGINEERING ASSISTANT TYPES
+// ==========================================
+
+// 12. Automatic Documentation Generator
+export interface GeneratedDocSection {
+  title: string;
+  doc_type: 'onboarding' | 'architecture' | 'api_reference' | 'data_models' | 'modules';
+  markdown_content: string;
+  summary: string;
+  symbols_covered_count: number;
+}
+
+export interface DocumentationReport {
+  repository_name: string;
+  generated_at: string;
+  total_sections: number;
+  sections: GeneratedDocSection[];
+}
+
+// 13. PR Impact Analyzer
+export interface ChangedFile {
+  file_path: string;
+  relative_path: string;
+  change_type: 'modified' | 'added' | 'deleted';
+  additions: number;
+  deletions: number;
+  complexity_delta: number;
+}
+
+export interface ImpactedCaller {
+  caller_name: string;
+  caller_file: string;
+  relative_path: string;
+  line_number: number;
+}
+
+export interface ImpactedRoute {
+  http_method: string;
+  route_path: string;
+  handler_name: string;
+  file_path: string;
+}
+
+export interface SuggestedReviewer {
+  name: string;
+  email: string;
+  commit_count_on_touched_files: number;
+  ownership_percentage: number;
+  rationale: string;
+}
+
+export interface PRImpactReport {
+  pr_title: string;
+  base_branch: string;
+  head_branch: string;
+  total_files_changed: number;
+  total_additions: number;
+  total_deletions: number;
+  estimated_blast_radius_score: number;
+  risk_level: 'Low' | 'Moderate' | 'High' | 'Critical';
+  changed_files: ChangedFile[];
+  impacted_callers: ImpactedCaller[];
+  impacted_routes: ImpactedRoute[];
+  suggested_reviewers: SuggestedReviewer[];
+  safety_checklist: string[];
+}
+
+// 14. Natural Language Code Search
+export interface NLSearchResult {
+  id: string;
+  symbol_name: string;
+  kind: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  match_score: number;
+  intent_category: string;
+  explanation: string;
+  code_snippet?: string;
+}
+
+export interface NLSearchReport {
+  query: string;
+  detected_intent: string;
+  total_results: number;
+  results: NLSearchResult[];
+}
+
+// 15. Intelligent Test Advisor
+export interface UntestedFunctionItem {
+  id: string;
+  symbol_name: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  cyclomatic_complexity: number;
+  in_degree_callers_count: number;
+  risk_score: number;
+  risk_tier: 'Critical' | 'High' | 'Moderate';
+  estimated_test_writing_mins: number;
+  recommended_framework: string;
+  reason_for_testing: string;
+  suggested_test_stub: string;
+}
+
+export interface TestAdvisorReport {
+  total_untested_functions: number;
+  critical_untested_count: number;
+  high_untested_count: number;
+  average_test_gap_score: number;
+  untested_candidates: UntestedFunctionItem[];
+}
+
+
 

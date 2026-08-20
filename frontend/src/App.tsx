@@ -42,6 +42,10 @@ import { ArchitectureDriftModal } from './components/drift/ArchitectureDriftModa
 import { TechDebtModal } from './components/techdebt/TechDebtModal';
 import { ModuleHealthModal } from './components/modulehealth/ModuleHealthModal';
 import { RefactoringModal } from './components/refactoring/RefactoringModal';
+import { DocumentationModal } from './components/docs/DocumentationModal';
+import { PRImpactModal } from './components/pr/PRImpactModal';
+import { NLSearchModal } from './components/nlsearch/NLSearchModal';
+import { TestAdvisorModal } from './components/testadvisor/TestAdvisorModal';
 import './App.css';
 
 export function App() {
@@ -79,6 +83,10 @@ export function App() {
   const [isTechDebtOpen, setIsTechDebtOpen] = useState(false);
   const [isModuleHealthOpen, setIsModuleHealthOpen] = useState(false);
   const [isRefactoringOpen, setIsRefactoringOpen] = useState(false);
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
+  const [isPRImpactOpen, setIsPRImpactOpen] = useState(false);
+  const [isNLSearchOpen, setIsNLSearchOpen] = useState(false);
+  const [isTestAdvisorOpen, setIsTestAdvisorOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -139,6 +147,10 @@ export function App() {
         setIsTechDebtOpen(false);
         setIsModuleHealthOpen(false);
         setIsRefactoringOpen(false);
+        setIsDocsOpen(false);
+        setIsPRImpactOpen(false);
+        setIsNLSearchOpen(false);
+        setIsTestAdvisorOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -246,6 +258,10 @@ export function App() {
             onOpenTechDebt={() => setIsTechDebtOpen(true)}
             onOpenModuleHealth={() => setIsModuleHealthOpen(true)}
             onOpenRefactoring={() => setIsRefactoringOpen(true)}
+            onOpenDocs={() => setIsDocsOpen(true)}
+            onOpenPRImpact={() => setIsPRImpactOpen(true)}
+            onOpenNLSearch={() => setIsNLSearchOpen(true)}
+            onOpenTestAdvisor={() => setIsTestAdvisorOpen(true)}
           />
         ) : (
           <>
@@ -494,6 +510,49 @@ export function App() {
           isOpen={isRefactoringOpen}
           onClose={() => setIsRefactoringOpen(false)}
           currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Automatic Documentation Generator Modal */}
+        <DocumentationModal
+          isOpen={isDocsOpen}
+          onClose={() => setIsDocsOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* PR Blast Radius & Impact Analyzer Modal */}
+        <PRImpactModal
+          isOpen={isPRImpactOpen}
+          onClose={() => setIsPRImpactOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Natural Language Code Search Modal */}
+        <NLSearchModal
+          isOpen={isNLSearchOpen}
+          onClose={() => setIsNLSearchOpen(false)}
+          onSelectSymbol={(symId) => {
+            const node = graphData?.nodes.find((n) => n.id === symId);
+            if (node) {
+              setSelectedNode(node.data);
+              setActiveScreen('graph');
+              setIsNLSearchOpen(false);
+            }
+          }}
+        />
+
+        {/* Intelligent Test Advisor Modal */}
+        <TestAdvisorModal
+          isOpen={isTestAdvisorOpen}
+          onClose={() => setIsTestAdvisorOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+          onSelectSymbol={(symId) => {
+            const node = graphData?.nodes.find((n) => n.id === symId);
+            if (node) {
+              setSelectedNode(node.data);
+              setActiveScreen('graph');
+              setIsTestAdvisorOpen(false);
+            }
+          }}
         />
 
         {/* Ingest Modal */}

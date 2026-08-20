@@ -31,6 +31,9 @@ import {
   Scale,
   HeartPulse,
   Wrench,
+  BookOpen,
+  GitPullRequest,
+  TestTube2,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -78,6 +81,10 @@ interface RepositoryDashboardProps {
   onOpenTechDebt: () => void;
   onOpenModuleHealth: () => void;
   onOpenRefactoring: () => void;
+  onOpenDocs: () => void;
+  onOpenPRImpact: () => void;
+  onOpenNLSearch: () => void;
+  onOpenTestAdvisor: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -110,6 +117,10 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenTechDebt,
   onOpenModuleHealth,
   onOpenRefactoring,
+  onOpenDocs,
+  onOpenPRImpact,
+  onOpenNLSearch,
+  onOpenTestAdvisor,
 }) => {
   const [healthScorecard, setHealthScorecard] = useState<RepositoryHealthScorecard | null>(null);
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
@@ -888,6 +899,101 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 Automated recommendations to extract methods, break cycles, split files, and reduce complexity.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Fifth Row: AI Engineering Assistant (Phase 3) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+          {/* Tool 18: Automatic Documentation Generator */}
+          <div
+            onClick={onOpenDocs}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+                Doc Synthesizer
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition">
+                Documentation Generator
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Live markdown onboarding guides, architecture blueprints, API catalogs, and model schemas.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 19: PR Blast Radius Analyzer */}
+          <div
+            onClick={onOpenPRImpact}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <GitPullRequest className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
+                Pre-Merge Safety
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-rose-300 transition">
+                PR Impact Analyzer
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Simulate PR diffs to calculate blast radius, downstream caller regressions, and reviewers.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 20: Natural Language Code Search */}
+          <div
+            onClick={onOpenNLSearch}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                Semantic Query
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
+                Natural Language Search
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Ask natural questions about authentication, database queries, business workflows, and APIs.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 21: Intelligent Test Advisor */}
+          <div
+            onClick={onOpenTestAdvisor}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <TestTube2 className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                Test Synthesizer
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
+                Test Advisor & Stubs
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Identify untested high-risk functions and synthesize unit test stubs with mocks and assertions.
               </p>
             </div>
           </div>
