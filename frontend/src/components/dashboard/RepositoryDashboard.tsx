@@ -22,6 +22,10 @@ import {
   GitCompare,
   Eye,
   Radio,
+  Trash2,
+  Zap,
+  GitBranch,
+  Network,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -60,6 +64,10 @@ interface RepositoryDashboardProps {
   onOpenDependencies: () => void;
   onOpenCompare: () => void;
   onOpenReview: () => void;
+  onOpenDeadCode: () => void;
+  onOpenImpact: () => void;
+  onOpenDataFlow: () => void;
+  onOpenApiMapper: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -83,6 +91,10 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenDependencies,
   onOpenCompare,
   onOpenReview,
+  onOpenDeadCode,
+  onOpenImpact,
+  onOpenDataFlow,
+  onOpenApiMapper,
 }) => {
   const [healthScorecard, setHealthScorecard] = useState<RepositoryHealthScorecard | null>(null);
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
@@ -648,6 +660,101 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 Search functions, classes, interfaces, and keywords with BM25 fusion.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Third Row: Advanced Code Intelligence (Phase 1) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+          {/* Tool 9: Dead Code Explorer */}
+          <div
+            onClick={onOpenDeadCode}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                Dead Logic
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
+                Dead Code Explorer
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Detect unused functions, classes, orphan files, and dead exports with confidence scores.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 10: Change Impact Simulator */}
+          <div
+            onClick={onOpenImpact}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <Zap className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
+                Pre-Refactor
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-rose-300 transition">
+                Change Impact Simulator
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Simulate deletion, rename, and moves to preview broken callers and affected APIs.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 11: Data Flow Analysis */}
+          <div
+            onClick={onOpenDataFlow}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <GitBranch className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                Taint Tracker
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
+                Data Flow Analysis
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Trace variables, parameters, user inputs, database writes, and API responses.
+              </p>
+            </div>
+          </div>
+
+          {/* Tool 12: API Dependency Map */}
+          <div
+            onClick={onOpenApiMapper}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <Network className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                Protocols
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
+                API Dependency Map
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Map REST, GraphQL, gRPC, WebSockets, and internal cross-module client invocations.
               </p>
             </div>
           </div>

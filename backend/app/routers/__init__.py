@@ -15,6 +15,10 @@ from app.routers.api_flow import router as api_flow_router
 from app.routers.dependencies import router as dependencies_router
 from app.routers.compare import router as compare_router
 from app.routers.code_review import router as code_review_router
+from app.routers.dead_code import router as dead_code_router
+from app.routers.impact import router as impact_router
+from app.routers.data_flow import router as data_flow_router
+from app.routers.api_mapper import router as api_mapper_router
 
 __all__ = [
     "ingest_router",
@@ -34,4 +38,8 @@ __all__ = [
     "dependencies_router",
     "compare_router",
     "code_review_router",
+    "dead_code_router",
+    "impact_router",
+    "data_flow_router",
+    "api_mapper_router",
 ]

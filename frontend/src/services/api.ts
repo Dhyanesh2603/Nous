@@ -294,6 +294,52 @@ export const fetchWatchStatus = async (): Promise<{ is_watching: boolean; watche
   return res.data;
 };
 
+// ==========================================
+// PHASE 1 — ADVANCED CODE INTELLIGENCE APIs
+// ==========================================
+
+// 1. Enhanced Dead Code Detection
+export const fetchDeadCodeReport = async (): Promise<any> => {
+  const res = await api.get('/analysis/dead-code-report');
+  return res.data;
+};
+
+// 2. Change Impact Simulator
+export const fetchSimulationTargets = async (): Promise<any> => {
+  const res = await api.get('/analysis/impact-simulate/targets');
+  return res.data;
+};
+
+export const simulateChangeImpact = async (
+  targetId: string,
+  simulationType: string,
+  newNameOrPath?: string
+): Promise<any> => {
+  const res = await api.post('/analysis/impact-simulate', {
+    target_id: targetId,
+    simulation_type: simulationType,
+    new_name_or_path: newNameOrPath,
+  });
+  return res.data;
+};
+
+// 3. Data Flow Analysis
+export const fetchDataFlowChains = async (): Promise<any> => {
+  const res = await api.get('/analysis/data-flow/chains');
+  return res.data;
+};
+
+export const traceSymbolDataFlow = async (entrySymbol: string): Promise<any> => {
+  const res = await api.get('/analysis/data-flow/trace', { params: { entry_symbol: entrySymbol } });
+  return res.data;
+};
+
+// 4. API Dependency Mapping
+export const fetchApiDependencies = async (): Promise<any> => {
+  const res = await api.get('/analysis/api-dependencies');
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;

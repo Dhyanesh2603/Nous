@@ -33,6 +33,10 @@ import { ApiFlowModal } from './components/apiflow/ApiFlowModal';
 import { DependencyModal } from './components/dependencies/DependencyModal';
 import { CompareModal } from './components/compare/CompareModal';
 import { CodeReviewModal } from './components/review/CodeReviewModal';
+import { DeadCodeModal } from './components/deadcode/DeadCodeModal';
+import { ImpactSimulatorModal } from './components/impact/ImpactSimulatorModal';
+import { DataFlowModal } from './components/dataflow/DataFlowModal';
+import { ApiMapperModal } from './components/apimapper/ApiMapperModal';
 import './App.css';
 
 export function App() {
@@ -61,6 +65,10 @@ export function App() {
   const [isDependenciesOpen, setIsDependenciesOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isDeadCodeOpen, setIsDeadCodeOpen] = useState(false);
+  const [isImpactOpen, setIsImpactOpen] = useState(false);
+  const [isDataFlowOpen, setIsDataFlowOpen] = useState(false);
+  const [isApiMapperOpen, setIsApiMapperOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -112,6 +120,10 @@ export function App() {
         setIsDependenciesOpen(false);
         setIsCompareOpen(false);
         setIsReviewOpen(false);
+        setIsDeadCodeOpen(false);
+        setIsImpactOpen(false);
+        setIsDataFlowOpen(false);
+        setIsApiMapperOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -210,6 +222,10 @@ export function App() {
             onOpenDependencies={() => setIsDependenciesOpen(true)}
             onOpenCompare={() => setIsCompareOpen(true)}
             onOpenReview={() => setIsReviewOpen(true)}
+            onOpenDeadCode={() => setIsDeadCodeOpen(true)}
+            onOpenImpact={() => setIsImpactOpen(true)}
+            onOpenDataFlow={() => setIsDataFlowOpen(true)}
+            onOpenApiMapper={() => setIsApiMapperOpen(true)}
           />
         ) : (
           <>
@@ -380,6 +396,48 @@ export function App() {
         <CodeReviewModal
           isOpen={isReviewOpen}
           onClose={() => setIsReviewOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Dead Code & Unused Logic Modal */}
+        <DeadCodeModal
+          isOpen={isDeadCodeOpen}
+          onClose={() => setIsDeadCodeOpen(false)}
+          onSelectSymbol={(symId) => {
+            const node = graphData?.nodes.find((n) => n.id === symId);
+            if (node) {
+              setSelectedNode(node.data);
+              setActiveScreen('graph');
+              setIsDeadCodeOpen(false);
+            }
+          }}
+        />
+
+        {/* Change Impact Simulator Modal */}
+        <ImpactSimulatorModal
+          isOpen={isImpactOpen}
+          onClose={() => setIsImpactOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Data Flow Analysis Modal */}
+        <DataFlowModal
+          isOpen={isDataFlowOpen}
+          onClose={() => setIsDataFlowOpen(false)}
+          onSelectSymbol={(symId) => {
+            const node = graphData?.nodes.find((n) => n.id === symId);
+            if (node) {
+              setSelectedNode(node.data);
+              setActiveScreen('graph');
+              setIsDataFlowOpen(false);
+            }
+          }}
+        />
+
+        {/* API Dependency & Protocol Mapper Modal */}
+        <ApiMapperModal
+          isOpen={isApiMapperOpen}
+          onClose={() => setIsApiMapperOpen(false)}
           currentRepoPath={status?.current_repo_path}
         />
 

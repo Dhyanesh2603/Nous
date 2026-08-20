@@ -24,6 +24,10 @@ from app.routers import (
     dependencies_router,
     compare_router,
     code_review_router,
+    dead_code_router,
+    impact_router,
+    data_flow_router,
+    api_mapper_router,
 )
 from app.state import app_state
 
@@ -47,8 +51,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version="0.5.0",
-    description="Software Intelligence Platform with RipEx AST, Timeline Replay, API Flow, Supply Chain, and AI Copilot.",
+    version="0.6.0",
+    description="Software Intelligence Platform with RipEx AST, Impact Simulation, Data Flow, Dead Code Intelligence, and Security Auditing.",
     lifespan=lifespan,
 )
 
@@ -79,13 +83,17 @@ app.include_router(api_flow_router)
 app.include_router(dependencies_router)
 app.include_router(compare_router)
 app.include_router(code_review_router)
+app.include_router(dead_code_router)
+app.include_router(impact_router)
+app.include_router(data_flow_router)
+app.include_router(api_mapper_router)
 
 
 @app.get("/")
 def root():
     return {
         "message": "Welcome to Nous Software Intelligence Platform",
-        "version": "0.5.0",
+        "version": "0.6.0",
         "docs_url": "/docs",
         "health_url": "/api/health",
         "frontend_url": "http://127.0.0.1:5173",
@@ -97,7 +105,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": settings.APP_NAME,
-        "version": "0.5.0",
+        "version": "0.6.0",
         "has_active_repo": app_state.scanner is not None,
     }
 

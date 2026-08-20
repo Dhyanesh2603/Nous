@@ -685,3 +685,194 @@ export interface CodeReviewReport {
   findings: CodeReviewFinding[];
 }
 
+// ==========================================
+// PHASE 1 — ADVANCED CODE INTELLIGENCE TYPES
+// ==========================================
+
+// 1. Enhanced Dead Code Detection Types
+export interface DeadCodeItem {
+  id: string;
+  name: string;
+  category: 'unused_function' | 'unused_class' | 'unused_file' | 'unused_export' | 'unreachable_code';
+  kind: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  confidence_score: number; // 0.0 to 1.0
+  reason: string;
+  snippet?: string;
+  suggested_remediation: string;
+}
+
+export interface DeadCodeReport {
+  total_dead_items: number;
+  unused_functions_count: number;
+  unused_classes_count: number;
+  unused_files_count: number;
+  unused_exports_count: number;
+  unreachable_code_count: number;
+  overall_dead_loc: number;
+  items: DeadCodeItem[];
+}
+
+// 2. Change Impact Simulator Types
+export type SimulationType =
+  | 'function_delete'
+  | 'class_delete'
+  | 'module_delete'
+  | 'function_rename'
+  | 'file_move'
+  | 'module_extract';
+
+export interface BrokenImport {
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  imported_symbol_or_module: string;
+  impact_reason: string;
+}
+
+export interface BrokenCaller {
+  caller_symbol_id: string;
+  caller_name: string;
+  caller_file: string;
+  relative_path: string;
+  call_line: number;
+  raw_call: string;
+  impact_reason: string;
+}
+
+export interface AffectedRoute {
+  http_method: string;
+  route_path: string;
+  handler_name: string;
+  file_path: string;
+  line_number: number;
+  impact_level: 'critical' | 'high' | 'medium';
+  reason: string;
+}
+
+export interface ImpactSimulationResult {
+  target_id: string;
+  target_name: string;
+  simulation_type: SimulationType;
+  new_name_or_path?: string;
+  estimated_risk_score: number;
+  risk_level: 'Low' | 'Moderate' | 'High' | 'Critical';
+  total_broken_callers: number;
+  total_broken_imports: number;
+  total_affected_apis: number;
+  total_downstream_files: number;
+  broken_callers: BrokenCaller[];
+  broken_imports: BrokenImport[];
+  affected_apis: AffectedRoute[];
+  downstream_dependencies: string[];
+  subgraph_nodes: any[];
+  subgraph_edges: any[];
+  summary_markdown: string;
+}
+
+export interface SimulationTargetsResponse {
+  functions: Array<{ id: string; name: string; kind: string; file_path: string; relative_path: string; line: number }>;
+  classes: Array<{ id: string; name: string; kind: string; file_path: string; relative_path: string; line: number }>;
+  files: Array<{ id: string; name: string; relative_path: string; line_count: number; symbol_count: number }>;
+  modules: Array<{ id: string; name: string; relative_dir: string; file_count: number }>;
+}
+
+// 3. Data Flow Analysis Types
+export type FlowStepType =
+  | 'user_input'
+  | 'param_pass'
+  | 'variable_assign'
+  | 'transformation'
+  | 'db_read'
+  | 'db_write'
+  | 'api_request'
+  | 'api_response'
+  | 'return_value';
+
+export interface DataFlowStep {
+  step_index: number;
+  step_type: FlowStepType;
+  symbol_name: string;
+  symbol_id?: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  variable_name: string;
+  expression_snippet: string;
+  description: string;
+}
+
+export interface DataFlowChain {
+  chain_id: string;
+  entry_point: string;
+  entry_file: string;
+  terminal_sink: string;
+  flow_category: string;
+  is_tainted_sink: boolean;
+  total_steps: number;
+  steps: DataFlowStep[];
+}
+
+export interface DataFlowReport {
+  total_chains: number;
+  total_user_input_sources: number;
+  total_db_reads: number;
+  total_db_writes: number;
+  total_api_endpoints_traced: number;
+  chains: DataFlowChain[];
+  available_entry_points: Array<{ id: string; name: string; file: string }>;
+}
+
+// 4. API Dependency Mapping Types
+export type ApiProtocol = 'REST' | 'GraphQL' | 'gRPC' | 'WebSocket' | 'Internal';
+
+export interface ApiEndpoint {
+  id: string;
+  protocol: ApiProtocol;
+  method: string;
+  path: string;
+  handler_name: string;
+  file_path: string;
+  relative_path: string;
+  line_number: number;
+  auth_required: boolean;
+  inbound_payload_model?: string;
+  response_model?: string;
+  service_module: string;
+}
+
+export interface ApiClientCall {
+  id: string;
+  caller_symbol: string;
+  caller_file: string;
+  relative_path: string;
+  line_number: number;
+  target_url_or_service: string;
+  http_method: string;
+  protocol: ApiProtocol;
+  is_internal_call: boolean;
+}
+
+export interface ApiDependencyEdge {
+  source_service: string;
+  target_endpoint: string;
+  protocol: ApiProtocol;
+  caller_file: string;
+  call_count: number;
+}
+
+export interface ApiDependencyGraphReport {
+  total_endpoints: number;
+  total_client_calls: number;
+  total_dependencies: number;
+  protocol_distribution: Record<string, number>;
+  endpoints: ApiEndpoint[];
+  client_calls: ApiClientCall[];
+  dependency_edges: ApiDependencyEdge[];
+  service_nodes: Array<{ name: string }>;
+  graph_nodes: any[];
+  graph_edges: any[];
+}
+
