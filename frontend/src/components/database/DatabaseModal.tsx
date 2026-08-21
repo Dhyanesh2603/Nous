@@ -32,7 +32,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
     fetchDatabaseSchema()
       .then((res: DatabaseSchemaReport) => {
         setReport(res);
-        if (res.tables.length > 0) {
+        if (res?.tables && res.tables.length > 0) {
           setSelectedTable(res.tables[0]);
         }
       })

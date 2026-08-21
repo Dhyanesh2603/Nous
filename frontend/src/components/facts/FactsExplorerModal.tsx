@@ -50,8 +50,8 @@ export const FactsExplorerModal: React.FC<FactsExplorerModalProps> = ({
           fetchApiRoutes(),
         ]);
         setSummary(sumRes);
-        setFacts(factsRes.facts);
-        setRoutes(routesRes);
+        setFacts(factsRes?.facts || []);
+        setRoutes(routesRes || []);
       } catch (err) {
         console.error('Failed to load RipEx facts:', err);
       } finally {
@@ -62,20 +62,20 @@ export const FactsExplorerModal: React.FC<FactsExplorerModalProps> = ({
     loadData();
   }, [isOpen]);
 
-  const filteredFacts = facts.filter((f) => {
+  const filteredFacts = (facts || []).filter((f) => {
     if (predicateFilter !== 'all' && f.predicate !== predicateFilter) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchSub = f.subject_id.toLowerCase().includes(q);
-      const matchObj = f.object_id.toLowerCase().includes(q);
-      const matchRel = f.relative_path.toLowerCase().includes(q);
-      const matchPred = f.predicate.toLowerCase().includes(q);
+      const matchSub = f.subject_id ? f.subject_id.toLowerCase().includes(q) : false;
+      const matchObj = f.object_id ? f.object_id.toLowerCase().includes(q) : false;
+      const matchRel = f.relative_path ? f.relative_path.toLowerCase().includes(q) : false;
+      const matchPred = f.predicate ? f.predicate.toLowerCase().includes(q) : false;
       if (!matchSub && !matchObj && !matchRel && !matchPred) return false;
     }
     return true;
   });
 
-  const instantiationFacts = facts.filter((f) => f.predicate === 'instantiates');
+  const instantiationFacts = (facts || []).filter((f) => f.predicate === 'instantiates');
 
   if (!isOpen) return null;
 

@@ -185,7 +185,7 @@ export const ExecutionPlaybackModal: React.FC<ExecutionPlaybackModalProps> = ({
                   </div>
 
                   {/* State Payload Snapshot */}
-                  {Object.keys(currentStep.state_payload).length > 0 && (
+                  {currentStep.state_payload && Object.keys(currentStep.state_payload).length > 0 && (
                     <div className="space-y-2">
                       <span className="text-xs font-bold text-slate-300 font-mono">Frame State & Variable Bindings</span>
                       <pre className="p-4 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs text-cyan-300 overflow-x-auto">

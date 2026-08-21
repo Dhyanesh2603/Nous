@@ -47,7 +47,7 @@ export const DataFlowModal: React.FC<DataFlowModalProps> = ({
   const chains = report?.chains || [];
   const filteredChains = chains.filter((c) => {
     if (filterCategory === 'all') return true;
-    return c.flow_category.toLowerCase().includes(filterCategory.toLowerCase());
+    return c.flow_category ? c.flow_category.toLowerCase().includes(filterCategory.toLowerCase()) : false;
   });
 
   const getStepIcon = (type: string) => {

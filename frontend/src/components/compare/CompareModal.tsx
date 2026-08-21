@@ -149,7 +149,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({
                 </span>
 
                 <div className="space-y-2">
-                  {report?.symbols_diff.map((sym, idx) => (
+                  {report?.symbols_diff?.map((sym, idx) => (
                     <div
                       key={idx}
                       className="p-3.5 bg-slate-950/60 border border-slate-800 rounded-xl flex items-center justify-between"

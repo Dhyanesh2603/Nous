@@ -44,9 +44,11 @@ export const KnowledgeGraphModal: React.FC<KnowledgeGraphModalProps> = ({
 
   const filteredNodes = (report?.nodes || []).filter((node) => {
     const matchesFilter = activeFilter === 'all' || node.entity_type === activeFilter;
+    const term = searchTerm.toLowerCase();
     const matchesSearch =
-      node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (node.relative_path && node.relative_path.toLowerCase().includes(searchTerm.toLowerCase()));
+      !searchTerm ||
+      (node.label ? node.label.toLowerCase().includes(term) : false) ||
+      (node.relative_path ? node.relative_path.toLowerCase().includes(term) : false);
     return matchesFilter && matchesSearch;
   });
 

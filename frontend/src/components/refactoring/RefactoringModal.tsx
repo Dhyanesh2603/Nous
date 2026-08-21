@@ -44,7 +44,7 @@ export const RefactoringModal: React.FC<RefactoringModalProps> = ({
   const recs = report?.recommendations || [];
   const filteredRecs = recs.filter((r) => {
     if (selectedCategory === 'all') return true;
-    return r.category.toLowerCase().includes(selectedCategory.toLowerCase());
+    return r.category ? r.category.toLowerCase().includes(selectedCategory.toLowerCase()) : false;
   });
 
   const getPriorityBadge = (p: string) => {

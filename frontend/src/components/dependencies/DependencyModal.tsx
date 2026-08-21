@@ -36,11 +36,11 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
   if (!isOpen) return null;
 
   const filteredDeps = (report?.dependencies || []).filter((d) => {
-    const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = d.name ? d.name.toLowerCase().includes(searchTerm.toLowerCase()) : false;
     if (!matchesSearch) return false;
     if (activeFilter === 'direct') return !d.is_dev_dependency;
     if (activeFilter === 'dev') return d.is_dev_dependency;
-    if (activeFilter === 'copyleft') return d.license_category.includes('Copyleft');
+    if (activeFilter === 'copyleft') return d.license_category ? d.license_category.includes('Copyleft') : false;
     return true;
   });
 

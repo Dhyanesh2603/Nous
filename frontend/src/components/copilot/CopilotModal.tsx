@@ -14,7 +14,7 @@ import {
 import {
   queryCopilot,
   fetchOnboardingRoadmap,
-  fetchGeneratedDocs,
+  fetchCopilotDocs,
 } from '../../services/api';
 import type { CopilotAnswer, OnboardingRoadmap } from '../../types';
 
@@ -55,8 +55,8 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
       .then((res: OnboardingRoadmap) => setOnboarding(res))
       .catch((err: unknown) => console.error('Onboarding load error:', err));
 
-    fetchGeneratedDocs()
-      .then((res) => setDocsMarkdown(res.documentation_markdown))
+    fetchCopilotDocs()
+      .then((res) => setDocsMarkdown(res?.documentation_markdown || ''))
       .catch((err: unknown) => console.error('Docs load error:', err));
   }, [isOpen, currentRepoPath]);
 

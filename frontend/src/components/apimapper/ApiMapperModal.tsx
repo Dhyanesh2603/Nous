@@ -42,11 +42,12 @@ export const ApiMapperModal: React.FC<ApiMapperModalProps> = ({
 
   const filteredEndpoints = endpoints.filter((ep) => {
     const matchesProto = selectedProtocol === 'all' || ep.protocol === selectedProtocol;
+    const filter = searchFilter.toLowerCase();
     const matchesSearch =
       searchFilter === '' ||
-      ep.path.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      ep.handler_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      ep.service_module.toLowerCase().includes(searchFilter.toLowerCase());
+      (ep.path ? ep.path.toLowerCase().includes(filter) : false) ||
+      (ep.handler_name ? ep.handler_name.toLowerCase().includes(filter) : false) ||
+      (ep.service_module ? ep.service_module.toLowerCase().includes(filter) : false);
     return matchesProto && matchesSearch;
   });
 

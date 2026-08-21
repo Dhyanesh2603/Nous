@@ -31,7 +31,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
     fetchSecurityAudit()
       .then((res: SecurityAuditReport) => {
         setReport(res);
-        if (res.vulnerabilities.length > 0) {
+        if (res?.vulnerabilities && res.vulnerabilities.length > 0) {
           setSelectedVuln(res.vulnerabilities[0]);
         }
       })

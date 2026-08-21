@@ -22,6 +22,7 @@ class UntestedFunctionItem(BaseModel):
 
 
 class TestAdvisorReport(BaseModel):
+    __test__ = False
     total_untested_functions: int
     critical_untested_count: int
     high_untested_count: int

@@ -47,11 +47,12 @@ export const DeadCodeModal: React.FC<DeadCodeModalProps> = ({
   const items = report?.items || [];
   const filteredItems = items.filter((item) => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const filter = searchFilter.toLowerCase();
     const matchesSearch =
       searchFilter === '' ||
-      item.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      item.relative_path.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      item.reason.toLowerCase().includes(searchFilter.toLowerCase());
+      (item.name ? item.name.toLowerCase().includes(filter) : false) ||
+      (item.relative_path ? item.relative_path.toLowerCase().includes(filter) : false) ||
+      (item.reason ? item.reason.toLowerCase().includes(filter) : false);
     return matchesCategory && matchesSearch;
   });
 

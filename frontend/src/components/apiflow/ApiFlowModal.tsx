@@ -29,7 +29,7 @@ export const ApiFlowModal: React.FC<ApiFlowModalProps> = ({
     fetchApiFlowCatalog()
       .then((res: ApiFlowCatalog) => {
         setCatalog(res);
-        if (res.endpoints.length > 0) {
+        if (res?.endpoints && res.endpoints.length > 0) {
           setSelectedEndpoint(res.endpoints[0]);
         }
       })

@@ -34,7 +34,7 @@ export const TimelineModal: React.FC<TimelineModalProps> = ({
     fetchTimelineEvolution(50)
       .then((res: RepositoryTimelineReport) => {
         setReport(res);
-        if (res.timeline_snapshots.length > 0) {
+        if (res?.timeline_snapshots && res.timeline_snapshots.length > 0) {
           setCurrentIndex(res.timeline_snapshots.length - 1);
         }
       })
