@@ -76,7 +76,7 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Frontend Components ({report?.frontend_components.length || 0})
+                Frontend Components ({report?.frontend_components?.length || 0})
               </button>
               <button
                 onClick={() => setActiveTab('backend')}
@@ -110,13 +110,13 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
           </div>
         ) : activeTab === 'components' ? (
           <div className="flex-1 overflow-y-auto p-6 space-y-4 font-mono text-xs">
-            {report.frontend_components.length === 0 ? (
+            {(report.frontend_components || []).length === 0 ? (
               <div className="py-16 text-center text-slate-500">
                 No React/Vue components detected in source trees.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {report.frontend_components.map((comp, idx) => (
+                {report.frontend_components?.map((comp, idx) => (
                   <div
                     key={idx}
                     className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3 hover:border-purple-500/40 transition"
@@ -132,7 +132,7 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
                     </div>
                     <p className="text-[11px] text-slate-400 truncate">{comp.relative_path}</p>
 
-                    {comp.hooks_used.length > 0 && (
+                    {comp.hooks_used && comp.hooks_used.length > 0 && (
                       <div className="space-y-1">
                         <span className="text-[10px] text-slate-500 uppercase font-semibold">Hooks Used:</span>
                         <div className="flex flex-wrap gap-1">
@@ -145,7 +145,7 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
                       </div>
                     )}
 
-                    {comp.child_components.length > 0 && (
+                    {comp.child_components && comp.child_components.length > 0 && (
                       <div className="space-y-1">
                         <span className="text-[10px] text-slate-500 uppercase font-semibold">Child Elements:</span>
                         <div className="flex flex-wrap gap-1">
@@ -167,10 +167,10 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
             {/* Controllers */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-slate-200 uppercase tracking-wider block">
-                Controllers & API Routers ({report.backend_layers.controllers.length})
+                Controllers & API Routers ({report.backend_layers?.controllers?.length || 0})
               </span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {report.backend_layers.controllers.map((c, i) => (
+                {report.backend_layers?.controllers?.map((c, i) => (
                   <div key={i} className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
                     <span className="font-bold text-cyan-300 block">{c.name}</span>
                     <span className="text-[10px] text-slate-500 block truncate">{c.file}</span>
@@ -182,10 +182,10 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
             {/* Services */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-slate-200 uppercase tracking-wider block">
-                Service & Domain Logic Layer ({report.backend_layers.services.length})
+                Service & Domain Logic Layer ({report.backend_layers?.services?.length || 0})
               </span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {report.backend_layers.services.map((s, i) => (
+                {report.backend_layers?.services?.map((s, i) => (
                   <div key={i} className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
                     <span className="font-bold text-emerald-300 block">{s.name}</span>
                     <span className="text-[10px] text-slate-500 block truncate">{s.file}</span>
@@ -197,10 +197,10 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
             {/* Repositories */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-slate-200 uppercase tracking-wider block">
-                Persistence & Repository Layer ({report.backend_layers.repositories.length})
+                Persistence & Repository Layer ({report.backend_layers?.repositories?.length || 0})
               </span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {report.backend_layers.repositories.map((r, i) => (
+                {report.backend_layers?.repositories?.map((r, i) => (
                   <div key={i} className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
                     <span className="font-bold text-amber-300 block">{r.name}</span>
                     <span className="text-[10px] text-slate-500 block truncate">{r.file}</span>

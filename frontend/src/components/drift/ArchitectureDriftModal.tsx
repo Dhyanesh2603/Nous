@@ -114,7 +114,7 @@ export const ArchitectureDriftModal: React.FC<ArchitectureDriftModalProps> = ({
             <>
               {/* Left Timeline List */}
               <div className="w-80 border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/20">
-                {report?.checkpoints.map((cp) => (
+                {report?.checkpoints?.map((cp) => (
                   <div
                     key={cp.commit_hash}
                     onClick={() => setSelectedCheckpoint(cp)}

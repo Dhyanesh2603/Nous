@@ -191,7 +191,8 @@ export const TimeMachineModal: React.FC<TimeMachineModalProps> = ({
                 {/* Interactive Scrubber Bars */}
                 <div className="flex items-end gap-1 h-24 pt-2">
                   {report?.frames?.map((f, idx) => {
-                    const maxLoc = Math.max(...(report.frames.map((x) => x.cumulative_loc) || [1]));
+                    const locs = report?.frames ? report.frames.map((x) => x.cumulative_loc) : [1];
+                    const maxLoc = Math.max(...locs, 1);
                     const heightPct = Math.max(15, Math.round((f.cumulative_loc / maxLoc) * 100));
                     const isSelected = idx === currentIndex;
                     return (

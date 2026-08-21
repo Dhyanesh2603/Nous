@@ -223,7 +223,7 @@ export const ExecutionPlaybackModal: React.FC<ExecutionPlaybackModalProps> = ({
 
                   {/* Step Timeline Indicator */}
                   <div className="flex items-center gap-1">
-                    {trace.steps.map((_, idx) => (
+                    {trace.steps?.map((_, idx) => (
                       <div
                         key={idx}
                         onClick={() => setCurrentStepIndex(idx)}

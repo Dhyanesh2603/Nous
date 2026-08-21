@@ -99,7 +99,7 @@ export const ModuleHealthModal: React.FC<ModuleHealthModalProps> = ({
             <>
               {/* Left Module List */}
               <div className="w-80 border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/20">
-                {report?.modules.map((m) => (
+                {report?.modules?.map((m) => (
                   <div
                     key={m.module_id}
                     onClick={() => setSelectedModule(m)}

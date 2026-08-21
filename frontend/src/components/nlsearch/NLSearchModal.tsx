@@ -143,7 +143,7 @@ export const NLSearchModal: React.FC<NLSearchModalProps> = ({
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-xs font-mono">
               Enter a query or select a prompt above to search code semantics
             </div>
-          ) : report.results.length === 0 ? (
+          ) : (report.results || []).length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-500 text-xs font-mono">
               No matching symbols found for this query
             </div>
@@ -151,7 +151,7 @@ export const NLSearchModal: React.FC<NLSearchModalProps> = ({
             <>
               {/* Left Results List */}
               <div className="w-80 border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/20">
-                {report.results.map((r) => (
+                {report.results?.map((r) => (
                   <div
                     key={r.id}
                     onClick={() => setSelectedResult(r)}

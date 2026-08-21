@@ -143,25 +143,25 @@ export const ImpactSimulatorModal: React.FC<ImpactSimulatorModalProps> = ({
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500/50 font-mono"
             >
               {targetType === 'function' &&
-                targets?.functions.map((f) => (
+                targets?.functions?.map((f) => (
                   <option key={f.id} value={f.id}>
                     {f.name}() — {f.relative_path}:{f.line}
                   </option>
                 ))}
               {targetType === 'class' &&
-                targets?.classes.map((c) => (
+                targets?.classes?.map((c) => (
                   <option key={c.id} value={c.id}>
                     class {c.name} — {c.relative_path}
                   </option>
                 ))}
               {targetType === 'file' &&
-                targets?.files.map((fl) => (
+                targets?.files?.map((fl) => (
                   <option key={fl.id} value={fl.id}>
                     {fl.relative_path} ({fl.line_count} LOC)
                   </option>
                 ))}
               {targetType === 'module' &&
-                targets?.modules.map((m) => (
+                targets?.modules?.map((m) => (
                   <option key={m.id} value={m.id}>
                     Module: {m.name} ({m.file_count} files)
                   </option>
@@ -268,7 +268,7 @@ export const ImpactSimulatorModal: React.FC<ImpactSimulatorModalProps> = ({
               </div>
 
               {/* Broken Callers Section */}
-              {result.broken_callers.length > 0 && (
+              {result.broken_callers && result.broken_callers.length > 0 && (
                 <div className="p-5 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
                     <Code2 className="w-4 h-4 text-rose-400" />
@@ -290,7 +290,7 @@ export const ImpactSimulatorModal: React.FC<ImpactSimulatorModalProps> = ({
               )}
 
               {/* Broken Imports Section */}
-              {result.broken_imports.length > 0 && (
+              {result.broken_imports && result.broken_imports.length > 0 && (
                 <div className="p-5 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
                     <FileCode className="w-4 h-4 text-amber-400" />
@@ -311,7 +311,7 @@ export const ImpactSimulatorModal: React.FC<ImpactSimulatorModalProps> = ({
               )}
 
               {/* Affected APIs Section */}
-              {result.affected_apis.length > 0 && (
+              {result.affected_apis && result.affected_apis.length > 0 && (
                 <div className="p-5 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
                     <Globe className="w-4 h-4 text-cyan-400" />

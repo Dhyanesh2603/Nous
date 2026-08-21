@@ -144,7 +144,7 @@ export const PRImpactModal: React.FC<PRImpactModalProps> = ({
                     Modified Source Files ({report?.changed_files?.length || 0})
                   </span>
                   <div className="space-y-2 font-mono text-xs">
-                    {report?.changed_files.map((cf, idx) => (
+                    {report?.changed_files?.map((cf, idx) => (
                       <div key={idx} className="p-2.5 bg-slate-900/70 border border-slate-800/80 rounded-lg flex items-center justify-between">
                         <div className="truncate pr-2">
                           <span className="text-slate-200 block truncate">{cf.relative_path}</span>

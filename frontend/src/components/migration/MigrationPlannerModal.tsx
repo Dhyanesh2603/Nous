@@ -85,7 +85,7 @@ export const MigrationPlannerModal: React.FC<MigrationPlannerModalProps> = ({
             <div className="p-3 text-[11px] font-mono uppercase text-slate-500 font-bold bg-slate-950/40">
               Migration Roadmaps ({report?.plans?.length || 0})
             </div>
-            {report?.plans.map((p) => (
+            {report?.plans?.map((p) => (
               <div
                 key={p.id}
                 onClick={() => setSelectedPlan(p)}

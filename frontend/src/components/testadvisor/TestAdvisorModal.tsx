@@ -112,7 +112,7 @@ export const TestAdvisorModal: React.FC<TestAdvisorModalProps> = ({
             <>
               {/* Left Candidates List */}
               <div className="w-80 border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/20">
-                {report?.untested_candidates.map((cand) => (
+                {report?.untested_candidates?.map((cand) => (
                   <div
                     key={cand.id}
                     onClick={() => setSelectedCandidate(cand)}

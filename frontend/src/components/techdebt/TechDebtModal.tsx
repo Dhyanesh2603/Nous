@@ -138,7 +138,7 @@ export const TechDebtModal: React.FC<TechDebtModalProps> = ({
                     Debt Dimensions ({report?.dimensions?.length || 0})
                   </span>
                   <div className="space-y-2 font-mono text-xs">
-                    {report?.dimensions.map((dim, idx) => (
+                    {report?.dimensions?.map((dim, idx) => (
                       <div key={idx} className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1">
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-slate-300 truncate">{dim.dimension_name}</span>
@@ -163,7 +163,7 @@ export const TechDebtModal: React.FC<TechDebtModalProps> = ({
                     Top Ranked Debt Hotspots
                   </span>
                   <div className="space-y-1.5 font-sans">
-                    {report?.top_debt_hotspots.map((hs) => (
+                    {report?.top_debt_hotspots?.map((hs) => (
                       <div
                         key={hs.id}
                         onClick={() => setSelectedHotspot(hs)}

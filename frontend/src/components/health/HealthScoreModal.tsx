@@ -101,7 +101,7 @@ export const HealthScoreModal: React.FC<HealthScoreModalProps> = ({
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Action Items ({scorecard?.recommendations.length || 0})
+                Action Items ({scorecard?.recommendations?.length || 0})
               </button>
             </div>
             <button
@@ -250,13 +250,13 @@ export const HealthScoreModal: React.FC<HealthScoreModalProps> = ({
           </div>
         ) : activeTab === 'performance' ? (
           <div className="flex-1 overflow-y-auto p-6 space-y-3 font-mono text-xs">
-            {!perfReport || perfReport.total_issues === 0 ? (
+            {!perfReport || (perfReport.issues || []).length === 0 ? (
               <div className="py-16 text-center text-slate-500">
                 <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
                 No performance bottlenecks detected in loop or async calls.
               </div>
             ) : (
-              perfReport.issues.map((issue) => (
+              perfReport.issues?.map((issue) => (
                 <div
                   key={issue.id}
                   className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 hover:border-amber-500/40 transition"
@@ -290,13 +290,13 @@ export const HealthScoreModal: React.FC<HealthScoreModalProps> = ({
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-6 space-y-3 font-mono text-xs">
-            {scorecard.recommendations.length === 0 ? (
+            {(scorecard.recommendations || []).length === 0 ? (
               <div className="py-16 text-center text-slate-500">
                 <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
                 No critical refactoring tasks identified.
               </div>
             ) : (
-              scorecard.recommendations.map((rec, idx) => (
+              scorecard.recommendations?.map((rec, idx) => (
                 <div
                   key={idx}
                   className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 hover:border-cyan-500/40 transition"
