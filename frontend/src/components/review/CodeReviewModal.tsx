@@ -124,16 +124,16 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
               {/* Findings List */}
               <div className="space-y-3">
                 <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
-                  Code Review Comments ({report?.findings.length || 0})
+                  Code Review Comments ({report?.findings?.length || 0})
                 </span>
 
-                {report?.findings.length === 0 ? (
+                {(report?.findings || []).length === 0 ? (
                   <div className="p-6 bg-slate-950/40 border border-slate-800 rounded-2xl text-center text-slate-400">
                     <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
                     <span>Zero critical code review findings detected. Clean maintainability score!</span>
                   </div>
                 ) : (
-                  report?.findings.map((f) => (
+                  report?.findings?.map((f) => (
                     <div
                       key={f.id}
                       className="p-5 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-2 hover:border-emerald-500/40 transition"

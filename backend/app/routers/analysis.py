@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import Optional, List
+from typing import Optional, List, Union
 from pydantic import BaseModel
 
 from app.state import app_state
@@ -68,12 +68,18 @@ def get_architecture_rules(preset: Optional[str] = Query("clean_architecture")):
 
 
 @router.post("/rules/evaluate", response_model=RuleEvaluationReport)
-def evaluate_custom_rules(req: EvaluateRulesRequest):
+def evaluate_custom_rules(req: Union[EvaluateRulesRequest, List[ArchitectureRule]] = None):
     if not app_state.scanner:
         raise HTTPException(status_code=400, detail="No repository loaded.")
-    return app_state.scanner.rules_engine.evaluate_rules(
-        custom_rules=req.custom_rules, preset=req.preset
-    )
+    
+    if req is None:
+        return app_state.scanner.rules_engine.evaluate_rules()
+    elif isinstance(req, list):
+        return app_state.scanner.rules_engine.evaluate_rules(custom_rules=req)
+    else:
+        return app_state.scanner.rules_engine.evaluate_rules(
+            custom_rules=req.custom_rules, preset=req.preset
+        )
 
 
 @router.get("/sequence", response_model=SequenceDiagramResponse)

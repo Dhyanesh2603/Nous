@@ -138,7 +138,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({
             </div>
           ) : report ? (
             <>
-              {report.violations.length > 0 ? (
+              {report.violations && report.violations.length > 0 ? (
                 report.violations.map((v, idx) => (
                   <div
                     key={v.rule_id + idx}

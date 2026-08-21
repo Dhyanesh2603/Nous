@@ -24,8 +24,17 @@ def get_modules():
 
 
 @router.get("/blast-radius", response_model=BlastRadiusResponse)
-def get_blast_radius(node_id: str = Query(...), max_depth: int = Query(4, ge=1, le=10)):
+def get_blast_radius(
+    node_id: Optional[str] = Query(None),
+    target_id: Optional[str] = Query(None),
+    target_type: Optional[str] = Query(None),
+    max_depth: int = Query(4, ge=1, le=10),
+):
     if not app_state.scanner:
         raise HTTPException(status_code=400, detail="No repository loaded.")
     
-    return app_state.scanner.graph_store.calculate_blast_radius(node_id, max_depth)
+    effective_id = node_id or target_id
+    if not effective_id:
+        raise HTTPException(status_code=422, detail="Missing required 'node_id' or 'target_id' query parameter")
+    
+    return app_state.scanner.graph_store.calculate_blast_radius(effective_id, max_depth)

@@ -146,7 +146,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error('Sample ingest error:', err);
-      setErrorMsg(`Failed to load sample project.`);
+      setErrorMsg(err?.response?.data?.detail || 'Failed to load sample project.');
     } finally {
       setIsScanning(false);
       setStatusMessage(null);

@@ -96,7 +96,7 @@ export const ClonesModal: React.FC<ClonesModalProps> = ({
                 <span className="text-amber-400 font-semibold">{report.total_duplicated_lines} Lines</span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1.5 font-mono text-xs">
-                {report.clone_groups.map((group, idx) => (
+                {report.clone_groups?.map((group, idx) => (
                   <button
                     key={group.group_id}
                     onClick={() => setSelectedGroupIndex(idx)}
@@ -137,7 +137,7 @@ export const ClonesModal: React.FC<ClonesModalProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {activeGroup.instances.map((instance) => (
+                    {activeGroup.instances?.map((instance) => (
                       <div
                         key={instance.id}
                         className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col font-mono text-xs"

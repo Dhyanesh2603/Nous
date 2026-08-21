@@ -127,10 +127,10 @@ export const SequenceModal: React.FC<SequenceModalProps> = ({
               {/* Participants Bar */}
               <div className="rounded-xl bg-slate-950/60 border border-slate-800 p-3">
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                  Participating Lifelines ({sequenceData.participants.length})
+                  Participating Lifelines ({sequenceData.participants?.length || 0})
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {sequenceData.participants.map((p) => (
+                  {sequenceData.participants?.map((p) => (
                     <div
                       key={p.id}
                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200"
@@ -150,7 +150,7 @@ export const SequenceModal: React.FC<SequenceModalProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                    Execution Steps ({sequenceData.steps.length})
+                    Execution Steps ({sequenceData.steps?.length || 0})
                   </h4>
                   <button
                     onClick={handleCopyMermaid}
@@ -162,7 +162,7 @@ export const SequenceModal: React.FC<SequenceModalProps> = ({
                 </div>
 
                 <div className="space-y-2 max-h-72 overflow-y-auto">
-                  {sequenceData.steps.map((step, idx) => {
+                  {sequenceData.steps?.map((step, idx) => {
                     const isActive = idx === activeStepIndex;
                     return (
                       <div
