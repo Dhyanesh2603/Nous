@@ -3,7 +3,7 @@
 # 🧠 NOUS
 ### Enterprise Software Intelligence & Interactive Architecture Engine
 
-**Nous** is a high-performance, polyglot codebase intelligence platform designed to ingest complex code repositories, parse structural Abstract Syntax Trees (ASTs), construct unified dependency and call graphs, enforce architectural boundaries, and provide an interactive, real-time visual canvas with AI-assisted diagnostics.
+**Nous** is a codebase intelligence platform designed to ingest software repositories, extract structural Abstract Syntax Trees (ASTs) using open-source language grammars (Tree-sitter & standard AST libraries), construct unified dependency and call graphs, enforce architectural boundaries, and provide an interactive, real-time visual canvas with AI-assisted diagnostics.
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI_0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/Frontend-React_19_+_Vite-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
@@ -17,8 +17,9 @@
 
 ## 🌟 Key Capabilities
 
-### 1. 🔍 Polyglot AST Engine & Multi-Modal Ingestion
-- **Multi-Language Support**: Parsers for **Python** (`.py`), **TypeScript / TSX** (`.ts`, `.tsx`), **JavaScript / JSX** (`.js`, `.jsx`), **Go** (`.go`), **Rust** (`.rs`), **Java** (`.java`), **Kotlin** (`.kt`), **SQL DDL** (`.sql`), **Prisma** (`.prisma`), **Vue**, **Svelte**, and **C/C++**.
+### 1. 🔍 Polyglot AST Ingestion & Language Support
+Nous integrates standard language AST engines and **Tree-sitter** grammar parsers to extract symbols, classes, function signatures, and call references across popular language ecosystems:
+- **Languages Supported**: **Python** (`.py`), **TypeScript / TSX** (`.ts`, `.tsx`), **JavaScript / JSX** (`.js`, `.jsx`), **Go** (`.go`), **Rust** (`.rs`), **Java** (`.java`), **Kotlin** (`.kt`), **SQL DDL** (`.sql`), **Prisma** (`.prisma`), **Vue**, **Svelte**, and **C/C++**.
 - **Ingestion Sources**:
   - **Local Directory**: Real-time background file watching with automatic live-reloading graph updates.
   - **Single File & Snippets**: Instant isolated AST extraction and dependency inspection.
@@ -59,7 +60,7 @@
 Nous Platform
  ├── backend/
  │    ├── app/
- │    │    ├── parsers/        # Multi-language Tree-sitter & regex AST parsers
+ │    │    ├── parsers/        # Tree-sitter grammar wrappers & AST extractors
  │    │    ├── graph/          # DependencyGraph, CallGraph, GraphStore (NetworkX)
  │    │    ├── analysis/       # 20+ specialized intelligence & diagnostic engines
  │    │    ├── routers/        # 30 modular FastAPI routers (67 API endpoints)
@@ -145,6 +146,16 @@ pytest -v
 cd frontend
 npm run build
 ```
+
+---
+
+## 🙏 Acknowledgements & Open Source Engines
+
+Nous builds upon and integrates with the following open-source technologies:
+- **[Tree-sitter](https://tree-sitter.github.io/)** — Incremental parsing library and ecosystem of language grammars.
+- **[NetworkX](https://networkx.org/)** — Graph algorithms, cycle detection, and topological analysis.
+- **[React Flow (@xyflow/react)](https://reactflow.dev/)** & **[Dagre](https://github.com/dagrejs/dagre)** — Interactive graph canvas and hierarchical layout rendering.
+- **[FastAPI](https://fastapi.tiangolo.com/)** — High-performance asynchronous REST API framework.
 
 ---
 
