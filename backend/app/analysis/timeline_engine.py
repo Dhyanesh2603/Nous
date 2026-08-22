@@ -74,7 +74,7 @@ class TimelineEngine:
             curr = parent
         return None
 
-    def analyze_timeline(self, max_commits: int = 40) -> RepositoryTimelineReport:
+    def analyze_timeline(self, max_commits: int = 50) -> RepositoryTimelineReport:
         if not os.path.exists(self.root_dir):
             return self._empty_timeline()
 
@@ -83,6 +83,22 @@ class TimelineEngine:
             return self._generate_synthetic_timeline()
 
         try:
+            # Query actual total commit count in repository
+            total_repo_commits = 0
+            try:
+                c_proc = subprocess.run(
+                    ["git", "-C", git_dir, "rev-list", "--count", "HEAD"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=5,
+                )
+                if c_proc.returncode == 0 and c_proc.stdout.strip().isdigit():
+                    total_repo_commits = int(c_proc.stdout.strip())
+            except Exception:
+                pass
+
             # git log with format: %H|%h|%an|%ad|%s
             cmd = [
                 "git",
@@ -94,6 +110,7 @@ class TimelineEngine:
                 "--date=short",
                 "--pretty=format:%H|%h|%an|%ad|%s",
                 "--shortstat",
+                "--root",
             ]
             res = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=15)
             if res.returncode != 0:
@@ -155,12 +172,15 @@ class TimelineEngine:
                                 files_changed_count=files_changed,
                                 lines_added=added,
                                 lines_deleted=deleted,
-                                cumulative_files_estimate=cum_files,
+                                cumulative_files_estimate=max(1, cum_files),
                                 architectural_impact=impact,
                                 affected_modules=["core", "api"] if files_changed > 1 else ["core"],
                             )
                         )
                 idx += 1
+
+            if not snapshots:
+                return self._generate_synthetic_timeline()
 
             # Feature evolution breakdown
             features = self._detect_feature_milestones(snapshots)
@@ -170,7 +190,7 @@ class TimelineEngine:
 
             return RepositoryTimelineReport(
                 is_git_repo=True,
-                total_commits=len(snapshots),
+                total_commits=total_repo_commits if total_repo_commits > 0 else len(snapshots),
                 first_commit_date=first_date,
                 latest_commit_date=last_date,
                 timeline_snapshots=snapshots,

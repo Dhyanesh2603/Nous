@@ -10,11 +10,13 @@ import type { FrameworkOverviewReport } from '../../types';
 interface FrameworkModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentRepoPath?: string;
 }
 
 export const FrameworkModal: React.FC<FrameworkModalProps> = ({
   isOpen,
   onClose,
+  currentRepoPath,
 }) => {
   const [report, setReport] = useState<FrameworkOverviewReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,12 +25,13 @@ export const FrameworkModal: React.FC<FrameworkModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    setReport(null);
     setLoading(true);
     fetchFrameworkOverview()
       .then((res: FrameworkOverviewReport) => setReport(res))
       .catch((err: unknown) => console.error('Failed to load framework overview:', err))
       .finally(() => setLoading(false));
-  }, [isOpen]);
+  }, [isOpen, currentRepoPath]);
 
   if (!isOpen) return null;
 

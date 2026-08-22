@@ -52,7 +52,12 @@ class GitCloner:
         # If repo directory exists, remove or update
         if target_dir.exists():
             try:
-                # Try pull first
+                # If shallow clone exists, unshallow to get full history
+                if (target_dir / ".git" / "shallow").exists():
+                    subprocess.run(["git", "-C", str(target_dir), "fetch", "--unshallow"], capture_output=True, timeout=60)
+                else:
+                    subprocess.run(["git", "-C", str(target_dir), "fetch", "--all", "--tags"], capture_output=True, timeout=30)
+
                 pull_cmd = ["git", "-C", str(target_dir), "pull", "--ff-only"]
                 res = subprocess.run(pull_cmd, capture_output=True, text=True, timeout=30)
                 if res.returncode == 0:
@@ -66,18 +71,25 @@ class GitCloner:
             except Exception:
                 pass
 
-        # Execute git clone --depth 50 (retrieves recent commit history for Time Machine & Drift)
-        cmd = ["git", "clone", "--depth", "50"]
+        # Execute git clone with full commit history for Time Machine, Drift, & Git Churn
+        cmd = ["git", "clone"]
         if branch:
             cmd.extend(["--branch", branch])
         cmd.extend([normalized_url, str(target_dir)])
 
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
             if proc.returncode != 0:
-                raise RuntimeError(f"Git clone failed: {proc.stderr or proc.stdout}")
+                # Fallback to depth 100 if full clone failed
+                cmd_shallow = ["git", "clone", "--depth", "100"]
+                if branch:
+                    cmd_shallow.extend(["--branch", branch])
+                cmd_shallow.extend([normalized_url, str(target_dir)])
+                proc_shallow = subprocess.run(cmd_shallow, capture_output=True, text=True, timeout=120)
+                if proc_shallow.returncode != 0:
+                    raise RuntimeError(f"Git clone failed: {proc.stderr or proc.stdout}")
         except subprocess.TimeoutExpired:
-            raise RuntimeError("Git clone timed out after 120 seconds.")
+            raise RuntimeError("Git clone timed out after 180 seconds.")
         except FileNotFoundError:
             raise RuntimeError("'git' command not found on host system. Please ensure git is installed.")
 

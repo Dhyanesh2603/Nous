@@ -13,11 +13,13 @@ import type { SecurityAuditReport, SecurityVulnerability } from '../../types';
 interface SecurityModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentRepoPath?: string;
 }
 
 export const SecurityModal: React.FC<SecurityModalProps> = ({
   isOpen,
   onClose,
+  currentRepoPath,
 }) => {
   const [report, setReport] = useState<SecurityAuditReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,8 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    setReport(null);
+    setSelectedVuln(null);
     setLoading(true);
     fetchSecurityAudit()
       .then((res: SecurityAuditReport) => {
@@ -37,7 +41,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
       })
       .catch((err: unknown) => console.error('Failed to run security audit:', err))
       .finally(() => setLoading(false));
-  }, [isOpen]);
+  }, [isOpen, currentRepoPath]);
 
   if (!isOpen) return null;
 

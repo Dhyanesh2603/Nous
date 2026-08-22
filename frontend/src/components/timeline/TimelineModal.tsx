@@ -85,7 +85,7 @@ export const TimelineModal: React.FC<TimelineModalProps> = ({
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-slate-100">Repository Replay & Git Evolution Timeline</h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                  DevTrace Replay
+                  Git Timeline
                 </span>
               </div>
               <p className="text-xs text-slate-400">

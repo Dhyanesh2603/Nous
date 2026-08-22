@@ -39,8 +39,41 @@ class GitChurnAnalyzer:
         self.root_dir = os.path.abspath(root_dir)
         self.graph_store = graph_store
 
+    def _resolve_git_dir(self) -> Optional[str]:
+        target = self.root_dir
+        if os.path.isfile(target):
+            target = os.path.dirname(target)
+        try:
+            res = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=target,
+                capture_output=True,
+                text=True,
+                check=False,
+                encoding="utf-8",
+                errors="replace",
+                timeout=5,
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                top = res.stdout.strip()
+                if os.path.exists(top):
+                    return top
+        except Exception:
+            pass
+
+        curr = target
+        while curr:
+            if os.path.exists(os.path.join(curr, ".git")):
+                return curr
+            parent = os.path.dirname(curr)
+            if parent == curr:
+                break
+            curr = parent
+        return None
+
     def analyze(self) -> GitChurnReport:
-        is_git = os.path.exists(os.path.join(self.root_dir, ".git"))
+        git_dir = self._resolve_git_dir()
+        is_git = bool(git_dir and os.path.exists(git_dir))
         file_stats: Dict[str, Dict[str, Any]] = {}
         
         # Initialize default stats for all parsed files
@@ -62,15 +95,31 @@ class GitChurnAnalyzer:
         total_commits = 0
         all_authors: Set[str] = set()
 
-        if is_git:
+        if is_git and git_dir:
+            try:
+                # Query total commits count directly
+                c_count_proc = subprocess.run(
+                    ["git", "-C", git_dir, "rev-list", "--count", "HEAD"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=5,
+                )
+                if c_count_proc.returncode == 0 and c_count_proc.stdout.strip().isdigit():
+                    total_commits = int(c_count_proc.stdout.strip())
+            except Exception:
+                pass
+
             try:
                 # Run git log with numstat
-                cmd = ["git", "-C", self.root_dir, "log", "--numstat", '--pretty=format:COMMIT:%H|%an|%ad', "--date=short"]
-                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
+                cmd = ["git", "-C", git_dir, "log", "--numstat", '--pretty=format:COMMIT:%H|%an|%ad', "--date=short", "-n", "100"]
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", timeout=15)
                 
                 if proc.returncode == 0:
                     current_author = None
                     current_date = None
+                    parsed_commits_count = 0
                     
                     for line in proc.stdout.splitlines():
                         line = line.strip()
@@ -78,7 +127,7 @@ class GitChurnAnalyzer:
                             continue
                         
                         if line.startswith("COMMIT:"):
-                            total_commits += 1
+                            parsed_commits_count += 1
                             parts = line[7:].split("|")
                             current_author = parts[1] if len(parts) > 1 else "Unknown"
                             current_date = parts[2] if len(parts) > 2 else ""
@@ -93,15 +142,19 @@ class GitChurnAnalyzer:
                                 added = int(added_str) if added_str.isdigit() else 0
                                 deleted = int(deleted_str) if deleted_str.isdigit() else 0
                                 
-                                if norm_rel in file_stats:
-                                    f_entry = file_stats[norm_rel]
-                                    f_entry["commits"] += 1
-                                    f_entry["added"] += added
-                                    f_entry["deleted"] += deleted
-                                    if current_author:
-                                        f_entry["authors"].add(current_author)
-                                    if not f_entry["last_modified"] and current_date:
-                                        f_entry["last_modified"] = current_date
+                                # Match in file_stats by direct or suffix path
+                                for rel_key, f_entry in file_stats.items():
+                                    if rel_key == norm_rel or rel_key.endswith(norm_rel) or norm_rel.endswith(rel_key):
+                                        f_entry["commits"] += 1
+                                        f_entry["added"] += added
+                                        f_entry["deleted"] += deleted
+                                        if current_author:
+                                            f_entry["authors"].add(current_author)
+                                        if not f_entry["last_modified"] and current_date:
+                                            f_entry["last_modified"] = current_date
+                    
+                    if total_commits == 0:
+                        total_commits = parsed_commits_count
             except Exception as e:
                 print(f"[GitChurn] Log extraction error: {e}")
 

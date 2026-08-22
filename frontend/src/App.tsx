@@ -368,18 +368,21 @@ export function App() {
           isOpen={isFactsOpen}
           onClose={() => setIsFactsOpen(false)}
           onTraceSequence={handleTraceSequence}
+          currentRepoPath={status?.current_repo_path}
         />
 
         {/* Database ERD Modal */}
         <DatabaseModal
           isOpen={isDatabaseOpen}
           onClose={() => setIsDatabaseOpen(false)}
+          currentRepoPath={status?.current_repo_path}
         />
 
         {/* Security Audit Modal */}
         <SecurityModal
           isOpen={isSecurityOpen}
           onClose={() => setIsSecurityOpen(false)}
+          currentRepoPath={status?.current_repo_path}
         />
 
         {/* AI Copilot Modal */}
@@ -403,6 +406,7 @@ export function App() {
         <FrameworkModal
           isOpen={isFrameworkOpen}
           onClose={() => setIsFrameworkOpen(false)}
+          currentRepoPath={status?.current_repo_path}
         />
 
         {/* Timeline Replay Modal */}

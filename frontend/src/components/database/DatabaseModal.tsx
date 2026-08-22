@@ -13,11 +13,13 @@ import type { DatabaseSchemaReport, TableDefinition } from '../../types';
 interface DatabaseModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentRepoPath?: string;
 }
 
 export const DatabaseModal: React.FC<DatabaseModalProps> = ({
   isOpen,
   onClose,
+  currentRepoPath,
 }) => {
   const [report, setReport] = useState<DatabaseSchemaReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,8 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    setReport(null);
+    setSelectedTable(null);
     setLoading(true);
     fetchDatabaseSchema()
       .then((res: DatabaseSchemaReport) => {
@@ -38,7 +42,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
       })
       .catch((err: unknown) => console.error('Failed to load database schema:', err))
       .finally(() => setLoading(false));
-  }, [isOpen]);
+  }, [isOpen, currentRepoPath]);
 
   if (!isOpen) return null;
 

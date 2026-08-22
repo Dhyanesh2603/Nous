@@ -20,6 +20,7 @@ interface FactsExplorerModalProps {
   onClose: () => void;
   onSelectSymbol?: (symbolId: string) => void;
   onTraceSequence?: (symbolId: string) => void;
+  currentRepoPath?: string;
 }
 
 export const FactsExplorerModal: React.FC<FactsExplorerModalProps> = ({
@@ -27,6 +28,7 @@ export const FactsExplorerModal: React.FC<FactsExplorerModalProps> = ({
   onClose,
   onSelectSymbol,
   onTraceSequence,
+  currentRepoPath,
 }) => {
   const [activeTab, setActiveTab] = useState<'facts' | 'routes' | 'instantiations'>('facts');
   const [summary, setSummary] = useState<FactSummary | null>(null);
@@ -41,8 +43,14 @@ export const FactsExplorerModal: React.FC<FactsExplorerModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    // Reset previous session memory when opening or switching repo
+    setSummary(null);
+    setFacts([]);
+    setRoutes([]);
+    setSearchQuery('');
+    setLoading(true);
+
     const loadData = async () => {
-      setLoading(true);
       try {
         const [sumRes, factsRes, routesRes] = await Promise.all([
           fetchFactSummary(),
@@ -60,7 +68,7 @@ export const FactsExplorerModal: React.FC<FactsExplorerModalProps> = ({
     };
 
     loadData();
-  }, [isOpen]);
+  }, [isOpen, currentRepoPath]);
 
   const filteredFacts = (facts || []).filter((f) => {
     if (predicateFilter !== 'all' && f.predicate !== predicateFilter) return false;

@@ -380,7 +380,7 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
             <div className="flex-1">
               <h4 className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">
-                Timeline Replay (DevTrace)
+                Timeline Replay
               </h4>
               <p className="text-[11px] text-slate-400">Replay commit growth & history.</p>
             </div>
