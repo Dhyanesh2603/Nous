@@ -42,12 +42,44 @@ class TimelineEngine:
     def __init__(self, root_dir: str):
         self.root_dir = os.path.abspath(root_dir)
 
+    def _resolve_git_dir(self) -> Optional[str]:
+        target = self.root_dir
+        if os.path.isfile(target):
+            target = os.path.dirname(target)
+        try:
+            res = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=target,
+                capture_output=True,
+                text=True,
+                check=False,
+                encoding="utf-8",
+                errors="replace",
+                timeout=5,
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                top = res.stdout.strip()
+                if os.path.exists(top):
+                    return top
+        except Exception:
+            pass
+
+        curr = target
+        while curr:
+            if os.path.exists(os.path.join(curr, ".git")):
+                return curr
+            parent = os.path.dirname(curr)
+            if parent == curr:
+                break
+            curr = parent
+        return None
+
     def analyze_timeline(self, max_commits: int = 40) -> RepositoryTimelineReport:
         if not os.path.exists(self.root_dir):
             return self._empty_timeline()
 
-        git_dir = os.path.join(self.root_dir, ".git")
-        if not os.path.exists(git_dir):
+        git_dir = self._resolve_git_dir()
+        if not git_dir:
             return self._generate_synthetic_timeline()
 
         try:
@@ -55,7 +87,7 @@ class TimelineEngine:
             cmd = [
                 "git",
                 "-C",
-                self.root_dir,
+                git_dir,
                 "log",
                 f"-n{max_commits}",
                 "--reverse",

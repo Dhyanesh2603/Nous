@@ -23,7 +23,6 @@ import { ClonesModal } from './components/clones/ClonesModal';
 import { FactsExplorerModal } from './components/facts/FactsExplorerModal';
 import { DatabaseModal } from './components/database/DatabaseModal';
 import { SecurityModal } from './components/security/SecurityModal';
-import { HealthScoreModal } from './components/health/HealthScoreModal';
 import { CopilotModal } from './components/copilot/CopilotModal';
 import { FrameworkModal } from './components/framework/FrameworkModal';
 import { IngestModal } from './components/ingest/IngestModal';
@@ -69,7 +68,6 @@ export function App() {
   const [isFactsOpen, setIsFactsOpen] = useState(false);
   const [isDatabaseOpen, setIsDatabaseOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
-  const [isHealthOpen, setIsHealthOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isFrameworkOpen, setIsFrameworkOpen] = useState(false);
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
@@ -137,7 +135,6 @@ export function App() {
         setIsFactsOpen(false);
         setIsDatabaseOpen(false);
         setIsSecurityOpen(false);
-        setIsHealthOpen(false);
         setIsCopilotOpen(false);
         setIsFrameworkOpen(false);
         setIsIngestModalOpen(false);
@@ -227,7 +224,6 @@ export function App() {
         onOpenFacts={() => setIsFactsOpen(true)}
         onOpenDatabase={() => setIsDatabaseOpen(true)}
         onOpenSecurity={() => setIsSecurityOpen(true)}
-        onOpenHealth={() => setIsHealthOpen(true)}
         onOpenCopilot={() => setIsCopilotOpen(true)}
         onOpenFramework={() => setIsFrameworkOpen(true)}
         onRefreshGraph={() => loadGraph()}
@@ -243,7 +239,6 @@ export function App() {
             onNavigateToGraph={handleNavigateToGraph}
             onOpenDatabase={() => setIsDatabaseOpen(true)}
             onOpenSecurity={() => setIsSecurityOpen(true)}
-            onOpenHealth={() => setIsHealthOpen(true)}
             onOpenCopilot={() => setIsCopilotOpen(true)}
             onOpenFramework={() => setIsFrameworkOpen(true)}
             onOpenFacts={() => setIsFactsOpen(true)}
@@ -385,12 +380,6 @@ export function App() {
         <SecurityModal
           isOpen={isSecurityOpen}
           onClose={() => setIsSecurityOpen(false)}
-        />
-
-        {/* Health Scorecard Modal */}
-        <HealthScoreModal
-          isOpen={isHealthOpen}
-          onClose={() => setIsHealthOpen(false)}
         />
 
         {/* AI Copilot Modal */}

@@ -5,6 +5,10 @@ from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 
 from app.scanner import RepoScanner
+from app.analysis.framework_analyzer import FrameworkAnalyzer
+from app.analysis.database_analyzer import DatabaseAnalyzer
+from app.analysis.security_scanner import SecurityScanner
+from app.analysis.test_advisor import TestAdvisor
 
 
 class CopilotAnswer(BaseModel):
@@ -59,77 +63,172 @@ class AICopilotEngine:
             )
 
         q_lower = query.lower()
-        search_res = self.scanner.search_engine.search(query, limit=5)
+        search_res = self.scanner.search_engine.search(query, limit=8)
         cited_files = list({r.relative_path for r in search_res.results})
         cited_symbols = [r.symbol_name for r in search_res.results if r.symbol_name]
 
-        # 1. Architecture / Structure explanation
-        if any(w in q_lower for w in ("architecture", "structure", "overview", "summarize", "how it works")):
+        # 1. Architecture, Overview, Frameworks & Tech Stack
+        if any(w in q_lower for w in ("architecture", "structure", "overview", "summarize", "how it works", "what does", "tech stack", "framework", "about")):
+            framework_analyzer = getattr(self.scanner, "framework_analyzer", None) or FrameworkAnalyzer(self.scanner.root_dir, self.scanner.file_asts)
+            framework_report = framework_analyzer.analyze()
             modules = list(self.scanner.graph_store.modules.keys())
             total_files = len(self.scanner.file_asts)
             total_symbols = len(self.scanner.search_engine.symbols)
             facts_count = len(self.scanner.fact_store.facts)
             routes_count = len(self.scanner.fact_store.routes)
+            fe_comps = len(framework_report.frontend_components)
+            detected_fw = ", ".join(framework_report.detected_frameworks) if framework_report.detected_frameworks else "Multi-language Polyglot"
 
-            md = f"""### Repository Architectural Summary
+            md = f"""### Repository Architecture & System Overview
 
-- **Total Source Files**: `{total_files}`
-- **AST Symbols**: `{total_symbols}`
+- **Detected Frameworks & Stack**: `{detected_fw}`
+- **Source Files**: `{total_files}`
+- **AST Symbols & Declarations**: `{total_symbols}`
+- **Frontend Components**: `{fe_comps}`
+- **API Endpoints**: `{routes_count}`
 - **RipEx Relational Facts**: `{facts_count}`
-- **API Endpoints Discovered**: `{routes_count}`
 
-#### Core Modules & Packages
+#### Core Architectural Modules & Layers
 """
             for m in modules[:6]:
-                md += f"- **`{m}`**: Contains domain logic and service bindings.\n"
+                md += f"- **`{m}`**: Module cluster with domain logic and internal dependencies.\n"
 
-            md += f"""
-#### Key Entrypoints
-"""
-            for f in self.scanner.file_asts.keys():
-                if any(ep in f.lower() for ep in ("main.py", "app.py", "index.ts", "main.ts", "server.js", "app.tsx")):
-                    md += f"- [`{os.path.relpath(f, self.scanner.root_dir)}`](file:///{f})\n"
+            if framework_report.frontend_components:
+                md += "\n#### Key Frontend Components\n"
+                for comp in framework_report.frontend_components[:5]:
+                    md += f"- **`{comp.name}`** (`{comp.framework}`) in `{comp.relative_path}`\n"
+
+            if framework_report.backend_layers.controllers:
+                md += "\n#### Key Backend Controllers & Routers\n"
+                for ctrl in framework_report.backend_layers.controllers[:5]:
+                    md += f"- **`{ctrl['name']}`** in `{ctrl['file']}` ({ctrl.get('endpoints_count', 0)} endpoints)\n"
+
+            entrypoint_files = [
+                os.path.relpath(f, self.scanner.root_dir).replace("\\", "/")
+                for f in self.scanner.file_asts.keys()
+                if any(ep in f.lower() for ep in ("main.py", "app.py", "index.ts", "main.ts", "server.js", "app.tsx", "index.tsx", "main.go", "main.rs", "app.vue"))
+            ]
+            if entrypoint_files:
+                md += "\n#### Key System Entrypoints\n"
+                for ep in entrypoint_files[:4]:
+                    md += f"- `{ep}`\n"
 
             return CopilotAnswer(
                 query=query,
-                summary=f"Analyzed {total_files} files across {len(modules)} architectural modules.",
+                summary=f"Analyzed {total_files} files across {len(modules)} modules ({detected_fw}).",
                 markdown_response=md,
-                cited_files=cited_files[:4],
+                cited_files=cited_files[:4] or entrypoint_files[:4],
                 cited_symbols=cited_symbols[:5],
-                suggested_actions=["View Module Graph", "Run Rules Linter", "Explore RipEx Facts"],
+                suggested_actions=["Explore Frontend Architecture", "View Module Graph", "Inspect API Routes"],
             )
 
-        # 2. Authentication Flow
-        elif any(w in q_lower for w in ("auth", "jwt", "login", "token", "password", "session")):
-            auth_symbols = [s for s in self.scanner.search_engine.symbols if any(k in s.name.lower() for k in ("auth", "jwt", "token", "login", "user", "session"))]
-            auth_files = list({os.path.relpath(s.file_path, self.scanner.root_dir) for s in auth_symbols})
+        # 2. Frontend UI Components, State & Hooks
+        elif any(w in q_lower for w in ("frontend", "component", "react", "vue", "svelte", "ui", "view", "page", "hook", "state", "props")):
+            framework_analyzer = getattr(self.scanner, "framework_analyzer", None) or FrameworkAnalyzer(self.scanner.root_dir, self.scanner.file_asts)
+            framework_report = framework_analyzer.analyze()
+            comps = framework_report.frontend_components
+            md = f"### Frontend UI Component Hierarchy ({len(comps)} Components Detected)\n\n"
 
-            md = f"""### Authentication & Authorization Lifecycle
-
-Nous identified **{len(auth_symbols)} symbols** and **{len(auth_files)} files** responsible for identity and session lifecycle:
-
-#### Relevant Files & Handlers:
-"""
-            for af in auth_files[:5]:
-                md += f"- **`{af}`**\n"
-
-            md += f"""
-#### Key Authentication Functions:
-"""
-            for sym in auth_symbols[:6]:
-                md += f"- `{sym.name}()` ({sym.kind}) in `{os.path.relpath(sym.file_path, self.scanner.root_dir)}:{sym.start_line}`\n"
+            if comps:
+                for c in comps[:10]:
+                    props_str = ", ".join(c.props[:3]) if c.props else "none"
+                    hooks_str = ", ".join(c.hooks_used[:3]) if c.hooks_used else "none"
+                    md += f"#### `{c.name}` ({c.framework})\n"
+                    md += f"- **Location**: `{c.relative_path}:{c.line_number}`\n"
+                    md += f"- **Props**: `{props_str}` | **Hooks**: `{hooks_str}`\n"
+                    if c.child_components:
+                        md += f"- **Child Elements**: {', '.join([f'`<{tag}/>`' for tag in c.child_components[:4]])}\n"
+                    md += "\n"
+            else:
+                md += "No standalone UI components detected in current AST index. Check if frontend files are located in subdirectories.\n"
 
             return CopilotAnswer(
                 query=query,
-                summary=f"Found {len(auth_symbols)} authentication components across {len(auth_files)} files.",
+                summary=f"Found {len(comps)} UI components and layouts.",
                 markdown_response=md,
-                cited_files=auth_files[:5],
-                cited_symbols=[s.name for s in auth_symbols[:6]],
-                suggested_actions=["Trace Login Sequence Diagram", "Check Hardcoded Secrets", "Inspect API Routes"],
+                cited_files=[c.relative_path for c in comps[:6]],
+                cited_symbols=[c.name for c in comps[:6]],
+                suggested_actions=["View Frontend Architecture Mode", "Inspect Component Flow"],
             )
 
-        # 3. Dead code / duplicate search
-        elif "dead code" in q_lower or "unused" in q_lower:
+        # 3. API Routes, Endpoints, Routers & HTTP
+        elif any(w in q_lower for w in ("api", "route", "endpoint", "controller", "http", "get", "post", "put", "delete")):
+            routes = self.scanner.fact_store.routes
+            md = f"### Discovered API Endpoints & Routes ({len(routes)} Endpoints)\n\n"
+
+            if routes:
+                for r in routes[:12]:
+                    rel_f = os.path.relpath(r.file_path, self.scanner.root_dir).replace("\\", "/")
+                    md += f"- **`{r.http_method.upper()}` `{r.route_path}`**\n"
+                    md += f"  - Handler: `{r.handler_name}()` in `{rel_f}:{r.line_number}`\n"
+            else:
+                md += "No explicit HTTP routes discovered. Check if routes use non-standard decorators or framework conventions.\n"
+
+            return CopilotAnswer(
+                query=query,
+                summary=f"Cataloged {len(routes)} API route handlers.",
+                markdown_response=md,
+                cited_files=list({os.path.relpath(r.file_path, self.scanner.root_dir).replace("\\", "/") for r in routes[:8]}),
+                cited_symbols=[r.handler_name for r in routes[:8]],
+                suggested_actions=["Open API Lifecycle Mapper", "Trace API Flow"],
+            )
+
+        # 4. Database Models, SQL Tables & Entities
+        elif any(w in q_lower for w in ("database", "db", "sql", "table", "model", "schema", "prisma", "entity", "orm")):
+            db_analyzer = getattr(self.scanner, "database_analyzer", None) or DatabaseAnalyzer(self.scanner.root_dir, self.scanner.file_asts)
+            db_report = db_analyzer.analyze()
+            md = f"### Database Architecture & Data Entities ({len(db_report.tables)} Tables / Models)\n\n"
+
+            if db_report.tables:
+                for t in db_report.tables[:10]:
+                    col_names = [c.name for c in t.columns[:4]]
+                    cols_str = ", ".join(col_names) if col_names else "columns defined in AST"
+                    rel_f = os.path.relpath(t.file_path, self.scanner.root_dir).replace("\\", "/")
+                    md += f"#### Table: `{t.name}` ({t.model_type})\n"
+                    md += f"- **File**: `{rel_f}`\n"
+                    md += f"- **Key Columns/Fields**: `{cols_str}`\n"
+                    if t.foreign_keys:
+                        md += f"- **Foreign Keys**: {', '.join([f'`{fk.from_column} -> {fk.to_table}.{fk.to_column}`' for fk in t.foreign_keys[:3]])}\n"
+                    md += "\n"
+            else:
+                md += "No database tables or ORM models detected in the current index.\n"
+
+            return CopilotAnswer(
+                query=query,
+                summary=f"Identified {len(db_report.tables)} database entities and tables.",
+                markdown_response=md,
+                cited_files=[os.path.relpath(t.file_path, self.scanner.root_dir).replace("\\", "/") for t in db_report.tables[:6]],
+                cited_symbols=[t.name for t in db_report.tables[:6]],
+                suggested_actions=["Open Database Schema Inspector", "View Data Flow"],
+            )
+
+        # 5. Security, SAST & Vulnerabilities
+        elif any(w in q_lower for w in ("security", "vulnerability", "sast", "secret", "injection", "safe", "cve", "risk")):
+            sec_scanner = getattr(self.scanner, "security_scanner", None) or SecurityScanner(self.scanner.file_asts)
+            sec_report = sec_scanner.scan()
+            findings = sec_report.findings
+            md = f"### Static Security & SAST Audit ({len(findings)} Findings)\n\n"
+
+            if findings:
+                for f in findings[:8]:
+                    md += f"#### [{f.severity.upper()}] `{f.title}`\n"
+                    md += f"- **File**: `{f.relative_path}:{f.line_number}`\n"
+                    md += f"- **Description**: {f.description}\n"
+                    md += f"- **Recommendation**: {f.recommendation}\n\n"
+            else:
+                md += "✅ No high-severity security vulnerabilities or hardcoded secrets detected!\n"
+
+            return CopilotAnswer(
+                query=query,
+                summary=f"Security scan complete: {sec_report.critical_count} critical, {sec_report.high_count} high findings.",
+                markdown_response=md,
+                cited_files=[f.relative_path for f in findings[:6]],
+                cited_symbols=[],
+                suggested_actions=["Open Security & SAST Modal", "Review PR Impact"],
+            )
+
+        # 6. Dead Code & Refactoring
+        elif any(w in q_lower for w in ("dead code", "unused", "clean", "refactor", "clone", "duplicate")):
             dead_code = self.scanner.analyzer.detect_dead_code()
             md = f"### Dead Code & Unreferenced Symbols ({len(dead_code)} detected)\n\n"
             for dc in dead_code[:8]:
@@ -143,25 +242,49 @@ Nous identified **{len(auth_symbols)} symbols** and **{len(auth_files)} files** 
                 suggested_actions=["Refactor Dead Code", "View Clones Explorer"],
             )
 
-        # 4. General Search & Retrieval Q&A
+        # 7. Testing Strategy & Advisor
+        elif any(w in q_lower for w in ("test", "testing", "coverage", "unit test", "advisor", "qa")):
+            test_advisor = getattr(self.scanner, "test_advisor", None) or TestAdvisor(self.scanner.file_asts, self.scanner.graph_store)
+            test_report = test_advisor.analyze()
+            candidates = test_report.untested_candidates
+            md = f"### Automated Test Advisor & Coverage Recommendations\n\n"
+            md += f"- **Risk Index**: `{test_report.untested_risk_index}/100`\n"
+            md += f"- **Suggested Priority Functions to Test**:\n"
+            for c in candidates[:6]:
+                md += f"  - **`{c.symbol_name}`** (`{c.relative_path}:{c.line_number}`) — *Complexity: {c.cyclomatic_complexity}, Callers: {c.caller_count}*\n"
+
+            return CopilotAnswer(
+                query=query,
+                summary=f"Recommended tests for {len(candidates)} high-complexity functions.",
+                markdown_response=md,
+                cited_files=[c.relative_path for c in candidates[:5]],
+                cited_symbols=[c.symbol_name for c in candidates[:5]],
+                suggested_actions=["Open Test Advisor Modal", "Run Automated Code Review"],
+            )
+
+        # 8. General Semantic Retrieval & Symbol Q&A
         else:
             md = f"### Code Intelligence Search Results for *\"{query}\"*\n\n"
             if search_res.results:
-                for idx, r in enumerate(search_res.results[:5], 1):
+                for idx, r in enumerate(search_res.results[:6], 1):
                     md += f"#### {idx}. `{r.symbol_name or r.relative_path}` ({r.symbol_kind or 'file'})\n"
                     md += f"- **File**: `{r.relative_path}:{r.start_line}`\n"
                     if r.matched_snippet:
-                        md += f"```python\n{r.matched_snippet[:160]}\n```\n\n"
+                        md += f"```\n{r.matched_snippet[:200]}\n```\n\n"
             else:
-                md += "No specific symbol matches found. Try searching for module names, functions, or architectural terms."
+                # Fallback: List top files and modules
+                top_files = [os.path.relpath(f, self.scanner.root_dir).replace("\\", "/") for f in list(self.scanner.file_asts.keys())[:5]]
+                md += f"No direct match for *\"{query}\"*. Here are key components in the repository:\n\n"
+                for tf in top_files:
+                    md += f"- `{tf}`\n"
 
             return CopilotAnswer(
                 query=query,
                 summary=f"Retrieved {len(search_res.results)} relevant symbols from the Knowledge Graph.",
                 markdown_response=md,
-                cited_files=cited_files,
-                cited_symbols=cited_symbols,
-                suggested_actions=["Calculate Blast Radius", "View Call Graph"],
+                cited_files=cited_files[:6],
+                cited_symbols=cited_symbols[:6],
+                suggested_actions=["Calculate Blast Radius", "View Call Graph", "Open Knowledge Graph"],
             )
 
     def predict_impact(self, target_identifier: str) -> ImpactPredictionReport:

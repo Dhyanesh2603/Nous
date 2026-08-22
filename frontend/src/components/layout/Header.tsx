@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Brain,
   Search,
-  Activity,
   FileCode,
   Code2,
   Boxes,
@@ -33,7 +32,6 @@ interface HeaderProps {
   onOpenFacts: () => void;
   onOpenDatabase: () => void;
   onOpenSecurity: () => void;
-  onOpenHealth: () => void;
   onOpenCopilot: () => void;
   onOpenFramework: () => void;
   onRefreshGraph: () => void;
@@ -52,7 +50,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenFacts,
   onOpenDatabase,
   onOpenSecurity,
-  onOpenHealth,
   onOpenCopilot,
   onOpenFramework,
   onRefreshGraph,
@@ -195,16 +192,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden lg:inline">Copilot</span>
-          </button>
-
-          {/* Health Scorecard */}
-          <button
-            onClick={onOpenHealth}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-emerald-300 hover:border-slate-700 transition"
-            title="Repository Health Scorecard & Technical Debt"
-          >
-            <Activity className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden lg:inline">Health</span>
           </button>
 
           {/* Security Audit */}

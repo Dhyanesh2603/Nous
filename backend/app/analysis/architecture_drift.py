@@ -43,24 +43,62 @@ class ArchitectureDriftAnalyzer:
     def __init__(self, root_dir: str):
         self.root_dir = os.path.abspath(root_dir)
 
-    def analyze(self, max_samples: int = 12) -> ArchitectureDriftReport:
-        checkpoints: List[DriftCheckpoint] = []
-        alerts: List[str] = []
-
+    def _resolve_git_dir(self) -> Optional[str]:
+        target = self.root_dir
+        if os.path.isfile(target):
+            target = os.path.dirname(target)
         try:
-            cmd = ["git", "log", "--pretty=format:%H|%h|%an|%ad|%s", "--date=short", "-n", "40"]
             res = subprocess.run(
-                cmd,
-                cwd=self.root_dir,
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=target,
                 capture_output=True,
                 text=True,
                 check=False,
                 encoding="utf-8",
                 errors="replace",
+                timeout=5,
             )
-            raw_commits = res.stdout.strip().splitlines()
+            if res.returncode == 0 and res.stdout.strip():
+                top = res.stdout.strip()
+                if os.path.exists(top):
+                    return top
         except Exception:
-            raw_commits = []
+            pass
+
+        curr = target
+        while curr:
+            if os.path.exists(os.path.join(curr, ".git")):
+                return curr
+            parent = os.path.dirname(curr)
+            if parent == curr:
+                break
+            curr = parent
+        return None
+
+    def analyze(self, max_samples: int = 12) -> ArchitectureDriftReport:
+        checkpoints: List[DriftCheckpoint] = []
+        alerts: List[str] = []
+
+        git_dir = self._resolve_git_dir()
+        raw_commits = []
+
+        if git_dir and os.path.exists(git_dir):
+            try:
+                cmd = ["git", "log", "--pretty=format:%H|%h|%an|%ad|%s", "--date=short", "-n", "40"]
+                res = subprocess.run(
+                    cmd,
+                    cwd=git_dir,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=10,
+                )
+                if res.returncode == 0 and res.stdout.strip():
+                    raw_commits = res.stdout.strip().splitlines()
+            except Exception:
+                raw_commits = []
 
         if not raw_commits:
             # Fallback single current snapshot if no git history

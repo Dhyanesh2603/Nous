@@ -218,17 +218,33 @@ class GraphStore:
     def _build_scoped_file_view(self, scope: str) -> Tuple[List[ReactFlowNode], List[ReactFlowEdge]]:
         all_nodes, all_edges = self._build_file_view()
         
-        frontend_extensions = {".tsx", ".jsx", ".vue", ".svelte", ".html", ".css", ".scss"}
-        frontend_keywords = {"component", "views", "pages", "hooks", "layouts", "frontend", "ui", "context"}
+        frontend_extensions = {
+            ".tsx", ".jsx", ".vue", ".svelte", ".html", ".htm", ".css", ".scss", ".sass", ".less"
+        }
+        frontend_keywords = {
+            "component", "views", "pages", "hooks", "layouts", "frontend", "ui", "context",
+            "store", "client", "web", "assets", "styles", "modal", "canvas", "header",
+            "footer", "button", "screen", "widgets", "router", "app", "nav"
+        }
         
         scoped_nodes = []
         scoped_node_ids = set()
 
         for node in all_nodes:
             rel = (node.data.get("relativePath") or "").lower()
-            ext = os.path.splitext(rel)[1]
+            ext = os.path.splitext(rel)[1].lower()
+            
+            # Check if file is frontend based on extension, path keywords, or AST symbols/imports
             is_fe = ext in frontend_extensions or any(k in rel for k in frontend_keywords)
             
+            # For .ts / .js files, also check if imported/exporting UI components or state
+            if not is_fe and ext in (".ts", ".js", ".mjs"):
+                file_obj = self.file_asts.get(node.id)
+                if file_obj:
+                    content_lower = (file_obj.raw_content or "").lower()
+                    if any(lib in content_lower for lib in ("react", "vue", "svelte", "useState", "useEffect", "document.", "window.")):
+                        is_fe = True
+
             if scope == "frontend" and is_fe:
                 scoped_nodes.append(node)
                 scoped_node_ids.add(node.id)
@@ -242,7 +258,7 @@ class GraphStore:
             if e.source in scoped_node_ids and e.target in scoped_node_ids
         ]
 
-        # If scoped filtering produced empty results (e.g. backend-only repo), fallback gracefully
+        # If scoped filtering produced empty results (e.g. backend-only repo for frontend view), fallback gracefully
         if not scoped_nodes:
             return all_nodes, all_edges
 

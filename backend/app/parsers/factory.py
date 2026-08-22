@@ -7,6 +7,7 @@ from app.parsers.ts_parser import TypeScriptASTParser
 from app.parsers.go_parser import GoASTParser
 from app.parsers.rust_parser import RustASTParser
 from app.parsers.ripex_parser import RipExASTParser
+from app.parsers.multi_lang_parser import MultiLanguageASTParser
 from app.config import settings
 
 
@@ -15,6 +16,7 @@ class ParserFactory:
         self.prefer_ripex = prefer_ripex
         self.ripex_parser = RipExASTParser() if prefer_ripex else None
         self.ripex_available = self.ripex_parser.is_available() if self.ripex_parser else False
+        self.multi_lang_parser = MultiLanguageASTParser()
 
         # Native Tree-sitter fallbacks
         self._parsers: Dict[str, BaseASTParser] = {
@@ -24,6 +26,7 @@ class ParserFactory:
             "javascript": TypeScriptASTParser("javascript"),
             "go": GoASTParser(),
             "rust": RustASTParser(),
+            "multi_lang": self.multi_lang_parser,
         }
 
     def is_supported_file(self, file_path: str) -> bool:
@@ -33,7 +36,7 @@ class ParserFactory:
     def get_parser_for_file(self, file_path: str) -> Optional[BaseASTParser]:
         ext = Path(file_path).suffix.lower()
 
-        # If RipEx is preferred and available, use it for all supported file types
+        # If RipEx is preferred and available, use it for its supported core set
         if self.prefer_ripex and self.ripex_available:
             if ext in (
                 ".py", ".pyi",
@@ -61,4 +64,8 @@ class ParserFactory:
         elif ext in (".rs",):
             return self._parsers["rust"]
             
+        # Multi-Language parser for Vue, Svelte, Java, Kotlin, Swift, Dart, PHP, Ruby, SQL, HTML, CSS, etc.
+        if ext in settings.SUPPORTED_EXTENSIONS:
+            return self.multi_lang_parser
+
         return None

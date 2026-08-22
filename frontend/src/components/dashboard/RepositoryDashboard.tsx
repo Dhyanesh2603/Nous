@@ -40,13 +40,11 @@ import {
 } from 'lucide-react';
 import type {
   GraphSummary,
-  RepositoryHealthScorecard,
   FrameworkOverviewReport,
   GitChurnReport,
   ViewMode,
 } from '../../types';
 import {
-  fetchHealthScorecard,
   fetchFrameworkOverview,
   fetchGitChurnReport,
   queryCopilot,
@@ -60,7 +58,6 @@ interface RepositoryDashboardProps {
   onNavigateToGraph: (viewMode: ViewMode) => void;
   onOpenDatabase: () => void;
   onOpenSecurity: () => void;
-  onOpenHealth: () => void;
   onOpenCopilot: () => void;
   onOpenFramework: () => void;
   onOpenFacts: () => void;
@@ -100,7 +97,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onNavigateToGraph,
   onOpenDatabase,
   onOpenSecurity,
-  onOpenHealth,
   onOpenCopilot,
   onOpenFramework,
   onOpenFacts,
@@ -133,7 +129,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenKnowledgeGraph,
   onOpenMigration,
 }) => {
-  const [healthScorecard, setHealthScorecard] = useState<RepositoryHealthScorecard | null>(null);
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
   const [aiSummary, setAiSummary] = useState<string>('');
@@ -145,10 +140,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
     : 'Repository';
 
   useEffect(() => {
-    fetchHealthScorecard()
-      .then((res) => setHealthScorecard(res))
-      .catch((err) => console.error('Failed to load health:', err));
-
     fetchFrameworkOverview()
       .then((res) => setFrameworks(res))
       .catch((err) => console.error('Failed to load frameworks:', err));
@@ -237,26 +228,8 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
           </div>
 
-          {/* Right Health Score Gauge & Switch Repo */}
+          {/* Switch Repo Button */}
           <div className="flex items-center gap-4 flex-shrink-0">
-            {healthScorecard && (
-              <div
-                onClick={onOpenHealth}
-                className="cursor-pointer p-4 bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition flex items-center gap-3.5 group shadow-lg"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 flex flex-col items-center justify-center text-cyan-300 font-mono">
-                  <span className="text-xl font-black leading-none">{healthScorecard.overall_grade}</span>
-                  <span className="text-[9px] text-slate-400 mt-0.5">{healthScorecard.overall_score}%</span>
-                </div>
-                <div>
-                  <span className="text-[11px] font-mono text-slate-400 block">Repository Health</span>
-                  <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">
-                    Scorecard & Debt
-                  </span>
-                </div>
-              </div>
-            )}
-
             <button
               onClick={onOpenIngestModal}
               className="px-4 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-900/30 flex-shrink-0"
@@ -268,15 +241,15 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
         </div>
 
         {/* METRICS STRIP */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6 pt-6 border-t border-slate-800/80 font-mono text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-6 pt-6 border-t border-slate-800/80 font-mono text-xs">
           <div className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-xl">
             <span className="text-slate-500 text-[10px] uppercase block">Total Files</span>
-            <span className="text-base font-bold text-slate-100">{summary?.total_files || healthScorecard?.total_files || 0}</span>
+            <span className="text-base font-bold text-slate-100">{summary?.total_files || 0}</span>
           </div>
 
           <div className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-xl">
             <span className="text-slate-500 text-[10px] uppercase block">AST Symbols</span>
-            <span className="text-base font-bold text-cyan-300">{summary?.total_symbols || healthScorecard?.total_symbols || 0}</span>
+            <span className="text-base font-bold text-cyan-300">{summary?.total_symbols || 0}</span>
           </div>
 
           <div className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-xl">
@@ -292,11 +265,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
           <div className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-xl">
             <span className="text-slate-500 text-[10px] uppercase block">Git Commits</span>
             <span className="text-base font-bold text-amber-300">{gitChurn?.total_commits_analyzed || 0}</span>
-          </div>
-
-          <div className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-xl">
-            <span className="text-slate-500 text-[10px] uppercase block">Tech Debt</span>
-            <span className="text-base font-bold text-rose-300">~{healthScorecard?.technical_debt_hours || 0}h</span>
           </div>
         </div>
       </div>

@@ -103,4 +103,57 @@ def test_parser_factory():
     assert factory.is_supported_file("App.tsx")
     assert factory.is_supported_file("index.ts")
     assert factory.is_supported_file("bundle.js")
-    assert not factory.is_supported_file("style.css")
+    assert factory.is_supported_file("App.vue")
+    assert factory.is_supported_file("Component.svelte")
+    assert factory.is_supported_file("style.css")
+    assert not factory.is_supported_file("image.png")
+    assert not factory.is_supported_file("archive.zip")
+
+
+def test_multi_language_parser():
+    from app.parsers.multi_lang_parser import MultiLanguageASTParser
+    parser = MultiLanguageASTParser()
+
+    # 1. Vue SFC test
+    vue_code = """<template>
+  <div class="user-card">
+    <Avatar :src="avatarUrl" />
+    <span>{{ username }}</span>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import Avatar from './Avatar.vue';
+
+const username = ref('Alice');
+const avatarUrl = ref('/img/avatar.png');
+
+function updateUser() {
+  console.log('updated');
+}
+</script>
+"""
+    vue_ast = parser.parse_file("UserCard.vue", "components/UserCard.vue", vue_code)
+    assert vue_ast.line_count > 0
+    sym_names = [s.name for s in vue_ast.symbols]
+    assert "UserCard" in sym_names
+    assert "updateUser" in sym_names
+    imp_modules = [i.source_module for i in vue_ast.imports]
+    assert "vue" in imp_modules
+    assert "./Avatar.vue" in imp_modules
+
+    # 2. Java class test
+    java_code = """package com.example.service;
+import java.util.List;
+import com.example.model.User;
+
+public class UserService {
+    public User findById(Long id) {
+        return null;
+    }
+}
+"""
+    java_ast = parser.parse_file("UserService.java", "src/main/java/UserService.java", java_code)
+    assert any(s.name == "UserService" for s in java_ast.symbols)
+    assert any(s.name == "findById" for s in java_ast.symbols)

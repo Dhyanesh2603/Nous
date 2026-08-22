@@ -66,8 +66,8 @@ class GitCloner:
             except Exception:
                 pass
 
-        # Execute git clone --depth 1
-        cmd = ["git", "clone", "--depth", "1"]
+        # Execute git clone --depth 50 (retrieves recent commit history for Time Machine & Drift)
+        cmd = ["git", "clone", "--depth", "50"]
         if branch:
             cmd.extend(["--branch", branch])
         cmd.extend([normalized_url, str(target_dir)])
