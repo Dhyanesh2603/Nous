@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between gap-3 select-none z-30 sticky top-0 font-mono text-xs">
+      <header className="h-14 bg-slate-950 border-b border-slate-800 pl-4 pr-6 sm:pr-8 flex items-center justify-between gap-4 select-none z-30 sticky top-0 font-mono text-xs">
         {/* Left: Brand & Main Navigation Toggle */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div
