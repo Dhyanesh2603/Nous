@@ -29,7 +29,6 @@ interface HeaderProps {
   onOpenSequence: () => void;
   onOpenRules: () => void;
   onOpenClones: () => void;
-  onOpenFacts: () => void;
   onOpenDatabase: () => void;
   onOpenSecurity: () => void;
   onOpenCopilot: () => void;
@@ -47,7 +46,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSequence,
   onOpenRules,
   onOpenClones,
-  onOpenFacts,
   onOpenDatabase,
   onOpenSecurity,
   onOpenCopilot,
@@ -222,16 +220,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Layers className="w-3.5 h-3.5 text-purple-400" />
             <span className="hidden lg:inline">Layers</span>
-          </button>
-
-          {/* RipEx Facts Explorer */}
-          <button
-            onClick={onOpenFacts}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-indigo-300 hover:border-slate-700 transition"
-            title="RipEx Fact Engine & API Route Catalog"
-          >
-            <Code2 className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden xl:inline">Facts</span>
           </button>
 
           {/* Sequence Tracer */}

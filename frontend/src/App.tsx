@@ -20,7 +20,6 @@ import { AnalyticsDrawer } from './components/analytics/AnalyticsDrawer';
 import { SequenceModal } from './components/sequence/SequenceModal';
 import { RulesModal } from './components/rules/RulesModal';
 import { ClonesModal } from './components/clones/ClonesModal';
-import { FactsExplorerModal } from './components/facts/FactsExplorerModal';
 import { DatabaseModal } from './components/database/DatabaseModal';
 import { SecurityModal } from './components/security/SecurityModal';
 import { CopilotModal } from './components/copilot/CopilotModal';
@@ -65,7 +64,6 @@ export function App() {
   const [isSequenceOpen, setIsSequenceOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isClonesOpen, setIsClonesOpen] = useState(false);
-  const [isFactsOpen, setIsFactsOpen] = useState(false);
   const [isDatabaseOpen, setIsDatabaseOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
@@ -132,7 +130,6 @@ export function App() {
         setIsSequenceOpen(false);
         setIsRulesOpen(false);
         setIsClonesOpen(false);
-        setIsFactsOpen(false);
         setIsDatabaseOpen(false);
         setIsSecurityOpen(false);
         setIsCopilotOpen(false);
@@ -221,7 +218,6 @@ export function App() {
         }}
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenClones={() => setIsClonesOpen(true)}
-        onOpenFacts={() => setIsFactsOpen(true)}
         onOpenDatabase={() => setIsDatabaseOpen(true)}
         onOpenSecurity={() => setIsSecurityOpen(true)}
         onOpenCopilot={() => setIsCopilotOpen(true)}
@@ -241,7 +237,6 @@ export function App() {
             onOpenSecurity={() => setIsSecurityOpen(true)}
             onOpenCopilot={() => setIsCopilotOpen(true)}
             onOpenFramework={() => setIsFrameworkOpen(true)}
-            onOpenFacts={() => setIsFactsOpen(true)}
             onOpenSequence={() => {
               setSequenceTargetSymbol(undefined);
               setIsSequenceOpen(true);
@@ -361,14 +356,6 @@ export function App() {
         <ClonesModal
           isOpen={isClonesOpen}
           onClose={() => setIsClonesOpen(false)}
-        />
-
-        {/* RipEx Facts Explorer Modal */}
-        <FactsExplorerModal
-          isOpen={isFactsOpen}
-          onClose={() => setIsFactsOpen(false)}
-          onTraceSequence={handleTraceSequence}
-          currentRepoPath={status?.current_repo_path}
         />
 
         {/* Database ERD Modal */}

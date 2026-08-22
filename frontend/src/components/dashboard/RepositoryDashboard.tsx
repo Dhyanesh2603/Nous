@@ -4,7 +4,6 @@ import {
   FolderGit2,
   Boxes,
   FileCode,
-  Code2,
   Database,
   ShieldAlert,
   ShieldCheck,
@@ -60,7 +59,6 @@ interface RepositoryDashboardProps {
   onOpenSecurity: () => void;
   onOpenCopilot: () => void;
   onOpenFramework: () => void;
-  onOpenFacts: () => void;
   onOpenSequence: () => void;
   onOpenRules: () => void;
   onOpenClones: () => void;
@@ -99,7 +97,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenSecurity,
   onOpenCopilot,
   onOpenFramework,
-  onOpenFacts,
   onOpenSequence,
   onOpenRules,
   onOpenClones,
@@ -551,25 +548,25 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
           </div>
 
-          {/* Tool 4: RipEx Relational Facts */}
+          {/* Tool 4: Database & ERD Schema */}
           <div
-            onClick={onOpenFacts}
+            onClick={onOpenDatabase}
             className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition cursor-pointer group space-y-3"
           >
             <div className="flex items-center justify-between">
               <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <Code2 className="w-5 h-5" />
+                <Database className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                RipEx Engine
+                Schema ERD
               </span>
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition">
-                RipEx Relational Facts
+                Database & Schema ERD
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Multi-language relational fact store index across calls & inheritance.
+                Relational entity models, foreign key relationships, and table definitions.
               </p>
             </div>
           </div>
