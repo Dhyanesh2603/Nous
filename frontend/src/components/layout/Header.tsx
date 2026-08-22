@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Brain,
   Search,
@@ -15,6 +15,8 @@ import {
   Layers,
   LayoutDashboard,
   Network,
+  ChevronDown,
+  Wrench,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
@@ -55,6 +57,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [samples, setSamples] = useState<SampleItem[]>([]);
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
+  const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+  const toolsMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchSamples()
@@ -62,9 +66,20 @@ export const Header: React.FC<HeaderProps> = ({
       .catch((err) => console.error('Failed to load sample repos:', err));
   }, []);
 
+  // Close tools dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(event.target as Node)) {
+        setIsToolsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <>
-      <header className="h-14 bg-slate-950 border-b border-slate-800 pl-4 pr-6 sm:pr-8 flex items-center justify-between gap-4 select-none z-30 sticky top-0 font-mono text-xs">
+      <header className="h-14 bg-slate-950 border-b border-slate-800 px-6 flex items-center justify-between gap-4 select-none z-30 sticky top-0 font-mono text-xs w-full">
         {/* Left: Brand & Main Navigation Toggle */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div
@@ -181,85 +196,144 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right Action Tools Toolbar */}
-        <div className="flex items-center gap-1.5 flex-shrink-0 font-mono">
+        <div className="flex items-center gap-2 flex-shrink-0 font-mono">
           {/* AI Copilot */}
           <button
             onClick={onOpenCopilot}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
             title="AI Repository Copilot & Onboarding"
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden lg:inline">Copilot</span>
+            <span>Copilot</span>
           </button>
 
           {/* Security Audit */}
           <button
             onClick={onOpenSecurity}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-rose-300 hover:border-slate-700 transition"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-rose-300 hover:border-slate-700 transition"
             title="Security & Vulnerability Audit"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden lg:inline">Security</span>
+            <span>Security</span>
           </button>
 
-          {/* Database ERD */}
-          <button
-            onClick={onOpenDatabase}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-blue-300 hover:border-slate-700 transition"
-            title="Database Schema & ER Diagrams"
-          >
-            <Database className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden lg:inline">Database</span>
-          </button>
+          {/* Tools Menu Dropdown */}
+          <div className="relative" ref={toolsMenuRef}>
+            <button
+              onClick={() => setIsToolsDropdownOpen((prev) => !prev)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition ${
+                isToolsDropdownOpen
+                  ? 'bg-slate-800 border-cyan-500/50 text-cyan-300 shadow-sm'
+                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700'
+              }`}
+              title="More Architecture & Analysis Tools"
+            >
+              <Wrench className="w-3.5 h-3.5 text-purple-400" />
+              <span>Tools</span>
+              <ChevronDown
+                className={`w-3 h-3 text-slate-400 transition-transform duration-150 ${
+                  isToolsDropdownOpen ? 'rotate-180 text-cyan-400' : ''
+                }`}
+              />
+            </button>
 
-          {/* Framework & Layers */}
-          <button
-            onClick={onOpenFramework}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-purple-300 hover:border-slate-700 transition"
-            title="Framework Components & Architecture Layers"
-          >
-            <Layers className="w-3.5 h-3.5 text-purple-400" />
-            <span className="hidden lg:inline">Layers</span>
-          </button>
+            {isToolsDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150 font-sans text-xs">
+                <div className="px-2.5 py-1.5 text-[10px] font-mono text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-800/80 mb-1">
+                  Architecture & Diagnostics
+                </div>
 
-          {/* Sequence Tracer */}
-          <button
-            onClick={onOpenSequence}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
-            title="Sequence Diagram Tracer"
-          >
-            <Workflow className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden xl:inline">Sequence</span>
-          </button>
+                <button
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenDatabase();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group"
+                >
+                  <div className="p-1 rounded-md bg-blue-500/10 text-blue-400 group-hover:scale-105 transition">
+                    <Database className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium block text-slate-200 group-hover:text-blue-300">Database Schema</span>
+                    <span className="text-[10px] text-slate-500 block">ER diagrams & SQL models</span>
+                  </div>
+                </button>
 
-          {/* Rules Linter */}
-          <button
-            onClick={onOpenRules}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-emerald-300 hover:border-slate-700 transition"
-            title="Architecture Rules Linter"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden xl:inline">Rules</span>
-          </button>
+                <button
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenFramework();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group"
+                >
+                  <div className="p-1 rounded-md bg-purple-500/10 text-purple-400 group-hover:scale-105 transition">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium block text-slate-200 group-hover:text-purple-300">Architecture Layers</span>
+                    <span className="text-[10px] text-slate-500 block">Frontend & backend components</span>
+                  </div>
+                </button>
 
-          {/* Clones */}
-          <button
-            onClick={onOpenClones}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-slate-700 transition"
-            title="AST Clones Explorer"
-          >
-            <Files className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden xl:inline">Clones</span>
-          </button>
+                <button
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenSequence();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group"
+                >
+                  <div className="p-1 rounded-md bg-cyan-500/10 text-cyan-400 group-hover:scale-105 transition">
+                    <Workflow className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium block text-slate-200 group-hover:text-cyan-300">Sequence Tracer</span>
+                    <span className="text-[10px] text-slate-500 block">Visual call sequence flow</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenRules();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group"
+                >
+                  <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-400 group-hover:scale-105 transition">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium block text-slate-200 group-hover:text-emerald-300">Architecture Rules</span>
+                    <span className="text-[10px] text-slate-500 block">Boundary & dependency rules</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenClones();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group"
+                >
+                  <div className="p-1 rounded-md bg-amber-500/10 text-amber-400 group-hover:scale-105 transition">
+                    <Files className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium block text-slate-200 group-hover:text-amber-300">AST Clones</span>
+                    <span className="text-[10px] text-slate-500 block">Code duplication detector</span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Search */}
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700 transition"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700 transition"
           >
             <Search className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Search</span>
-            <kbd className="px-1 py-0.2 rounded bg-slate-950 text-[9px] text-slate-500 border border-slate-800">
+            <span>Search</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-slate-950 text-[9px] text-slate-400 border border-slate-800 font-mono">
               Ctrl+K
             </kbd>
           </button>
