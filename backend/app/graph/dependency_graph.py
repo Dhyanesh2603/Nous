@@ -95,30 +95,39 @@ class DependencyGraphBuilder:
 
         curr_dir = os.path.dirname(current_file)
         
-        # 1. Relative imports starting with . or .. (Python or JS/TS)
+        # 1. Relative imports starting with . or .. (Python, JS/TS, etc.)
         if source_mod.startswith("."):
             possible_target = os.path.normpath(os.path.join(curr_dir, source_mod))
             resolved = self._match_file_extension(possible_target)
             if resolved:
                 return resolved, False
-            # Check for index.ts, __init__.py, etc.
             index_resolved = self._match_index_file(possible_target)
             if index_resolved:
                 return index_resolved, False
 
-        # 2. Python module style (e.g. app.parsers.base or utils.helpers)
-        if "." in source_mod and not source_mod.startswith("."):
-            as_rel_path = source_mod.replace(".", os.sep)
-            possible_from_root = os.path.normpath(os.path.join(self.root_dir, as_rel_path))
-            resolved = self._match_file_extension(possible_from_root)
+        # 2. Convert module dot syntax to directory slash syntax (e.g. app.parsers.base -> app/parsers/base)
+        as_slash = source_mod.replace(".", "/")
+        clean_mod = as_slash.lstrip("@/").lstrip("/")
+
+        # Check from current file's parent directories (e.g., backend/, src/, root)
+        walk_dir = curr_dir
+        while walk_dir and len(walk_dir) >= len(self.root_dir):
+            candidate = os.path.normpath(os.path.join(walk_dir, clean_mod))
+            resolved = self._match_file_extension(candidate)
             if resolved:
                 return resolved, False
-            index_resolved = self._match_index_file(possible_from_root)
+            index_resolved = self._match_index_file(candidate)
             if index_resolved:
                 return index_resolved, False
+            
+            if walk_dir == self.root_dir:
+                break
+            parent = os.path.dirname(walk_dir)
+            if parent == walk_dir:
+                break
+            walk_dir = parent
 
-        # 3. TS/JS root or baseUrl imports (e.g. "@/components/Button" or "src/utils")
-        clean_mod = source_mod.lstrip("@/").lstrip("/")
+        # 3. Direct check from root_dir
         possible_from_root = os.path.normpath(os.path.join(self.root_dir, clean_mod))
         resolved = self._match_file_extension(possible_from_root)
         if resolved:
@@ -127,17 +136,25 @@ class DependencyGraphBuilder:
         if index_resolved:
             return index_resolved, False
 
-        # 4. Check all known internal files for matching suffix
+        # 4. Check all known internal files for matching suffix (handles monorepo subpackages)
         for internal_path in self.file_asts.keys():
             rel = os.path.relpath(internal_path, self.root_dir).replace("\\", "/")
-            if rel.endswith(source_mod) or rel.rsplit(".", 1)[0].endswith(source_mod):
+            rel_no_ext = rel.rsplit(".", 1)[0]
+            if rel_no_ext.endswith(clean_mod) or rel_no_ext.endswith(source_mod):
+                return internal_path, False
+            # Check package-level matching (e.g. backend/app/config matching app.config)
+            rel_dotted = rel_no_ext.replace("/", ".")
+            if rel_dotted.endswith(source_mod):
                 return internal_path, False
 
         # If not resolved internally, it's an external library (e.g., react, fastapi, os)
         return source_mod, True
 
     def _match_file_extension(self, base_path: str) -> Optional[str]:
-        extensions = [".py", ".ts", ".tsx", ".js", ".jsx"]
+        extensions = [
+            ".py", ".ts", ".tsx", ".js", ".jsx", ".vue", ".svelte",
+            ".java", ".kt", ".kts", ".go", ".rs", ".php", ".rb", ".sql", ".prisma"
+        ]
         # Direct match if already has extension
         if base_path in self.file_asts:
             return base_path
@@ -148,7 +165,10 @@ class DependencyGraphBuilder:
         return None
 
     def _match_index_file(self, dir_path: str) -> Optional[str]:
-        index_names = ["__init__.py", "index.ts", "index.tsx", "index.js", "index.jsx"]
+        index_names = [
+            "__init__.py", "index.ts", "index.tsx", "index.js", "index.jsx",
+            "index.vue", "index.svelte", "main.go", "mod.rs", "index.php"
+        ]
         for idx in index_names:
             candidate = os.path.normpath(os.path.join(dir_path, idx))
             if candidate in self.file_asts:

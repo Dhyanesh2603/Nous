@@ -215,35 +215,74 @@ class GraphStore:
 
         return nodes, edges
 
+    def _is_frontend_file(self, rel_path: str, file_path: str) -> bool:
+        """
+        Accurately classifies whether a file belongs to Frontend architecture
+        using path segment hierarchy, file extensions, and AST contents.
+        """
+        rel_norm = rel_path.replace("\\", "/").lower()
+        parts = [p for p in rel_norm.split("/") if p]
+        filename = parts[-1] if parts else ""
+        ext = os.path.splitext(filename)[1].lower()
+
+        # 1. Definite frontend extensions
+        frontend_extensions = {
+            ".tsx", ".jsx", ".vue", ".svelte", ".html", ".htm", ".css", ".scss", ".sass", ".less", ".svg"
+        }
+        if ext in frontend_extensions:
+            return True
+
+        # 2. Definite backend extensions (Python, Go, Rust, Java, Kotlin, C#, PHP, Ruby, SQL, Prisma)
+        backend_extensions = {
+            ".py", ".go", ".rs", ".java", ".kt", ".kts", ".scala", ".cs", ".php", ".rb", ".sql", ".prisma", ".proto"
+        }
+        if ext in backend_extensions:
+            return False
+
+        # 3. Path segment checks (e.g. backend/ vs frontend/ directories)
+        dir_segments = set(parts[:-1]) if len(parts) > 1 else set()
+        
+        # Explicit backend directory markers
+        backend_dir_markers = {
+            "backend", "server", "servers", "controllers", "handlers",
+            "repositories", "models", "routers", "db", "database", "migrations",
+            "pkg", "internal", "cmd"
+        }
+        if dir_segments & backend_dir_markers:
+            return False
+
+        # Explicit frontend directory markers
+        frontend_dir_markers = {
+            "frontend", "client", "clients", "ui", "web", "public", "components",
+            "views", "pages", "layouts", "hooks", "modals", "canvas", "styles", "screens", "widgets"
+        }
+        if dir_segments & frontend_dir_markers:
+            return True
+
+        # 4. For polyglot .ts / .js / .mjs files, inspect content and imports
+        if ext in (".ts", ".js", ".mjs", ".cjs"):
+            file_obj = self.file_asts.get(file_path)
+            if file_obj:
+                content = (file_obj.raw_content or "").lower()
+                # Frontend libraries & DOM indicators
+                if any(kw in content for kw in ("react", "vue", "svelte", "usestate", "useeffect", "document.", "window.", "@xyflow", "lucide-react", "createcontext")):
+                    return True
+                # Backend frameworks & runtime indicators
+                if any(kw in content for kw in ("express", "fastify", "nestjs", "typeorm", "prisma", "mongoose", "knex", "redis", "fastapi", "flask", "django")):
+                    return False
+
+        return False
+
     def _build_scoped_file_view(self, scope: str) -> Tuple[List[ReactFlowNode], List[ReactFlowEdge]]:
         all_nodes, all_edges = self._build_file_view()
-        
-        frontend_extensions = {
-            ".tsx", ".jsx", ".vue", ".svelte", ".html", ".htm", ".css", ".scss", ".sass", ".less"
-        }
-        frontend_keywords = {
-            "component", "views", "pages", "hooks", "layouts", "frontend", "ui", "context",
-            "store", "client", "web", "assets", "styles", "modal", "canvas", "header",
-            "footer", "button", "screen", "widgets", "router", "app", "nav"
-        }
         
         scoped_nodes = []
         scoped_node_ids = set()
 
         for node in all_nodes:
-            rel = (node.data.get("relativePath") or "").lower()
-            ext = os.path.splitext(rel)[1].lower()
-            
-            # Check if file is frontend based on extension, path keywords, or AST symbols/imports
-            is_fe = ext in frontend_extensions or any(k in rel for k in frontend_keywords)
-            
-            # For .ts / .js files, also check if imported/exporting UI components or state
-            if not is_fe and ext in (".ts", ".js", ".mjs"):
-                file_obj = self.file_asts.get(node.id)
-                if file_obj:
-                    content_lower = (file_obj.raw_content or "").lower()
-                    if any(lib in content_lower for lib in ("react", "vue", "svelte", "useState", "useEffect", "document.", "window.")):
-                        is_fe = True
+            rel = node.data.get("relativePath") or ""
+            file_path = node.id
+            is_fe = self._is_frontend_file(rel, file_path)
 
             if scope == "frontend" and is_fe:
                 scoped_nodes.append(node)
