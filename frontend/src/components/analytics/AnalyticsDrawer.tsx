@@ -237,7 +237,7 @@ export const AnalyticsDrawer: React.FC<AnalyticsDrawerProps> = ({
                       Architectural Recommendations
                     </h4>
                     <ul className="space-y-1 text-[11px] text-slate-300 list-disc list-inside leading-relaxed">
-                      {patternsSummary.recommendations.map((rec, idx) => (
+                      {(patternsSummary.recommendations || []).map((rec, idx) => (
                         <li key={idx}>{rec}</li>
                       ))}
                     </ul>
@@ -247,9 +247,9 @@ export const AnalyticsDrawer: React.FC<AnalyticsDrawerProps> = ({
                 {/* Detected Patterns List */}
                 <div className="space-y-2">
                   <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                    Identified Design Patterns ({patternsSummary.detected_patterns.length})
+                    Identified Design Patterns ({(patternsSummary.detected_patterns || []).length})
                   </h4>
-                  {patternsSummary.detected_patterns.map((pat, idx) => (
+                  {(patternsSummary.detected_patterns || []).map((pat, idx) => (
                     <div
                       key={pat.id + idx}
                       onClick={() => onSelectSymbol(pat.id.replace('pat::', '').split('::')[0])}
@@ -280,8 +280,8 @@ export const AnalyticsDrawer: React.FC<AnalyticsDrawerProps> = ({
                   Unreferenced exported symbols and orphan functions with zero call edges in the call graph.
                 </div>
 
-                {metrics.dead_code_symbols.length > 0 ? (
-                  metrics.dead_code_symbols.map((sym, idx) => (
+                {(metrics.dead_code_symbols || []).length > 0 ? (
+                  (metrics.dead_code_symbols || []).map((sym, idx) => (
                     <div
                       key={sym.id + idx}
                       onClick={() => onSelectSymbol(sym.id)}
@@ -316,8 +316,8 @@ export const AnalyticsDrawer: React.FC<AnalyticsDrawerProps> = ({
                   Circular import chains can cause runtime initialization bugs and tight architectural coupling.
                 </div>
 
-                {metrics.circular_dependencies.length > 0 ? (
-                  metrics.circular_dependencies.map((cycle, idx) => (
+                {(metrics.circular_dependencies || []).length > 0 ? (
+                  (metrics.circular_dependencies || []).map((cycle, idx) => (
                     <div
                       key={cycle.cycle_id + idx}
                       onClick={() => onHighlightCycle && onHighlightCycle(cycle.files)}
@@ -349,7 +349,7 @@ export const AnalyticsDrawer: React.FC<AnalyticsDrawerProps> = ({
                   High Cyclomatic Complexity combined with high incoming call frequency identifies critical refactoring candidates.
                 </div>
 
-                {metrics.hotspots.map((hotspot, idx) => (
+                {(metrics.hotspots || []).map((hotspot, idx) => (
                   <div
                     key={hotspot.id + idx}
                     onClick={() => onSelectSymbol(hotspot.id)}

@@ -157,7 +157,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 <span className="text-cyan-400 font-semibold">{report.tables_count}</span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-xs">
-                {report.tables.map((tbl) => (
+                {(report.tables || []).map((tbl) => (
                   <button
                     key={tbl.name}
                     onClick={() => setSelectedTable(tbl)}
@@ -172,7 +172,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                       <span className="truncate font-semibold">{tbl.name}</span>
                     </div>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
-                      {tbl.columns.length} cols
+                      {(tbl.columns || []).length} cols
                     </span>
                   </button>
                 ))}
@@ -199,7 +199,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
 
                   <div className="space-y-2">
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                      Columns & Fields ({selectedTable.columns.length})
+                      Columns & Fields ({(selectedTable.columns || []).length})
                     </span>
                     <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
                       <table className="w-full text-left border-collapse">
@@ -211,7 +211,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60">
-                          {selectedTable.columns.map((col) => (
+                          {(selectedTable.columns || []).map((col) => (
                             <tr key={col.name} className="hover:bg-slate-900/40 transition">
                               <td className="p-3 font-semibold text-slate-200 flex items-center gap-1.5">
                                 {col.is_primary_key && <Key className="w-3 h-3 text-amber-400" />}

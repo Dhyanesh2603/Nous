@@ -238,10 +238,10 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
                       {/* Cited files & symbols */}
                       {m.answer && (
                         <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2 font-mono text-[11px]">
-                          {m.answer.cited_files.length > 0 && (
+                          {(m.answer.cited_files || []).length > 0 && (
                             <div className="flex items-center gap-1.5 flex-wrap text-slate-400">
                               <span className="text-cyan-400 font-semibold">Citations:</span>
-                              {m.answer.cited_files.map((cf, i) => (
+                              {(m.answer.cited_files || []).map((cf, i) => (
                                 <span
                                   key={i}
                                   onClick={() => onSelectFile && onSelectFile(cf)}
@@ -303,7 +303,7 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
                     </p>
                   </div>
                   <div className="flex gap-1.5">
-                    {onboarding.primary_languages.map((l) => (
+                    {(onboarding.primary_languages || []).map((l) => (
                       <span key={l} className="px-2 py-0.5 rounded bg-slate-800 text-cyan-300 text-[10px] uppercase">
                         {l}
                       </span>
@@ -312,7 +312,7 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
                 </div>
 
                 <div className="space-y-4">
-                  {onboarding.steps.map((step) => (
+                  {(onboarding.steps || []).map((step) => (
                     <div
                       key={step.step_number}
                       className="p-5 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3"
@@ -328,7 +328,7 @@ export const CopilotModal: React.FC<CopilotModalProps> = ({
                       <div className="space-y-1.5">
                         <span className="text-[10px] text-slate-500 uppercase font-semibold">Recommended Files:</span>
                         <div className="flex flex-wrap gap-1.5">
-                          {step.key_files.map((kf, i) => (
+                          {(step.key_files || []).map((kf, i) => (
                             <span key={i} className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300 flex items-center gap-1">
                               <FileCode className="w-3 h-3 text-cyan-400" />
                               {kf}

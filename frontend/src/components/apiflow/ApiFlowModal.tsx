@@ -98,7 +98,7 @@ export const ApiFlowModal: React.FC<ApiFlowModalProps> = ({
                 <span className="text-cyan-400 font-semibold">{catalog.total_endpoints}</span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1.5 font-mono text-xs">
-                {catalog.endpoints.map((ep) => (
+                {(catalog.endpoints || []).map((ep) => (
                   <button
                     key={ep.id}
                     onClick={() => setSelectedEndpoint(ep)}
@@ -160,7 +160,7 @@ export const ApiFlowModal: React.FC<ApiFlowModalProps> = ({
                     </span>
 
                     <div className="space-y-3">
-                      {selectedEndpoint.pipeline_steps.map((step) => (
+                      {(selectedEndpoint.pipeline_steps || []).map((step) => (
                         <div
                           key={step.step_number}
                           className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl flex items-start gap-3.5 hover:border-cyan-500/40 transition"

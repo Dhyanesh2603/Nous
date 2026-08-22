@@ -172,7 +172,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
                 <span>Vulnerabilities ({filteredVulns.length})</span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1.5 font-mono text-xs">
-                {filteredVulns.map((v) => (
+                {(filteredVulns || []).map((v) => (
                   <button
                     key={v.id}
                     onClick={() => setSelectedVuln(v)}

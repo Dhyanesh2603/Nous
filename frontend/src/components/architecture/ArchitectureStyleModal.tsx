@@ -150,7 +150,7 @@ export const ArchitectureStyleModal: React.FC<ArchitectureStyleModalProps> = ({
                         Matched Structural Patterns
                       </span>
                       <div className="flex flex-wrap gap-1.5">
-                        {selectedStyle.matched_patterns.map((pat, idx) => (
+                        {(selectedStyle.matched_patterns || []).map((pat, idx) => (
                           <span
                             key={idx}
                             className="px-2.5 py-1 text-[11px] font-mono rounded-lg bg-slate-900 text-purple-300 border border-purple-500/20"
@@ -162,11 +162,11 @@ export const ArchitectureStyleModal: React.FC<ArchitectureStyleModalProps> = ({
                     </div>
 
                     {/* Evidence Directories */}
-                    {selectedStyle.evidence_directories.length > 0 && (
+                    {(selectedStyle.evidence_directories || []).length > 0 && (
                       <div className="space-y-2">
                         <span className="text-xs font-bold text-slate-300 font-mono">Evidence Directories</span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
-                          {selectedStyle.evidence_directories.map((dir, idx) => (
+                          {(selectedStyle.evidence_directories || []).map((dir, idx) => (
                             <div key={idx} className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg text-slate-300 truncate">
                               📁 {dir}/
                             </div>
@@ -176,14 +176,14 @@ export const ArchitectureStyleModal: React.FC<ArchitectureStyleModalProps> = ({
                     )}
 
                     {/* Architectural Layers Breakdown */}
-                    {report?.architectural_layers && report.architectural_layers.length > 0 && (
+                    {(report?.architectural_layers || []).length > 0 && (
                       <div className="space-y-3 pt-2 border-t border-slate-800">
                         <span className="text-xs font-bold text-slate-200 font-mono flex items-center gap-1.5">
                           <Layers className="w-4 h-4 text-cyan-400" />
-                          Identified Architectural Layers ({report.architectural_layers.length})
+                          Identified Architectural Layers ({(report?.architectural_layers || []).length})
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-sans">
-                          {report.architectural_layers.map((layer, idx) => (
+                          {(report?.architectural_layers || []).map((layer, idx) => (
                             <div key={idx} className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-1">
                               <div className="flex items-center justify-between font-mono text-xs">
                                 <span className="font-bold text-slate-200">{layer.layer_name}</span>
