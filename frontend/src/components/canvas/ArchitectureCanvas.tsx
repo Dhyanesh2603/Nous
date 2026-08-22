@@ -3,7 +3,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   BackgroundVariant,
   useNodesState,
   useEdgesState,
@@ -17,6 +16,7 @@ import dagre from 'dagre';
 
 import { nodeTypes } from './CustomNodes';
 import { edgeTypes } from './CustomEdges';
+import { MinimapRadarControl } from './MinimapRadarControl';
 import type { GraphNode, GraphEdge, GraphNodeData } from '../../types';
 
 interface ArchitectureCanvasProps {
@@ -160,15 +160,7 @@ export const ArchitectureCanvas: React.FC<ArchitectureCanvasProps> = ({
         <Controls
           className="!bg-slate-900 !border-slate-800 !shadow-xl !rounded-lg !text-slate-300 [&>button]:!border-slate-800 [&>button]:!bg-slate-900 [&>button:hover]:!bg-slate-800"
         />
-        <MiniMap
-          nodeColor={(node) => {
-            if (node.type === 'moduleNode') return '#06b6d4';
-            if (node.type === 'symbolNode') return '#10b981';
-            return '#64748b';
-          }}
-          className="!bg-slate-900/90 !border !border-slate-800 !rounded-xl overflow-hidden !shadow-2xl"
-          maskColor="rgba(2, 6, 23, 0.75)"
-        />
+        <MinimapRadarControl layoutDirection={layoutDirection} />
       </ReactFlow>
     </div>
   );
