@@ -40,10 +40,11 @@ export const NoRepoWelcome: React.FC<NoRepoWelcomeProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-12 flex flex-col items-center justify-center max-w-6xl mx-auto w-full font-sans animate-in fade-in duration-300">
-      {/* Hero Welcome Header */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
+    <div className="flex-1 overflow-y-auto w-full">
+      <div className="min-h-full py-10 sm:py-14 px-6 md:px-12 flex flex-col items-center justify-start max-w-6xl mx-auto font-sans animate-in fade-in duration-300">
+        {/* Hero Welcome Header */}
+        <div className="text-center space-y-4 max-w-3xl mx-auto mb-10 pt-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Interactive Architecture & Codebase Intelligence</span>
         </div>
@@ -184,6 +185,7 @@ export const NoRepoWelcome: React.FC<NoRepoWelcomeProps> = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
