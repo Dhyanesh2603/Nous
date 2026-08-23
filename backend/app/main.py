@@ -47,18 +47,7 @@ from app.state import app_state
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: auto-load Python sample fixture if available, or backend itself
-    try:
-        backend_dir = Path(__file__).resolve().parent.parent
-        py_fixture = backend_dir / "tests" / "fixtures" / "python_project"
-        if py_fixture.exists():
-            print(f"[Nous] Pre-loading default sample repository: {py_fixture}")
-            app_state.load_repository(str(py_fixture.resolve()))
-        elif backend_dir.parent.exists():
-            print(f"[Nous] Pre-loading self repository: {backend_dir.parent}")
-            app_state.load_repository(str(backend_dir.parent.resolve()))
-    except Exception as e:
-        print(f"[Nous] Initial autoload notice: {e}")
+    # Keep state clean until the user explicitly selects or ingests a repository
     yield
     # Shutdown logic if any
 

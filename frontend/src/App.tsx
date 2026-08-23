@@ -5,11 +5,13 @@ import type {
   ViewMode,
   SearchResultItem,
   BlastRadiusResponse,
+  SampleItem,
 } from './types';
 import {
   fetchGraphStructure,
   fetchBlastRadius,
   fetchIngestStatus,
+  fetchSamples,
 } from './services/api';
 import { Header } from './components/layout/Header';
 import { FilterBar } from './components/layout/FilterBar';
@@ -26,6 +28,7 @@ import { CopilotModal } from './components/copilot/CopilotModal';
 import { FrameworkModal } from './components/framework/FrameworkModal';
 import { IngestModal } from './components/ingest/IngestModal';
 import { RepositoryDashboard } from './components/dashboard/RepositoryDashboard';
+import { NoRepoWelcome } from './components/dashboard/NoRepoWelcome';
 import { TimelineModal } from './components/timeline/TimelineModal';
 import { ApiFlowModal } from './components/apiflow/ApiFlowModal';
 import { DependencyModal } from './components/dependencies/DependencyModal';
@@ -57,6 +60,8 @@ export function App() {
   const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
   const [graphData, setGraphData] = useState<GraphStructureResponse | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
+  const [samples, setSamples] = useState<SampleItem[]>([]);
+  const [ingestModalTab, setIngestModalTab] = useState<'local' | 'git' | 'upload'>('local');
   
   // Modals & Drawers
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -101,12 +106,17 @@ export function App() {
   const loadGraph = useCallback(async (mode: ViewMode = viewMode) => {
     setIsLoading(true);
     try {
-      const data = await fetchGraphStructure(mode);
-      setGraphData(data);
       const statusRes = await fetchIngestStatus();
       setStatus(statusRes);
+      if (statusRes && statusRes.is_loaded && statusRes.current_repo_path && statusRes.files_count > 0) {
+        const data = await fetchGraphStructure(mode);
+        setGraphData(data);
+      } else {
+        setGraphData(null);
+      }
     } catch (err) {
       console.error('Failed to load graph structure:', err);
+      setGraphData(null);
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +125,9 @@ export function App() {
   // Initial load
   useEffect(() => {
     loadGraph();
+    fetchSamples()
+      .then((res) => setSamples(res.samples))
+      .catch((err) => console.error('Failed to load sample repos:', err));
   }, [loadGraph]);
 
   // Keyboard shortcuts
@@ -226,9 +239,23 @@ export function App() {
         currentRepoPath={status?.current_repo_path}
       />
 
-      {/* Main Workspace: Either Repository Dashboard OR Architecture Graph */}
+      {/* Main Workspace: Either NoRepoWelcome OR Repository Dashboard OR Architecture Graph */}
       <main className="flex-1 relative flex overflow-hidden">
-        {activeScreen === 'dashboard' ? (
+        {isLoading && !graphData && !status ? (
+          <div className="flex-1 flex flex-col items-center justify-center bg-slate-950 text-slate-400 gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
+            <span className="text-xs font-mono">Initializing software intelligence engine...</span>
+          </div>
+        ) : !status?.is_loaded || !status?.current_repo_path ? (
+          <NoRepoWelcome
+            onOpenIngestModal={(tab) => {
+              setIngestModalTab(tab || 'local');
+              setIsIngestModalOpen(true);
+            }}
+            samples={samples}
+            onRefreshGraph={() => loadGraph()}
+          />
+        ) : activeScreen === 'dashboard' ? (
           <RepositoryDashboard
             currentRepoPath={status?.current_repo_path}
             summary={graphData?.summary}
@@ -245,7 +272,10 @@ export function App() {
             onOpenClones={() => setIsClonesOpen(true)}
             onOpenSearch={() => setIsSearchOpen(true)}
             onOpenAnalytics={() => setIsAnalyticsOpen(true)}
-            onOpenIngestModal={() => setIsIngestModalOpen(true)}
+            onOpenIngestModal={() => {
+              setIngestModalTab('local');
+              setIsIngestModalOpen(true);
+            }}
             onOpenTimeline={() => setIsTimelineOpen(true)}
             onOpenApiFlow={() => setIsApiFlowOpen(true)}
             onOpenDependencies={() => setIsDependenciesOpen(true)}
@@ -586,7 +616,8 @@ export function App() {
           onSuccess={() => {
             loadGraph();
           }}
-          samples={[]}
+          samples={samples}
+          initialTab={ingestModalTab}
           currentRepoPath={status?.current_repo_path}
         />
       </main>

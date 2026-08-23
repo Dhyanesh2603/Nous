@@ -27,6 +27,7 @@ interface IngestModalProps {
   onSuccess: () => void;
   samples: SampleItem[];
   currentRepoPath?: string;
+  initialTab?: 'local' | 'git' | 'upload';
 }
 
 export const IngestModal: React.FC<IngestModalProps> = ({
@@ -35,8 +36,15 @@ export const IngestModal: React.FC<IngestModalProps> = ({
   onSuccess,
   samples,
   currentRepoPath,
+  initialTab = 'local',
 }) => {
-  const [activeTab, setActiveTab] = useState<'local' | 'git' | 'upload'>('local');
+  const [activeTab, setActiveTab] = useState<'local' | 'git' | 'upload'>(initialTab);
+
+  React.useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   // Local folder / file state
   const [localPath, setLocalPath] = useState('');
@@ -62,7 +70,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
 
     setIsScanning(true);
     setErrorMsg(null);
-    setStatusMessage('Scanning and parsing files with RipEx v0.3.0...');
+    setStatusMessage('Scanning and parsing syntax trees...');
     try {
       await ingestRepository(localPath.trim());
       onSuccess();
@@ -86,10 +94,10 @@ export const IngestModal: React.FC<IngestModalProps> = ({
 
     setIsScanning(true);
     setErrorMsg(null);
-    setStatusMessage(`Cloning ${gitUrl.trim()} (shallow clone --depth 1)...`);
+    setStatusMessage(`Cloning ${gitUrl.trim()} full repository history...`);
     try {
       await ingestGitRepository(gitUrl.trim(), gitBranch.trim() || undefined);
-      setStatusMessage('Parsing cloned repository with RipEx v0.3.0...');
+      setStatusMessage('Parsing cloned repository AST and dependency graphs...');
       onSuccess();
       onClose();
     } catch (err: any) {
