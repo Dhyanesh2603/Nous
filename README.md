@@ -1,102 +1,108 @@
-<div align="center">
+# NOUS
+### Software Architecture Intelligence & Static Codebase Analysis Platform
 
-# 🧠 NOUS
-### Enterprise Software Intelligence & Interactive Architecture Engine
-
-**Nous** is a codebase intelligence platform designed to ingest software repositories, extract structural Abstract Syntax Trees (ASTs) using open-source language grammars (Tree-sitter & standard AST libraries), construct unified dependency and call graphs, enforce architectural boundaries, and provide an interactive, real-time visual canvas with AI-assisted diagnostics.
-
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI_0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/Frontend-React_19_+_Vite-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/Language-TypeScript_5.8-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Python](https://img.shields.io/badge/Language-Python_3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-</div>
+Nous is an automated software architecture analysis and intelligence platform. It ingests polyglot source code repositories, constructs unified Abstract Syntax Tree (AST) representations, maps dependency and call graphs, and renders interactive, real-time architectural topology with integrated static analysis and diagnostics.
 
 ---
 
-## 🌟 Key Capabilities
+## Abstract
 
-### 1. 🔍 Polyglot AST Ingestion & Language Support
-Nous integrates standard language AST engines and **Tree-sitter** grammar parsers to extract symbols, classes, function signatures, and call references across popular language ecosystems:
-- **Languages Supported**: **Python** (`.py`), **TypeScript / TSX** (`.ts`, `.tsx`), **JavaScript / JSX** (`.js`, `.jsx`), **Go** (`.go`), **Rust** (`.rs`), **Java** (`.java`), **Kotlin** (`.kt`), **SQL DDL** (`.sql`), **Prisma** (`.prisma`), **Vue**, **Svelte**, and **C/C++**.
-- **Ingestion Sources**:
-  - **Local Directory**: Real-time background file watching with automatic live-reloading graph updates.
-  - **Single File & Snippets**: Instant isolated AST extraction and dependency inspection.
-  - **ZIP Archives**: Compressed project archive extraction and immediate full-repo scanning.
-  - **Remote Git Repositories**: Full commit history ingestion (`--unshallow`), branch churn tracking, and timeline reconstruction.
+Modern software repositories often suffer from architectural erosion, hidden circular dependencies, untracked blast radiuses, and unvalidated structural drift. Nous provides an automated system to parse, index, and analyze complex codebases across multiple programming languages.
 
-### 2. 🗺️ Interactive Architecture Canvas
-- **Multi-Level Architectural Views**:
-  - **Overview Dashboard**: High-level diagnostic telemetry, health metrics, and direct tool launchers.
-  - **Full Dependency Graph**: Global file-level import and dependency relationships.
-  - **Frontend Architecture Lens**: Isolates React/Vue/Svelte components, routing, and UI hooks.
-  - **Backend Architecture Lens**: Isolates controllers, API routes, domain services, repositories, and middleware.
-  - **Module Cluster View**: High-level architectural community clustering via Louvain modularity.
-  - **Call Graph View**: Cross-file function, method, and class invocation hierarchy.
-- **Minimap Viewport Radar & Theatre-Seat Sector Navigator**:
-  - **Slidable Sub-Screen Viewport**: Pannable and draggable illuminated viewport lens to slide across the graph smoothly.
-  - **Theatre Sector Presets**: Jump directly to `Top` (Ingress/Controllers), `Mid` (Core Logic/Services), `Base` (Database/Storage), or `All` (Whole Graph Overview).
-  - **Magnification Slider**: Live zoom percentage adjustment (20% – 200%) with quick recentering.
-- **Transitive Blast Radius**: Calculates exact downstream impact radius with glowing, animated blast vectors.
-
-### 3. 🛡️ Diagnostics, AI Copilot & Analysis Subsystems (67 API Endpoints)
-- **AI Repository Copilot**: AST-aware semantic question answering, code citations, and structured onboarding roadmaps.
-- **Automated Code Review & SAST Security Audit**: Detects hardcoded secrets, SQL injection vectors, unsafe execution patterns, and entropy outliers.
-- **Database Schema & Relational ERD**: Extracts tables, primary/foreign keys, and data types from SQL and Prisma models.
-- **API Request Flow Tracer**: End-to-end visual execution pipeline tracing from HTTP route handlers to database persistence.
-- **Architecture Boundary & Dependency Linter**: Validates layering rules (e.g. controllers cannot directly query database models).
-- **AST Clones & Duplicate Code Detector**: Syntactic and structural code clone identification.
-- **Git Timeline & Evolution Replay**: Commit-by-commit evolution playback, author metrics, and churn hotspots.
-- **Technical Debt & Architecture Drift Engine**: Tracks cyclomatic complexity hotspots, coupling metrics, and architectural drift.
-- **PR Impact Simulator**: Simulates blast radius of function/class modifications or deletions before merging.
-- **Automated Doc Generator & Test Advisor**: Auto-generates architecture documentation and recommends unit test cases for uncovered branches.
+By integrating open-source grammar parsing engines (Tree-sitter and language-specific AST libraries) with graph-theoretic algorithms (NetworkX, Dagre layout engines), Nous produces deterministic models of file-level dependencies, symbol-level call graphs, and architectural community clusters. These models drive an interactive visual canvas and a suite of static diagnostic subsystems, enabling engineers to inspect system boundaries, trace execution pathways, detect code clones, and evaluate the architectural impact of proposed changes.
 
 ---
 
-## 🏗️ Architecture Overview
+## Core System Architecture
+
+### 1. Ingestion and AST Extraction
+- **Multi-Source Ingestion**: Supports local file system directories with real-time file-system watching, isolated single-source files, compressed archive formats (`.zip`), and full-depth remote Git repositories.
+- **Polyglot Parsing Support**: Uses Tree-sitter grammars and standard AST extractors across Python, TypeScript, JavaScript, Go, Rust, Java, Kotlin, SQL DDL, Prisma schema definitions, Vue, Svelte, and C/C++.
+- **Deterministic State Isolation**: Initializes in an unpopulated state, allowing users to explicitly select, switch, or ingest target repositories on demand without ambient data cross-contamination.
+
+### 2. Graph Modeling Engine
+- **Hierarchical Dependency Graph**: Models inter-module import relationships, detects circular dependency cycles, and computes topological orderings.
+- **Symbol Scoping & Call Graph**: Indexes functions, classes, interfaces, and methods to map caller-callee relationships across file boundaries.
+- **Community Clustering**: Automatically identifies logical subsystem boundaries using modularity maximization algorithms.
+- **Transitive Blast Radius Computation**: Evaluates downstream dependency reachability when a symbol or module is targeted for modification or deprecation.
+
+### 3. Interactive Topology Canvas
+- **Multi-Tier Abstraction Layers**:
+  - **Overview Dashboard**: High-level repository telemetry, health indicators, and direct diagnostic launchers.
+  - **Global Dependency View**: Complete file-level dependency topology with directed acyclic layout.
+  - **Frontend Architecture Lens**: Isolates user interface components, client routing, and state hooks.
+  - **Backend Architecture Lens**: Isolates API routes, controllers, domain services, middleware, and data access objects.
+  - **Module Cluster View**: High-level structural communities grouped by architectural affinity.
+  - **Call Graph View**: Cross-file functional invocation graph with symbol resolution.
+- **Minimap Viewport Radar & Sector Navigation**:
+  - **Interactive Viewport Lens**: Draggable and resizable bounding viewport slider providing real-time canvas navigation.
+  - **Discrete Sector Controls**: Quick-jump presets targeting Ingress/Controllers (`Top`), Core Services (`Mid`), and Persistence/Storage (`Base`).
+  - **Magnification Slider**: Continuous zoom adjustment from 20% to 200% with automatic canvas recentering.
+
+### 4. Diagnostics & Analysis Subsystems
+- **Repository Copilot**: AST-indexed semantic query engine providing code citations and onboarding pathways.
+- **Static Application Security Testing (SAST)**: Static identification of hardcoded credentials, SQL injection vectors, and unsafe execution routines.
+- **Relational Schema & ERD Analyzer**: Extraction of relational entities, table attributes, and foreign key constraints from SQL DDL and Prisma models.
+- **API Request Flow Tracer**: Reconstruction of end-to-end execution pipelines from HTTP endpoints through middleware to persistence layers.
+- **Architecture Boundary Linter**: Static verification of layered architectural constraints and forbidden dependency directions.
+- **Structural Code Clone Detection**: Identification of exact and near-duplicate syntax subtrees across the codebase.
+- **Git Evolution & Churn Analytics**: Historical commit replay, author attribution analysis, and file modification frequency heatmaps.
+- **Technical Debt & Architectural Drift**: Metrics on cyclomatic complexity, coupling concentration, and structural entropy over time.
+- **Pull Request Impact Simulation**: Forward-looking blast radius prediction for proposed file or symbol deletions and renames.
+
+---
+
+## Repository Structure
 
 ```
-Nous Platform
- ├── backend/
- │    ├── app/
- │    │    ├── parsers/        # Tree-sitter grammar wrappers & AST extractors
- │    │    ├── graph/          # DependencyGraph, CallGraph, GraphStore (NetworkX)
- │    │    ├── analysis/       # 20+ specialized intelligence & diagnostic engines
- │    │    ├── routers/        # 30 modular FastAPI routers (67 API endpoints)
- │    │    ├── scanner.py      # Repository orchestrator & state synchronization
- │    │    └── main.py         # FastAPI application entrypoint & CORS middleware
- │    └── tests/               # 44 comprehensive pytest integration tests
- └── frontend/
-      ├── src/
-      │    ├── components/
-      │    │    ├── canvas/    # React Flow canvas, Dagre layout, MinimapRadarControl
-      │    │    ├── dashboard/ # Repository overview & diagnostic tool matrix
-      │    │    ├── layout/    # Top navigation bar & tools dropdown menu
-      │    │    └── [modals]/  # 25+ specialized analysis & diagnostic modal dialogs
-      │    ├── services/       # Typed Axios API client
-      │    └── types/          # Full TypeScript domain & graph type definitions
-      └── vite.config.ts
+nous/
+├── backend/
+│   ├── app/
+│   │   ├── analysis/       # 20+ specialized intelligence and diagnostic engines
+│   │   ├── graph/          # DependencyGraph, CallGraph, and GraphStore models
+│   │   ├── parsers/        # Tree-sitter grammar wrappers and AST extractors
+│   │   ├── routers/        # 30 modular FastAPI REST routers (67 API endpoints)
+│   │   ├── config.py       # Application settings and environment configuration
+│   │   ├── git_cloner.py   # Remote repository cloning and history extraction
+│   │   ├── scanner.py      # Repository scanner and AST orchestration engine
+│   │   ├── state.py        # Centralized in-memory application state store
+│   │   └── main.py         # FastAPI application entry point and CORS configuration
+│   ├── tests/              # 44 automated integration and unit tests
+│   └── pyproject.toml      # Python dependencies and build metadata
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   │   ├── canvas/     # React Flow canvas, Dagre layout, and MinimapRadarControl
+    │   │   ├── dashboard/  # Telemetry dashboard and NoRepoWelcome onboarding
+    │   │   ├── layout/     # Navigation header and tools dropdown menu
+    │   │   └── [modals]/   # Modal dialogs for each diagnostic subsystem
+    │   ├── services/       # Typed HTTP client services
+    │   ├── types/          # Domain, AST, and graph type definitions
+    │   ├── App.tsx         # Main application controller and routing
+    │   └── main.tsx        # React application entry point
+    ├── index.html          # Application HTML shell
+    ├── package.json        # Frontend dependencies and build scripts
+    └── vite.config.ts      # Vite build configuration
 ```
 
 ---
 
-## 🚀 Quickstart Guide
+## Installation and Execution
 
 ### Prerequisites
-- **Python 3.11+**
-- **Node.js 18+** & **npm**
-- **Git**
+- Python 3.11 or higher
+- Node.js 18 or higher (with npm)
+- Git (command-line executable available on system PATH)
 
 ---
 
-### 1. Backend Setup
+### Backend Service Setup
 
 ```bash
-# Navigate to backend directory
+# Navigate to the backend directory
 cd backend
 
-# Create and activate Python virtual environment
+# Initialize and activate Python virtual environment
 python -m venv .venv
 
 # Windows (PowerShell):
@@ -104,44 +110,44 @@ python -m venv .venv
 # Linux / macOS:
 source .venv/bin/activate
 
-# Install dependencies
+# Install required Python dependencies
 pip install -r requirements.txt
 
-# Start FastAPI server on port 8000
+# Start the FastAPI service on port 8000
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Backend API will be live at: **`http://127.0.0.1:8000`**  
-Interactive OpenAPI documentation: **`http://127.0.0.1:8000/docs`**
+The REST API service will listen on `http://127.0.0.1:8000`.  
+OpenAPI documentation is available at `http://127.0.0.1:8000/docs`.
 
 ---
 
-### 2. Frontend Setup
+### Frontend Client Setup
 
 ```bash
-# Navigate to frontend directory
+# Navigate to the frontend directory
 cd frontend
 
-# Install npm packages
+# Install client dependencies
 npm install
 
-# Start Vite React development server
+# Start the Vite development server
 npm run dev
 ```
 
-Frontend application will be live at: **`http://localhost:5173`**
+The client user interface will be accessible at `http://localhost:5173`.
 
 ---
 
-## 🧪 Testing & Verification
+## Quality Assurance & Verification
 
-### Run Backend Tests (44 Tests)
+### Backend Automated Test Suite
 ```bash
 cd backend
 pytest -v
 ```
 
-### Run Frontend Production Build & TypeScript Checks
+### Frontend Type Validation & Production Build
 ```bash
 cd frontend
 npm run build
@@ -149,16 +155,17 @@ npm run build
 
 ---
 
-## 🙏 Acknowledgements & Open Source Engines
+## External Technologies & Acknowledgements
 
-Nous builds upon and integrates with the following open-source technologies:
-- **[Tree-sitter](https://tree-sitter.github.io/)** — Incremental parsing library and ecosystem of language grammars.
-- **[NetworkX](https://networkx.org/)** — Graph algorithms, cycle detection, and topological analysis.
-- **[React Flow (@xyflow/react)](https://reactflow.dev/)** & **[Dagre](https://github.com/dagrejs/dagre)** — Interactive graph canvas and hierarchical layout rendering.
-- **[FastAPI](https://fastapi.tiangolo.com/)** — High-performance asynchronous REST API framework.
+Nous incorporates and builds upon the following open-source frameworks and libraries:
+- **Tree-sitter**: Incremental parsing system and formal language grammar ecosystem.
+- **NetworkX**: Complex network creation, manipulation, and graph-theoretic analysis.
+- **React Flow (@xyflow/react) & Dagre**: Interactive node-based graph rendering and hierarchical DAG layout.
+- **FastAPI**: Asynchronous Python web framework for REST API implementation.
+- **Lucide Icons**: Standardized technical icon library.
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This software is distributed under the terms of the MIT License. See the [LICENSE](LICENSE) file for complete details.
