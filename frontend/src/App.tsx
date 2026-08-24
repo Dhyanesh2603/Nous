@@ -372,6 +372,20 @@ export function App() {
           onClose={() => setIsSearchOpen(false)}
           onSelectResult={handleSelectSearchResult}
           onCalculateBlastRadius={(nodeId) => handleCalculateBlastRadius(nodeId, 'file')}
+          onNavigateScreen={setActiveScreen}
+          onViewModeChange={handleViewModeChange}
+          onOpenSecurity={() => setIsSecurityOpen(true)}
+          onOpenDatabase={() => setIsDatabaseOpen(true)}
+          onOpenCopilot={() => setIsCopilotOpen(true)}
+          onOpenExport={() => setIsExportOpen(true)}
+          onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
+          onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
+          onOpenPRImpact={() => setIsPRImpactOpen(true)}
+          onOpenRules={() => setIsRulesOpen(true)}
+          onOpenIngest={() => {
+            setIngestModalTab('local');
+            setIsIngestModalOpen(true);
+          }}
         />
 
         {/* Sequence Diagram Modal */}
