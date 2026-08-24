@@ -107,17 +107,6 @@ app.include_router(migration_planner_router)
 app.include_router(executive_report_router)
 
 
-@app.get("/")
-def root():
-    return {
-        "message": "Welcome to Nous Enterprise Software Intelligence Platform",
-        "version": "1.0.0",
-        "docs_url": "/docs",
-        "health_url": "/api/health",
-        "frontend_url": "http://127.0.0.1:5173",
-    }
-
-
 @app.get("/api/health")
 def health_check():
     return {
@@ -126,6 +115,37 @@ def health_check():
         "version": "1.0.0",
         "has_active_repo": app_state.scanner is not None,
     }
+
+
+# Static Frontend SPA Serving (Single-Container / Production Deployment)
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+frontend_dist = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+if not frontend_dist.exists():
+    frontend_dist = Path(__file__).resolve().parent.parent / "static"
+
+if frontend_dist.exists() and (frontend_dist / "index.html").exists():
+    assets_dir = frontend_dist / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        target = frontend_dist / full_path
+        if full_path and target.is_file():
+            return FileResponse(target)
+        return FileResponse(frontend_dist / "index.html")
+else:
+    @app.get("/")
+    def root():
+        return {
+            "message": "Welcome to Nous Enterprise Software Intelligence Platform",
+            "version": "1.0.0",
+            "docs_url": "/docs",
+            "health_url": "/api/health",
+            "frontend_url": "http://127.0.0.1:5173",
+        }
 
 
 if __name__ == "__main__":

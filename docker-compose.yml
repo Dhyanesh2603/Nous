@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  nous:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nous-platform
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - nous-data:/app/.cloned_repos
+      - nous-uploads:/app/.file_uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  nous-data:
+  nous-uploads:

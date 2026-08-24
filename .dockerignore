@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+venv
+env
+__pycache__
+*.pyc
+node_modules
+.cloned_repos
+.file_uploads
+.pytest_cache
+dist
+build
+.system_generated
