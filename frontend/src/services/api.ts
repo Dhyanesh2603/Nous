@@ -435,6 +435,12 @@ export const fetchMigrationPlans = async (): Promise<any> => {
   return res.data;
 };
 
+// 21. Executive Architecture & Security Audit Report
+export const fetchExecutiveReport = async (): Promise<any> => {
+  const res = await api.get('/analysis/executive-report');
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;

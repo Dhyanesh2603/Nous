@@ -1267,6 +1267,36 @@ export interface MigrationPlannerReport {
   plans: MigrationPlan[];
 }
 
+// 21. Executive Architecture & Security Audit Report
+export interface ExecutiveRecommendation {
+  priority: 'P0-Critical' | 'P1-High' | 'P2-Medium' | 'P3-Low';
+  category: string;
+  title: string;
+  description: string;
+  impact_file?: string;
+}
+
+export interface ExecutiveAuditReportResponse {
+  repository_name: string;
+  generated_at: string;
+  overall_health_score: number;
+  architecture_score: number;
+  security_score: number;
+  maintainability_score: number;
+  total_files: number;
+  total_symbols: number;
+  total_dependencies: number;
+  circular_cycles_count: number;
+  security_findings_count: number;
+  dead_code_items_count: number;
+  code_clones_count: number;
+  database_tables_count: number;
+  languages_breakdown: Record<string, number>;
+  recommendations: ExecutiveRecommendation[];
+  full_markdown_report: string;
+}
+
+
 
 
 

@@ -41,6 +41,7 @@ from app.routers import (
     playback_router,
     knowledge_graph_router,
     migration_planner_router,
+    executive_report_router,
 )
 from app.state import app_state
 
@@ -103,6 +104,7 @@ app.include_router(time_machine_router)
 app.include_router(playback_router)
 app.include_router(knowledge_graph_router)
 app.include_router(migration_planner_router)
+app.include_router(executive_report_router)
 
 
 @app.get("/")

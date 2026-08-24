@@ -36,6 +36,7 @@ import {
   History,
   Play,
   Compass,
+  FileCheck2,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -87,6 +88,7 @@ interface RepositoryDashboardProps {
   onOpenPlayback: () => void;
   onOpenKnowledgeGraph: () => void;
   onOpenMigration: () => void;
+  onOpenExecutiveReport?: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -125,6 +127,7 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenPlayback,
   onOpenKnowledgeGraph,
   onOpenMigration,
+  onOpenExecutiveReport,
 }) => {
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
@@ -225,8 +228,19 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
           </div>
 
-          {/* Switch Repo Button */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {onOpenExecutiveReport && (
+              <button
+                onClick={onOpenExecutiveReport}
+                className="px-4 py-3 rounded-2xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-950/30 flex-shrink-0"
+                title="Open comprehensive executive architecture and security audit report"
+              >
+                <FileCheck2 className="w-4 h-4 text-emerald-400" />
+                <span>Audit Report</span>
+              </button>
+            )}
+
             <button
               onClick={onOpenIngestModal}
               className="px-4 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-900/30 flex-shrink-0"

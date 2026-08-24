@@ -52,6 +52,7 @@ import { ExecutionPlaybackModal } from './components/playback/ExecutionPlaybackM
 import { KnowledgeGraphModal } from './components/knowledge/KnowledgeGraphModal';
 import { MigrationPlannerModal } from './components/migration/MigrationPlannerModal';
 import { ExportModal } from './components/export/ExportModal';
+import { ExecutiveReportModal } from './components/report/ExecutiveReportModal';
 import './App.css';
 
 export function App() {
@@ -98,6 +99,7 @@ export function App() {
   const [isKnowledgeGraphOpen, setIsKnowledgeGraphOpen] = useState(false);
   const [isMigrationOpen, setIsMigrationOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isExecutiveReportOpen, setIsExecutiveReportOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -238,6 +240,7 @@ export function App() {
         onOpenCopilot={() => setIsCopilotOpen(true)}
         onOpenFramework={() => setIsFrameworkOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
+        onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
         onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
       />
@@ -301,6 +304,7 @@ export function App() {
             onOpenPlayback={() => setIsPlaybackOpen(true)}
             onOpenKnowledgeGraph={() => setIsKnowledgeGraphOpen(true)}
             onOpenMigration={() => setIsMigrationOpen(true)}
+            onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
           />
         ) : (
           <>
@@ -621,6 +625,13 @@ export function App() {
           edges={blastRadiusData ? blastRadiusData.subgraph_edges : (graphData?.edges || [])}
           summary={graphData?.summary}
           layoutDirection={layoutDirection}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Executive Architecture Audit Report Modal */}
+        <ExecutiveReportModal
+          isOpen={isExecutiveReportOpen}
+          onClose={() => setIsExecutiveReportOpen(false)}
           currentRepoPath={status?.current_repo_path}
         />
 
