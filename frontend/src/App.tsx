@@ -51,6 +51,7 @@ import { TimeMachineModal } from './components/timemachine/TimeMachineModal';
 import { ExecutionPlaybackModal } from './components/playback/ExecutionPlaybackModal';
 import { KnowledgeGraphModal } from './components/knowledge/KnowledgeGraphModal';
 import { MigrationPlannerModal } from './components/migration/MigrationPlannerModal';
+import { ExportModal } from './components/export/ExportModal';
 import './App.css';
 
 export function App() {
@@ -96,6 +97,7 @@ export function App() {
   const [isPlaybackOpen, setIsPlaybackOpen] = useState(false);
   const [isKnowledgeGraphOpen, setIsKnowledgeGraphOpen] = useState(false);
   const [isMigrationOpen, setIsMigrationOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -235,6 +237,7 @@ export function App() {
         onOpenSecurity={() => setIsSecurityOpen(true)}
         onOpenCopilot={() => setIsCopilotOpen(true)}
         onOpenFramework={() => setIsFrameworkOpen(true)}
+        onOpenExport={() => setIsExportOpen(true)}
         onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
       />
@@ -312,6 +315,7 @@ export function App() {
               onResetBlastRadius={() => setBlastRadiusData(null)}
               currentViewMode={viewMode}
               onViewModeChange={handleViewModeChange}
+              onOpenExport={() => setIsExportOpen(true)}
             />
 
             {/* Central Graph Canvas */}
@@ -606,6 +610,17 @@ export function App() {
         <MigrationPlannerModal
           isOpen={isMigrationOpen}
           onClose={() => setIsMigrationOpen(false)}
+          currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Export Architecture Modal */}
+        <ExportModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
+          nodes={blastRadiusData ? blastRadiusData.subgraph_nodes : (graphData?.nodes || [])}
+          edges={blastRadiusData ? blastRadiusData.subgraph_edges : (graphData?.edges || [])}
+          summary={graphData?.summary}
+          layoutDirection={layoutDirection}
           currentRepoPath={status?.current_repo_path}
         />
 

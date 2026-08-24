@@ -3,6 +3,7 @@ import {
   ArrowDownUp,
   ArrowLeftRight,
   Zap,
+  Download,
 } from 'lucide-react';
 import type { GraphSummary, ViewMode } from '../../types';
 
@@ -14,6 +15,7 @@ interface FilterBarProps {
   onResetBlastRadius: () => void;
   currentViewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  onOpenExport?: () => void;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -22,6 +24,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onToggleLayoutDirection,
   isBlastRadiusActive,
   onResetBlastRadius,
+  onOpenExport,
 }) => {
   return (
     <div className="absolute top-4 left-4 z-20 flex items-center gap-2 select-none font-mono text-xs">
@@ -43,6 +46,18 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </>
         )}
       </button>
+
+      {/* Export Diagram Button */}
+      {onOpenExport && (
+        <button
+          onClick={onOpenExport}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-cyan-500/40 shadow-xl transition"
+          title="Export Architecture as PNG, SVG, or Mermaid.js"
+        >
+          <Download className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Export</span>
+        </button>
+      )}
 
       {/* Summary Stats Pill */}
       {summary && (

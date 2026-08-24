@@ -17,6 +17,7 @@ import {
   Network,
   ChevronDown,
   Wrench,
+  Share2,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
@@ -35,6 +36,7 @@ interface HeaderProps {
   onOpenSecurity: () => void;
   onOpenCopilot: () => void;
   onOpenFramework: () => void;
+  onOpenExport?: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
 }
@@ -52,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSecurity,
   onOpenCopilot,
   onOpenFramework,
+  onOpenExport,
   onRefreshGraph,
   currentRepoPath,
 }) => {
@@ -322,6 +325,24 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="text-[10px] text-slate-500 block">Code duplication detector</span>
                   </div>
                 </button>
+
+                {onOpenExport && (
+                  <button
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenExport();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group border-t border-slate-800/80 pt-2"
+                  >
+                    <div className="p-1 rounded-md bg-cyan-500/10 text-cyan-400 group-hover:scale-105 transition">
+                      <Share2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium block text-slate-200 group-hover:text-cyan-300">Export Diagram</span>
+                      <span className="text-[10px] text-slate-500 block">PNG, SVG & Mermaid export</span>
+                    </div>
+                  </button>
+                )}
               </div>
             )}
           </div>
