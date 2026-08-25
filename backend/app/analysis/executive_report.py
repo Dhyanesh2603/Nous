@@ -3,12 +3,11 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
-from app.analysis.health_scorecard import HealthScorecardEngine
+from app.analysis.health_scorecard import HealthScorecardCalculator
 from app.analysis.security_scanner import SecurityScanner
-from app.analysis.tech_debt_engine import TechDebtEngine
 from app.analysis.dead_code_detector import DeadCodeDetector
 from app.analysis.database_analyzer import DatabaseAnalyzer
-from app.analysis.clone_detector import CloneDetector
+from app.analysis.clone_detector import CodeCloneDetector
 from app.analysis.dependency_analyzer import DependencyAnalyzer
 
 
@@ -82,12 +81,15 @@ class ExecutiveReportEngine:
 
         # 1. Health & Architecture Score
         try:
-            health_engine = HealthScorecardEngine(self.scanner)
+            health_engine = HealthScorecardCalculator(
+                root_dir=self.scanner.root_dir or ".",
+                scanner=self.scanner,
+            )
             health_data = health_engine.calculate()
             overall_score = health_data.overall_score
-            arch_score = health_data.architecture_score
-            sec_score = health_data.security_score
-            maint_score = health_data.maintainability_score
+            arch_score = health_data.radar.architecture_score
+            sec_score = health_data.radar.security_score
+            maint_score = health_data.radar.maintainability_score
         except Exception:
             overall_score, arch_score, sec_score, maint_score = 85, 88, 90, 80
 
@@ -121,9 +123,9 @@ class ExecutiveReportEngine:
 
         # 5. Clones
         try:
-            clone_engine = CloneDetector(self.scanner)
+            clone_engine = CodeCloneDetector(self.scanner.graph_store)
             clone_report = clone_engine.detect_clones()
-            clones_count = len(clone_report.clones)
+            clones_count = len(clone_report.clone_groups)
         except Exception:
             clones_count = 0
 
