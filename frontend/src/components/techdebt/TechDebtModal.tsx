@@ -96,17 +96,17 @@ export const TechDebtModal: React.FC<TechDebtModalProps> = ({
 
           <div className="p-3.5 bg-slate-900/70 border border-slate-800 rounded-xl font-mono">
             <span className="text-[10px] uppercase text-slate-500 block flex items-center gap-1">
-              <Clock className="w-3 h-3 text-amber-400" /> Remediation Effort
+              <Scale className="w-3 h-3 text-amber-400" /> Debt Severity
             </span>
-            <span className="text-xl font-bold text-amber-300 block mt-0.5">{report?.total_debt_hours || 0} hrs</span>
+            <span className="text-xl font-bold text-amber-300 block mt-0.5">Grade {report?.debt_grade || 'A'}</span>
           </div>
 
           <div className="p-3.5 bg-slate-900/70 border border-slate-800 rounded-xl font-mono">
             <span className="text-[10px] uppercase text-slate-500 block flex items-center gap-1">
-              <DollarSign className="w-3 h-3 text-emerald-400" /> Est. Cost Impact
+              <FileCode className="w-3 h-3 text-emerald-400" /> Dimension Scope
             </span>
             <span className="text-xl font-bold text-emerald-300 block mt-0.5">
-              ${report?.total_debt_cost_estimate_usd?.toLocaleString() || 0}
+              {report?.dimensions?.length || 8} Dimensions
             </span>
           </div>
 
@@ -143,7 +143,7 @@ export const TechDebtModal: React.FC<TechDebtModalProps> = ({
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-slate-300 truncate">{dim.dimension_name}</span>
                           <span className={`font-bold ${dim.score >= 80 ? 'text-emerald-300' : dim.score >= 60 ? 'text-amber-300' : 'text-rose-300'}`}>
-                            {dim.score}% ({dim.debt_hours}h)
+                            {dim.score}% Quality
                           </span>
                         </div>
                         <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
@@ -175,7 +175,7 @@ export const TechDebtModal: React.FC<TechDebtModalProps> = ({
                       >
                         <div className="flex items-center justify-between font-mono text-[11px]">
                           <span className="font-bold truncate">{hs.title}</span>
-                          <span className="text-amber-400 font-bold">{hs.estimated_hours_to_fix}h</span>
+                          <span className="text-amber-400 font-bold uppercase">{hs.severity}</span>
                         </div>
                         <p className="text-[10px] font-mono text-slate-500 truncate">{hs.relative_path}:{hs.line_number}</p>
                       </div>
@@ -199,7 +199,7 @@ export const TechDebtModal: React.FC<TechDebtModalProps> = ({
                         <FileCode className="w-3.5 h-3.5 text-slate-500" />
                         <span>{selectedHotspot.relative_path}:{selectedHotspot.line_number}</span>
                         <span>•</span>
-                        <span className="text-amber-400 font-bold">{selectedHotspot.estimated_hours_to_fix} hours estimated effort</span>
+                        <span className="text-amber-400 font-semibold uppercase">{selectedHotspot.severity} Severity</span>
                       </p>
                     </div>
 

@@ -144,7 +144,7 @@ export const HealthScoreModal: React.FC<HealthScoreModalProps> = ({
                 <div>
                   <span className="text-[11px] text-slate-400 block font-mono">Technical Debt</span>
                   <span className="text-sm font-bold text-amber-300 font-mono">
-                    ~{scorecard.technical_debt_hours}h ({scorecard.technical_debt_level})
+                    {scorecard.technical_debt_level} Level
                   </span>
                 </div>
               </div>

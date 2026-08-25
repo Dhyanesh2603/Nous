@@ -101,7 +101,7 @@ export const MigrationPlannerModal: React.FC<MigrationPlannerModalProps> = ({
                 <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
                   <span className="text-orange-300 font-bold">{p.readiness_score}% Readiness</span>
                   <span>•</span>
-                  <span>~{p.total_estimated_hours}h</span>
+                  <span>{p.checklist?.length || 0} Steps</span>
                 </div>
               </div>
             ))}
@@ -128,7 +128,7 @@ export const MigrationPlannerModal: React.FC<MigrationPlannerModalProps> = ({
                         {selectedPlan.readiness_score}% Readiness
                       </span>
                       <span className="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                        ~{selectedPlan.total_estimated_hours} Hours
+                        {selectedPlan.checklist.length} Phases
                       </span>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export const MigrationPlannerModal: React.FC<MigrationPlannerModalProps> = ({
                             </span>
                             <span className="font-bold text-slate-200">{step.title}</span>
                           </div>
-                          <span className="text-slate-400 text-[11px]">~{step.estimated_hours}h • {step.target_files_count} files</span>
+                          <span className="text-slate-400 text-[11px]">{step.target_files_count} Target Files</span>
                         </div>
                         <p className="text-xs text-slate-400 font-sans leading-relaxed">{step.description}</p>
                         {step.command_or_codemod && (

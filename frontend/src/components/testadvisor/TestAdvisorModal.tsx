@@ -136,8 +136,8 @@ export const TestAdvisorModal: React.FC<TestAdvisorModalProps> = ({
                     </div>
                     <p className="text-[11px] font-mono text-slate-500 truncate">{cand.relative_path}:{cand.line_number}</p>
                     <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-0.5">
-                      <span>v(G)={cand.cyclomatic_complexity} • {cand.in_degree_callers_count} callers</span>
-                      <span className="text-emerald-400 font-bold">~{cand.estimated_test_writing_mins}m</span>
+                      <span>v(G)={cand.cyclomatic_complexity} Complexity</span>
+                      <span className="text-emerald-400 font-bold">{cand.in_degree_callers_count} Callers</span>
                     </div>
                   </div>
                 ))}

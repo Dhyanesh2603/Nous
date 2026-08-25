@@ -108,8 +108,8 @@ export const RefactoringModal: React.FC<RefactoringModalProps> = ({
             <span className="text-base font-bold text-amber-300">{report?.medium_count || 0}</span>
           </div>
           <div className="p-2.5 bg-slate-900/60 border border-slate-800/80 rounded-xl">
-            <span className="text-slate-500 text-[10px] uppercase block">Total Refactor Effort</span>
-            <span className="text-base font-bold text-emerald-300">{report?.total_estimated_effort_hours || 0} hrs</span>
+            <span className="text-slate-500 text-[10px] uppercase block">High-Risk Targets</span>
+            <span className="text-base font-bold text-emerald-300">{(report?.critical_count || 0) + (report?.high_count || 0)} items</span>
           </div>
         </div>
 
@@ -170,7 +170,7 @@ export const RefactoringModal: React.FC<RefactoringModalProps> = ({
                     <p className="text-xs text-slate-300 font-sans font-medium line-clamp-1">{r.title}</p>
                     <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-0.5">
                       <span className="truncate">{r.relative_path}:{r.line_number}</span>
-                      <span className="text-cyan-400 font-bold">{r.estimated_effort_hours}h</span>
+                      <span className="text-cyan-400 font-semibold">{r.category}</span>
                     </div>
                   </div>
                 ))}
@@ -190,7 +190,7 @@ export const RefactoringModal: React.FC<RefactoringModalProps> = ({
                           <FileCode className="w-3.5 h-3.5 text-slate-500" />
                           <span>{selectedRec.relative_path}:{selectedRec.line_number}</span>
                           <span>•</span>
-                          <span className="text-cyan-300 font-bold">{selectedRec.estimated_effort_hours} hours effort</span>
+                          <span className="text-cyan-300 font-semibold">{selectedRec.category}</span>
                         </p>
                       </div>
                     </div>
