@@ -14,3 +14,24 @@ def generate_docs():
 
     generator = DocGenerator(scanner=app_state.scanner)
     return generator.generate()
+
+
+@router.get("/platform-docs")
+def get_platform_docs():
+    """Returns the comprehensive platform documentation and user manual (DOCUMENTATION.md)."""
+    from pathlib import Path
+
+    doc_path = Path(__file__).resolve().parents[3] / "DOCUMENTATION.md"
+    if not doc_path.exists():
+        doc_path = Path("DOCUMENTATION.md")
+
+    if doc_path.exists():
+        content = doc_path.read_text(encoding="utf-8").lstrip("\ufeff")
+    else:
+        content = "# NOUS Documentation\nDocumentation file is currently being initialized."
+
+    return {
+        "title": "NOUS Platform Documentation & User Manual",
+        "markdown": content,
+    }
+

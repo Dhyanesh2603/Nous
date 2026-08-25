@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Scale,
   X,
-  Clock,
-  DollarSign,
   FileCode,
   CheckCircle2,
 } from 'lucide-react';

@@ -5,6 +5,7 @@ import {
   Globe,
   Upload,
   Play,
+  BookOpen,
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
@@ -15,12 +16,14 @@ interface NoRepoWelcomeProps {
   onOpenIngestModal: (tab?: 'local' | 'git' | 'upload') => void;
   samples: SampleItem[];
   onRefreshGraph: () => void;
+  onOpenPlatformDocs?: () => void;
 }
 
 export const NoRepoWelcome: React.FC<NoRepoWelcomeProps> = ({
   onOpenIngestModal,
   samples,
   onRefreshGraph,
+  onOpenPlatformDocs,
 }) => {
   const [loadingSampleId, setLoadingSampleId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -183,6 +186,31 @@ export const NoRepoWelcome: React.FC<NoRepoWelcomeProps> = ({
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Platform Documentation Quick Banner */}
+      {onOpenPlatformDocs && (
+        <div
+          onClick={onOpenPlatformDocs}
+          className="w-full mt-6 p-4 rounded-xl bg-indigo-950/30 hover:bg-indigo-950/50 border border-indigo-500/30 hover:border-indigo-500/50 transition cursor-pointer flex items-center justify-between group text-xs font-mono"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold text-slate-200 group-hover:text-indigo-300 block font-sans">
+                Explore the Platform Documentation & User Manual
+              </span>
+              <span className="text-[11px] text-slate-400 font-sans">
+                Read in-depth guides on ingestion modes, visual canvas controls, AST diagnostics, and all 20 tools.
+              </span>
+            </div>
+          </div>
+          <span className="text-indigo-400 group-hover:translate-x-1 transition-transform font-bold">
+            Read Manual ➜
+          </span>
         </div>
       )}
       </div>

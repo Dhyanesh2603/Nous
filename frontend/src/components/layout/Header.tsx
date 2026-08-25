@@ -18,6 +18,7 @@ import {
   Wrench,
   Share2,
   FileCheck2,
+  BookOpen,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
@@ -37,6 +38,7 @@ interface HeaderProps {
   onOpenFramework: () => void;
   onOpenExport?: () => void;
   onOpenExecutiveReport?: () => void;
+  onOpenPlatformDocs?: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
 }
@@ -55,6 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenFramework,
   onOpenExport,
   onOpenExecutiveReport,
+  onOpenPlatformDocs,
   onRefreshGraph,
   currentRepoPath,
 }) => {
@@ -212,6 +215,18 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
+          {/* Platform Documentation & User Manual */}
+          {onOpenPlatformDocs && (
+            <button
+              onClick={onOpenPlatformDocs}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-500/50 transition"
+              title="Open Platform Documentation & User Manual"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Docs</span>
+            </button>
+          )}
+
           {/* Security Audit */}
           <button
             onClick={onOpenSecurity}
@@ -360,6 +375,24 @@ export const Header: React.FC<HeaderProps> = ({
                     <div>
                       <span className="font-medium block text-slate-200 group-hover:text-cyan-300">Export Diagram</span>
                       <span className="text-[10px] text-slate-500 block">PNG, SVG & Mermaid export</span>
+                    </div>
+                  </button>
+                )}
+
+                {onOpenPlatformDocs && (
+                  <button
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenPlatformDocs();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group border-t border-slate-800/80 pt-2"
+                  >
+                    <div className="p-1 rounded-md bg-indigo-500/10 text-indigo-400 group-hover:scale-105 transition">
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium block text-slate-200 group-hover:text-indigo-300">Platform User Manual</span>
+                      <span className="text-[10px] text-slate-500 block">Complete architecture & tool docs</span>
                     </div>
                   </button>
                 )}

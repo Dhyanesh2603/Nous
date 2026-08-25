@@ -51,6 +51,7 @@ import { KnowledgeGraphModal } from './components/knowledge/KnowledgeGraphModal'
 import { MigrationPlannerModal } from './components/migration/MigrationPlannerModal';
 import { ExportModal } from './components/export/ExportModal';
 import { ExecutiveReportModal } from './components/report/ExecutiveReportModal';
+import { PlatformDocumentationModal } from './components/docs/PlatformDocumentationModal';
 import './App.css';
 
 export function App() {
@@ -96,6 +97,7 @@ export function App() {
   const [isMigrationOpen, setIsMigrationOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isExecutiveReportOpen, setIsExecutiveReportOpen] = useState(false);
+  const [isPlatformDocsOpen, setIsPlatformDocsOpen] = useState(false);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -170,6 +172,7 @@ export function App() {
         setIsMigrationOpen(false);
         setIsExportOpen(false);
         setIsExecutiveReportOpen(false);
+        setIsPlatformDocsOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -236,6 +239,7 @@ export function App() {
         onOpenFramework={() => setIsFrameworkOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
+        onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
         onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
       />
@@ -255,6 +259,7 @@ export function App() {
             }}
             samples={samples}
             onRefreshGraph={() => loadGraph()}
+            onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
           />
         ) : activeScreen === 'dashboard' ? (
           <RepositoryDashboard
@@ -298,6 +303,7 @@ export function App() {
             onOpenKnowledgeGraph={() => setIsKnowledgeGraphOpen(true)}
             onOpenMigration={() => setIsMigrationOpen(true)}
             onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
+            onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
           />
         ) : (
           <>
@@ -371,6 +377,7 @@ export function App() {
           onOpenDatabase={() => setIsDatabaseOpen(true)}
           onOpenExport={() => setIsExportOpen(true)}
           onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
+          onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
           onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
           onOpenPRImpact={() => setIsPRImpactOpen(true)}
           onOpenRules={() => setIsRulesOpen(true)}
@@ -608,6 +615,12 @@ export function App() {
           isOpen={isExecutiveReportOpen}
           onClose={() => setIsExecutiveReportOpen(false)}
           currentRepoPath={status?.current_repo_path}
+        />
+
+        {/* Platform Documentation & User Manual Modal */}
+        <PlatformDocumentationModal
+          isOpen={isPlatformDocsOpen}
+          onClose={() => setIsPlatformDocsOpen(false)}
         />
 
         {/* Ingest Modal */}

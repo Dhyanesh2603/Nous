@@ -85,6 +85,7 @@ interface RepositoryDashboardProps {
   onOpenKnowledgeGraph: () => void;
   onOpenMigration: () => void;
   onOpenExecutiveReport?: () => void;
+  onOpenPlatformDocs?: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -122,6 +123,7 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenKnowledgeGraph,
   onOpenMigration,
   onOpenExecutiveReport,
+  onOpenPlatformDocs,
 }) => {
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
@@ -218,6 +220,17 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               >
                 <FileCheck2 className="w-4 h-4 text-emerald-400" />
                 <span>Audit Report</span>
+              </button>
+            )}
+
+            {onOpenPlatformDocs && (
+              <button
+                onClick={onOpenPlatformDocs}
+                className="px-4 py-3 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-indigo-950/30 flex-shrink-0"
+                title="Open comprehensive platform documentation and user manual"
+              >
+                <BookOpen className="w-4 h-4 text-indigo-400" />
+                <span>Docs</span>
               </button>
             )}
 

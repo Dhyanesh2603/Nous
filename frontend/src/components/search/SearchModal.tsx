@@ -18,6 +18,7 @@ import {
   FolderOpen,
   ArrowRight,
   Terminal,
+  BookOpen,
 } from 'lucide-react';
 import type { SearchResultItem, SearchResponse, ViewMode } from '../../types';
 import { searchCodebase } from '../../services/api';
@@ -33,6 +34,7 @@ interface SearchModalProps {
   onOpenDatabase?: () => void;
   onOpenExport?: () => void;
   onOpenExecutiveReport?: () => void;
+  onOpenPlatformDocs?: () => void;
   onOpenTimeMachine?: () => void;
   onOpenPRImpact?: () => void;
   onOpenRules?: () => void;
@@ -41,7 +43,7 @@ interface SearchModalProps {
 
 interface CommandAction {
   id: string;
-  category: 'Navigation' | 'Diagnostics' | 'Export' | 'Repository';
+  category: 'Navigation' | 'Diagnostics' | 'Export' | 'Repository' | 'Documentation';
   title: string;
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -61,6 +63,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onOpenDatabase,
   onOpenExport,
   onOpenExecutiveReport,
+  onOpenPlatformDocs,
   onOpenTimeMachine,
   onOpenPRImpact,
   onOpenRules,
@@ -154,6 +157,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       iconColor: 'text-emerald-400',
       action: () => {
         onOpenExecutiveReport?.();
+        onClose();
+      },
+    },
+    {
+      id: 'action_docs',
+      category: 'Documentation',
+      title: 'Open Platform Documentation & User Manual',
+      subtitle: 'Complete architecture guide, 20 tools walkthrough & API reference',
+      icon: BookOpen,
+      iconBg: 'bg-indigo-500/10',
+      iconColor: 'text-indigo-400',
+      action: () => {
+        onOpenPlatformDocs?.();
         onClose();
       },
     },

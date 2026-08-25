@@ -360,6 +360,11 @@ export const fetchGeneratedDocs = async (): Promise<any> => {
   return res.data;
 };
 
+export const fetchPlatformDocs = async (): Promise<{ title: string; markdown: string }> => {
+  const res = await api.get<{ title: string; markdown: string }>('/analysis/platform-docs');
+  return res.data;
+};
+
 // 13. PR Impact Analyzer
 export const fetchPRImpactReport = async (diffTarget: string = 'HEAD~1'): Promise<any> => {
   const res = await api.get('/analysis/pr-impact', { params: { diff_target: diffTarget } });
