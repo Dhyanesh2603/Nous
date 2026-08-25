@@ -18,7 +18,6 @@ from app.routers import (
     performance_router,
     framework_router,
     health_score_router,
-    copilot_router,
     timeline_router,
     api_flow_router,
     dependencies_router,
@@ -35,7 +34,6 @@ from app.routers import (
     refactoring_router,
     doc_gen_router,
     pr_analyzer_router,
-    nl_search_router,
     test_advisor_router,
     time_machine_router,
     playback_router,
@@ -81,7 +79,6 @@ app.include_router(security_router)
 app.include_router(performance_router)
 app.include_router(framework_router)
 app.include_router(health_score_router)
-app.include_router(copilot_router)
 app.include_router(timeline_router)
 app.include_router(api_flow_router)
 app.include_router(dependencies_router)
@@ -98,7 +95,6 @@ app.include_router(module_health_router)
 app.include_router(refactoring_router)
 app.include_router(doc_gen_router)
 app.include_router(pr_analyzer_router)
-app.include_router(nl_search_router)
 app.include_router(test_advisor_router)
 app.include_router(time_machine_router)
 app.include_router(playback_router)

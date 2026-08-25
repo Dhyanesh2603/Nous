@@ -24,7 +24,6 @@ import { RulesModal } from './components/rules/RulesModal';
 import { ClonesModal } from './components/clones/ClonesModal';
 import { DatabaseModal } from './components/database/DatabaseModal';
 import { SecurityModal } from './components/security/SecurityModal';
-import { CopilotModal } from './components/copilot/CopilotModal';
 import { FrameworkModal } from './components/framework/FrameworkModal';
 import { IngestModal } from './components/ingest/IngestModal';
 import { RepositoryDashboard } from './components/dashboard/RepositoryDashboard';
@@ -45,7 +44,6 @@ import { ModuleHealthModal } from './components/modulehealth/ModuleHealthModal';
 import { RefactoringModal } from './components/refactoring/RefactoringModal';
 import { DocumentationModal } from './components/docs/DocumentationModal';
 import { PRImpactModal } from './components/pr/PRImpactModal';
-import { NLSearchModal } from './components/nlsearch/NLSearchModal';
 import { TestAdvisorModal } from './components/testadvisor/TestAdvisorModal';
 import { TimeMachineModal } from './components/timemachine/TimeMachineModal';
 import { ExecutionPlaybackModal } from './components/playback/ExecutionPlaybackModal';
@@ -73,7 +71,6 @@ export function App() {
   const [isClonesOpen, setIsClonesOpen] = useState(false);
   const [isDatabaseOpen, setIsDatabaseOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
-  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isFrameworkOpen, setIsFrameworkOpen] = useState(false);
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
@@ -92,7 +89,6 @@ export function App() {
   const [isRefactoringOpen, setIsRefactoringOpen] = useState(false);
   const [isDocsOpen, setIsDocsOpen] = useState(false);
   const [isPRImpactOpen, setIsPRImpactOpen] = useState(false);
-  const [isNLSearchOpen, setIsNLSearchOpen] = useState(false);
   const [isTestAdvisorOpen, setIsTestAdvisorOpen] = useState(false);
   const [isTimeMachineOpen, setIsTimeMachineOpen] = useState(false);
   const [isPlaybackOpen, setIsPlaybackOpen] = useState(false);
@@ -149,7 +145,6 @@ export function App() {
         setIsClonesOpen(false);
         setIsDatabaseOpen(false);
         setIsSecurityOpen(false);
-        setIsCopilotOpen(false);
         setIsFrameworkOpen(false);
         setIsIngestModalOpen(false);
         setIsTimelineOpen(false);
@@ -168,12 +163,13 @@ export function App() {
         setIsRefactoringOpen(false);
         setIsDocsOpen(false);
         setIsPRImpactOpen(false);
-        setIsNLSearchOpen(false);
         setIsTestAdvisorOpen(false);
         setIsTimeMachineOpen(false);
         setIsPlaybackOpen(false);
         setIsKnowledgeGraphOpen(false);
         setIsMigrationOpen(false);
+        setIsExportOpen(false);
+        setIsExecutiveReportOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -237,7 +233,6 @@ export function App() {
         onOpenClones={() => setIsClonesOpen(true)}
         onOpenDatabase={() => setIsDatabaseOpen(true)}
         onOpenSecurity={() => setIsSecurityOpen(true)}
-        onOpenCopilot={() => setIsCopilotOpen(true)}
         onOpenFramework={() => setIsFrameworkOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
@@ -268,7 +263,6 @@ export function App() {
             onNavigateToGraph={handleNavigateToGraph}
             onOpenDatabase={() => setIsDatabaseOpen(true)}
             onOpenSecurity={() => setIsSecurityOpen(true)}
-            onOpenCopilot={() => setIsCopilotOpen(true)}
             onOpenFramework={() => setIsFrameworkOpen(true)}
             onOpenSequence={() => {
               setSequenceTargetSymbol(undefined);
@@ -298,7 +292,6 @@ export function App() {
             onOpenRefactoring={() => setIsRefactoringOpen(true)}
             onOpenDocs={() => setIsDocsOpen(true)}
             onOpenPRImpact={() => setIsPRImpactOpen(true)}
-            onOpenNLSearch={() => setIsNLSearchOpen(true)}
             onOpenTestAdvisor={() => setIsTestAdvisorOpen(true)}
             onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
             onOpenPlayback={() => setIsPlaybackOpen(true)}
@@ -376,7 +369,6 @@ export function App() {
           onViewModeChange={handleViewModeChange}
           onOpenSecurity={() => setIsSecurityOpen(true)}
           onOpenDatabase={() => setIsDatabaseOpen(true)}
-          onOpenCopilot={() => setIsCopilotOpen(true)}
           onOpenExport={() => setIsExportOpen(true)}
           onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
           onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
@@ -422,23 +414,6 @@ export function App() {
           isOpen={isSecurityOpen}
           onClose={() => setIsSecurityOpen(false)}
           currentRepoPath={status?.current_repo_path}
-        />
-
-        {/* AI Copilot Modal */}
-        <CopilotModal
-          isOpen={isCopilotOpen}
-          onClose={() => setIsCopilotOpen(false)}
-          currentRepoPath={status?.current_repo_path}
-          onSelectFile={(f) => {
-            const node = graphData?.nodes.find(
-              (n) => n.data.relativePath === f || n.data.filePath?.endsWith(f)
-            );
-            if (node) {
-              setSelectedNode(node.data);
-              setActiveScreen('graph');
-              setIsCopilotOpen(false);
-            }
-          }}
         />
 
         {/* Framework & Layers Modal */}
@@ -572,20 +547,6 @@ export function App() {
           isOpen={isPRImpactOpen}
           onClose={() => setIsPRImpactOpen(false)}
           currentRepoPath={status?.current_repo_path}
-        />
-
-        {/* Natural Language Code Search Modal */}
-        <NLSearchModal
-          isOpen={isNLSearchOpen}
-          onClose={() => setIsNLSearchOpen(false)}
-          onSelectSymbol={(symId) => {
-            const node = graphData?.nodes.find((n) => n.id === symId);
-            if (node) {
-              setSelectedNode(node.data);
-              setActiveScreen('graph');
-              setIsNLSearchOpen(false);
-            }
-          }}
         />
 
         {/* Intelligent Test Advisor Modal */}

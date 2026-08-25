@@ -7,7 +7,6 @@ import {
   Database,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   Layers,
   Workflow,
   Files,
@@ -47,7 +46,6 @@ import type {
 import {
   fetchFrameworkOverview,
   fetchGitChurnReport,
-  queryCopilot,
   toggleWatchMode,
   fetchWatchStatus,
 } from '../../services/api';
@@ -58,7 +56,6 @@ interface RepositoryDashboardProps {
   onNavigateToGraph: (viewMode: ViewMode) => void;
   onOpenDatabase: () => void;
   onOpenSecurity: () => void;
-  onOpenCopilot: () => void;
   onOpenFramework: () => void;
   onOpenSequence: () => void;
   onOpenRules: () => void;
@@ -82,7 +79,6 @@ interface RepositoryDashboardProps {
   onOpenRefactoring: () => void;
   onOpenDocs: () => void;
   onOpenPRImpact: () => void;
-  onOpenNLSearch: () => void;
   onOpenTestAdvisor: () => void;
   onOpenTimeMachine: () => void;
   onOpenPlayback: () => void;
@@ -97,7 +93,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onNavigateToGraph,
   onOpenDatabase,
   onOpenSecurity,
-  onOpenCopilot,
   onOpenFramework,
   onOpenSequence,
   onOpenRules,
@@ -121,7 +116,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenRefactoring,
   onOpenDocs,
   onOpenPRImpact,
-  onOpenNLSearch,
   onOpenTestAdvisor,
   onOpenTimeMachine,
   onOpenPlayback,
@@ -131,8 +125,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
 }) => {
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
-  const [aiSummary, setAiSummary] = useState<string>('');
-  const [loadingSummary, setLoadingSummary] = useState(true);
   const [isWatching, setIsWatching] = useState(false);
 
   const repoName = currentRepoPath
@@ -151,12 +143,6 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
     fetchWatchStatus()
       .then((res) => setIsWatching(res.is_watching))
       .catch(() => {});
-
-    setLoadingSummary(true);
-    queryCopilot('Summarize architecture overview')
-      .then((res) => setAiSummary(res.summary))
-      .catch((err) => console.error('Failed to load copilot summary:', err))
-      .finally(() => setLoadingSummary(false));
   }, [currentRepoPath]);
 
   const handleToggleWatch = async () => {
@@ -212,18 +198,12 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               </p>
             </div>
 
-            {/* AI Architectural Insight Summary */}
+            {/* Deterministic Architecture Topology Status */}
             <div className="p-3.5 bg-slate-950/70 border border-slate-800/80 rounded-2xl text-xs text-slate-300 flex items-start gap-2.5 leading-relaxed font-sans">
-              <Sparkles className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <Network className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold text-cyan-300">Architecture Insight: </span>
-                {loadingSummary ? (
-                  <span className="text-slate-500 animate-pulse font-mono text-[11px]">
-                    Synthesizing Knowledge Graph topology...
-                  </span>
-                ) : (
-                  aiSummary || 'Repository indexed with multi-language AST facts and dependency graphs.'
-                )}
+                <span className="font-semibold text-cyan-300">Topology Status: </span>
+                <span>Deterministic AST dependency graphs, call hierarchies, and architectural boundaries active.</span>
               </div>
             </div>
           </div>
@@ -493,25 +473,25 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          {/* Tool 1: AI Copilot & Onboarding */}
+          {/* Tool 1: Architecture Rules & Layer Boundaries */}
           <div
-            onClick={onOpenCopilot}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+            onClick={onOpenRules}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
           >
             <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <Sparkles className="w-5 h-5" />
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                Zero Cloud Keys
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                Linter Engine
               </span>
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                AI Repository Copilot
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
+                Architecture Boundary Rules
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Ask architectural questions and generate onboarding roadmaps.
+                Enforce clean module boundaries and prevent layer-skipping dependencies.
               </p>
             </div>
           </div>
@@ -942,25 +922,25 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             </div>
           </div>
 
-          {/* Tool 20: Natural Language Code Search */}
+          {/* Tool 20: Executive Audit Report */}
           <div
-            onClick={onOpenNLSearch}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
+            onClick={onOpenExecutiveReport}
+            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
           >
             <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <Sparkles className="w-5 h-5" />
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <FileCheck2 className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                Semantic Query
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                Audit Matrix
               </span>
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                Natural Language Search
+              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
+                Executive Audit Report
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Ask natural questions about authentication, database queries, business workflows, and APIs.
+                Comprehensive health scorecard, SAST security vulnerabilities, and prioritized remediation matrix.
               </p>
             </div>
           </div>

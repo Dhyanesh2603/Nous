@@ -21,9 +21,6 @@ import type {
   PerformanceReport,
   FrameworkOverviewReport,
   RepositoryHealthScorecard,
-  CopilotAnswer,
-  ImpactPredictionReport,
-  OnboardingRoadmap,
 } from '../types';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
@@ -232,27 +229,6 @@ export const fetchHealthScorecard = async (): Promise<RepositoryHealthScorecard>
   return res.data;
 };
 
-// AI Copilot
-export const queryCopilot = async (query: string): Promise<CopilotAnswer> => {
-  const res = await api.post<CopilotAnswer>('/copilot/query', { query });
-  return res.data;
-};
-
-export const predictImpact = async (target: string): Promise<ImpactPredictionReport> => {
-  const res = await api.post<ImpactPredictionReport>('/copilot/impact', { target });
-  return res.data;
-};
-
-export const fetchOnboardingRoadmap = async (): Promise<OnboardingRoadmap> => {
-  const res = await api.get<OnboardingRoadmap>('/copilot/onboarding');
-  return res.data;
-};
-
-export const fetchCopilotDocs = async (): Promise<{ documentation_markdown: string }> => {
-  const res = await api.get<{ documentation_markdown: string }>('/copilot/docs');
-  return res.data;
-};
-
 // Timeline & Evolution
 export const fetchTimelineEvolution = async (maxCommits: number = 40): Promise<any> => {
   const res = await api.get('/timeline/evolution', { params: { max_commits: maxCommits } });
@@ -387,12 +363,6 @@ export const fetchGeneratedDocs = async (): Promise<any> => {
 // 13. PR Impact Analyzer
 export const fetchPRImpactReport = async (diffTarget: string = 'HEAD~1'): Promise<any> => {
   const res = await api.get('/analysis/pr-impact', { params: { diff_target: diffTarget } });
-  return res.data;
-};
-
-// 14. Natural Language Code Search
-export const searchNaturalLanguage = async (query: string): Promise<any> => {
-  const res = await api.get('/analysis/nl-search', { params: { q: query } });
   return res.data;
 };
 

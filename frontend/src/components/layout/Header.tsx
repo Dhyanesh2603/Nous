@@ -11,7 +11,6 @@ import {
   Database,
   FolderOpen,
   ShieldAlert,
-  Sparkles,
   Layers,
   LayoutDashboard,
   Network,
@@ -35,7 +34,6 @@ interface HeaderProps {
   onOpenClones: () => void;
   onOpenDatabase: () => void;
   onOpenSecurity: () => void;
-  onOpenCopilot: () => void;
   onOpenFramework: () => void;
   onOpenExport?: () => void;
   onOpenExecutiveReport?: () => void;
@@ -54,7 +52,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenClones,
   onOpenDatabase,
   onOpenSecurity,
-  onOpenCopilot,
   onOpenFramework,
   onOpenExport,
   onOpenExecutiveReport,
@@ -203,15 +200,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Tools Toolbar */}
         <div className="flex items-center gap-2 flex-shrink-0 font-mono">
-          {/* AI Copilot */}
-          <button
-            onClick={onOpenCopilot}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition"
-            title="AI Repository Copilot & Onboarding"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Copilot</span>
-          </button>
+          {/* Executive Audit Report */}
+          {onOpenExecutiveReport && (
+            <button
+              onClick={onOpenExecutiveReport}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition"
+              title="Executive Architecture & Security Audit Report"
+            >
+              <FileCheck2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Audit Report</span>
+            </button>
+          )}
 
           {/* Security Audit */}
           <button

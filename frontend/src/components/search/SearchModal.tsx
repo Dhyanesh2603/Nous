@@ -31,7 +31,6 @@ interface SearchModalProps {
   onViewModeChange?: (mode: ViewMode) => void;
   onOpenSecurity?: () => void;
   onOpenDatabase?: () => void;
-  onOpenCopilot?: () => void;
   onOpenExport?: () => void;
   onOpenExecutiveReport?: () => void;
   onOpenTimeMachine?: () => void;
@@ -60,7 +59,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onViewModeChange,
   onOpenSecurity,
   onOpenDatabase,
-  onOpenCopilot,
   onOpenExport,
   onOpenExecutiveReport,
   onOpenTimeMachine,
@@ -195,19 +193,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       iconColor: 'text-blue-400',
       action: () => {
         onOpenDatabase?.();
-        onClose();
-      },
-    },
-    {
-      id: 'action_copilot',
-      category: 'Diagnostics',
-      title: 'Launch AI Repository Copilot',
-      subtitle: 'Natural language codebase Q&A with AST citations',
-      icon: Sparkles,
-      iconBg: 'bg-indigo-500/10',
-      iconColor: 'text-indigo-400',
-      action: () => {
-        onOpenCopilot?.();
         onClose();
       },
     },

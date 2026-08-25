@@ -9,7 +9,6 @@ from app.routers.security import router as security_router
 from app.routers.performance import router as performance_router
 from app.routers.framework import router as framework_router
 from app.routers.health_score import router as health_score_router
-from app.routers.copilot import router as copilot_router
 from app.routers.timeline import router as timeline_router
 from app.routers.api_flow import router as api_flow_router
 from app.routers.dependencies import router as dependencies_router
@@ -26,7 +25,6 @@ from app.routers.module_health import router as module_health_router
 from app.routers.refactoring import router as refactoring_router
 from app.routers.doc_gen import router as doc_gen_router
 from app.routers.pr_analyzer import router as pr_analyzer_router
-from app.routers.nl_search import router as nl_search_router
 from app.routers.test_advisor import router as test_advisor_router
 from app.routers.time_machine import router as time_machine_router
 from app.routers.playback import router as playback_router
@@ -46,7 +44,6 @@ __all__ = [
     "performance_router",
     "framework_router",
     "health_score_router",
-    "copilot_router",
     "timeline_router",
     "api_flow_router",
     "dependencies_router",
@@ -63,7 +60,6 @@ __all__ = [
     "refactoring_router",
     "doc_gen_router",
     "pr_analyzer_router",
-    "nl_search_router",
     "test_advisor_router",
     "time_machine_router",
     "playback_router",
