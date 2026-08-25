@@ -40,7 +40,8 @@ By integrating open-source grammar parsing engines (Tree-sitter and language-spe
   - **Magnification Slider**: Continuous zoom adjustment from 20% to 200% with automatic canvas recentering.
 
 ### 4. Diagnostics & Analysis Subsystems
-- **Repository Copilot**: AST-indexed semantic query engine providing code citations and onboarding pathways.
+- **Executive Architecture & Security Audit Report**: Unified quality, security, complexity, and drift synthesizer with PDF and Markdown export.
+- **Universal Omni-Command Palette (`Ctrl+K`)**: Dual-mode action launcher and deterministic AST symbol hybrid search (BM25 + RRF).
 - **Static Application Security Testing (SAST)**: Static identification of hardcoded credentials, SQL injection vectors, and unsafe execution routines.
 - **Relational Schema & ERD Analyzer**: Extraction of relational entities, table attributes, and foreign key constraints from SQL DDL and Prisma models.
 - **API Request Flow Tracer**: Reconstruction of end-to-end execution pipelines from HTTP endpoints through middleware to persistence layers.
@@ -49,6 +50,8 @@ By integrating open-source grammar parsing engines (Tree-sitter and language-spe
 - **Git Evolution & Churn Analytics**: Historical commit replay, author attribution analysis, and file modification frequency heatmaps.
 - **Technical Debt & Architectural Drift**: Metrics on cyclomatic complexity, coupling concentration, and structural entropy over time.
 - **Pull Request Impact Simulation**: Forward-looking blast radius prediction for proposed file or symbol deletions and renames.
+
+> For complete in-depth guides, workflows, and API specifications, see **[DOCUMENTATION.md](DOCUMENTATION.md)**.
 
 ---
 
