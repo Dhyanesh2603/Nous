@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Terminal,
   BookOpen,
+  Activity,
 } from 'lucide-react';
 import type { SearchResultItem, SearchResponse, ViewMode } from '../../types';
 import { searchCodebase } from '../../services/api';
@@ -36,6 +37,7 @@ interface SearchModalProps {
   onOpenExecutiveReport?: () => void;
   onOpenPlatformDocs?: () => void;
   onOpenArchitectAI?: () => void;
+  onOpenRippleSimulator?: () => void;
   onOpenTimeMachine?: () => void;
   onOpenPRImpact?: () => void;
   onOpenRules?: () => void;
@@ -66,6 +68,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onOpenExecutiveReport,
   onOpenPlatformDocs,
   onOpenArchitectAI,
+  onOpenRippleSimulator,
   onOpenTimeMachine,
   onOpenPRImpact,
   onOpenRules,
@@ -159,6 +162,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       iconColor: 'text-cyan-400',
       action: () => {
         onOpenArchitectAI?.();
+        onClose();
+      },
+    },
+    {
+      id: 'action_ripple_simulator',
+      category: 'AI Intelligence',
+      title: 'Open Ripple Effect Simulator',
+      subtitle: 'Multi-tier failure cascade and contract breaking risk analysis',
+      icon: Activity,
+      iconBg: 'bg-rose-500/10',
+      iconColor: 'text-rose-400',
+      action: () => {
+        onOpenRippleSimulator?.();
         onClose();
       },
     },

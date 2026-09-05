@@ -20,6 +20,7 @@ import {
   FileCheck2,
   BookOpen,
   Sparkles,
+  Activity,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
@@ -41,6 +42,7 @@ interface HeaderProps {
   onOpenExecutiveReport?: () => void;
   onOpenPlatformDocs?: () => void;
   onOpenArchitectAI?: () => void;
+  onOpenRippleSimulator?: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
 }
@@ -61,6 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenExecutiveReport,
   onOpenPlatformDocs,
   onOpenArchitectAI,
+  onOpenRippleSimulator,
   onRefreshGraph,
   currentRepoPath,
 }) => {
@@ -215,6 +218,18 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
               <span>Architect AI</span>
+            </button>
+          )}
+
+          {/* Ripple Effect Simulator */}
+          {onOpenRippleSimulator && (
+            <button
+              onClick={onOpenRippleSimulator}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 hover:border-rose-500/50 transition shadow-sm"
+              title="Interactive Ripple Effect & Failure Cascade Simulator"
+            >
+              <Activity className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+              <span>Ripple Effect</span>
             </button>
           )}
 
@@ -426,6 +441,24 @@ export const Header: React.FC<HeaderProps> = ({
                     <div>
                       <span className="font-medium block text-slate-200 group-hover:text-cyan-300">Architect AI Assistant</span>
                       <span className="text-[10px] text-slate-500 block">Grounded Q&A & sequence diagrams</span>
+                    </div>
+                  </button>
+                )}
+
+                {onOpenRippleSimulator && (
+                  <button
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenRippleSimulator();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group border-t border-slate-800/80 pt-2"
+                  >
+                    <div className="p-1 rounded-md bg-rose-500/10 text-rose-400 group-hover:scale-105 transition">
+                      <Activity className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium block text-slate-200 group-hover:text-rose-300">Ripple Effect Simulator</span>
+                      <span className="text-[10px] text-slate-500 block">Cascading failure & contract risk</span>
                     </div>
                   </button>
                 )}

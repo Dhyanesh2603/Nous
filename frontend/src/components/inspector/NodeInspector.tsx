@@ -10,6 +10,7 @@ import {
   Workflow,
   Database,
   Sparkles,
+  Activity,
 } from 'lucide-react';
 import type { GraphNodeData, FileContentResponse, SymbolFactsResponse } from '../../types';
 import { fetchFileContent, fetchSymbolFacts } from '../../services/api';
@@ -21,6 +22,7 @@ interface NodeInspectorProps {
   onCalculateBlastRadius: (nodeId: string) => void;
   onTraceSequence?: (symbolId: string) => void;
   onAskArchitectAI?: (nodeId: string, label: string) => void;
+  onSimulateRipple?: (nodeId: string, nodeType: 'file' | 'symbol') => void;
 }
 
 export const NodeInspector: React.FC<NodeInspectorProps> = ({
@@ -29,6 +31,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   onCalculateBlastRadius,
   onTraceSequence,
   onAskArchitectAI,
+  onSimulateRipple,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'code' | 'facts'>('overview');
   const [fileContent, setFileContent] = useState<FileContentResponse | null>(null);
@@ -144,6 +147,17 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
             Ask AI
+          </button>
+        )}
+
+        {onSimulateRipple && (
+          <button
+            onClick={() => onSimulateRipple(node.id, isSymbol ? 'symbol' : 'file')}
+            className="py-2 px-3 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-semibold text-xs transition flex items-center justify-center gap-1.5"
+            title="Simulate Ripple Effect & Failure Cascade"
+          >
+            <Activity className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+            Ripple
           </button>
         )}
       </div>

@@ -37,6 +37,7 @@ import {
   Compass,
   FileCheck2,
   Sparkles,
+  Activity,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -88,6 +89,7 @@ interface RepositoryDashboardProps {
   onOpenExecutiveReport?: () => void;
   onOpenPlatformDocs?: () => void;
   onOpenArchitectAI?: () => void;
+  onOpenRippleSimulator?: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -127,6 +129,7 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenExecutiveReport,
   onOpenPlatformDocs,
   onOpenArchitectAI,
+  onOpenRippleSimulator,
 }) => {
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
@@ -223,6 +226,17 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               >
                 <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
                 <span>Architect AI</span>
+              </button>
+            )}
+
+            {onOpenRippleSimulator && (
+              <button
+                onClick={onOpenRippleSimulator}
+                className="px-4 py-3 rounded-2xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-rose-950/30 flex-shrink-0"
+                title="Open Ripple Effect & Cascading Failure Simulator"
+              >
+                <Activity className="w-4 h-4 text-rose-400 animate-pulse" />
+                <span>Ripple Effect</span>
               </button>
             )}
 

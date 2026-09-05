@@ -1322,3 +1322,40 @@ export interface AIProviderStatus {
   providers: Record<string, { available: boolean; default_model: string; url?: string }>;
   active_default: string;
 }
+
+// 23. Interactive Ripple Effect Simulator
+export interface RippleLevelItem {
+  id: string;
+  name: string;
+  kind: string;
+  file_path: string;
+  line?: number;
+  relationship: string;
+  risk_level: 'critical' | 'high' | 'medium' | 'low';
+  risk_reason: string;
+}
+
+export interface RippleSimulationReport {
+  target_id: string;
+  target_name: string;
+  target_type: 'file' | 'symbol';
+  change_type: 'breaking' | 'behavioral' | 'additive';
+  overall_risk_score: number;
+  risk_tier: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  level1_direct: RippleLevelItem[];
+  level2_transitive: RippleLevelItem[];
+  level3_ingress: RippleLevelItem[];
+  breaking_contract_warnings: string[];
+  recommended_test_files: string[];
+  affected_endpoints_count: number;
+  total_affected_files: number;
+  transitive_reachability_pct: number;
+}
+
+export interface RippleTarget {
+  id: string;
+  name: string;
+  type: string;
+  label: string;
+}
+

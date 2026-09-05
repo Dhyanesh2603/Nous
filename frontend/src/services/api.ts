@@ -442,6 +442,25 @@ export const fetchSuggestedAIQuestions = async (): Promise<{ questions: string[]
   return res.data;
 };
 
+// 23. Interactive Ripple Effect Simulator
+export const fetchRippleTargets = async (): Promise<{ targets: any[] }> => {
+  const res = await api.get<{ targets: any[] }>('/analysis/ripple/targets');
+  return res.data;
+};
+
+export const fetchRippleSimulation = async (
+  targetId: string,
+  targetType: string = 'file',
+  changeType: string = 'breaking'
+): Promise<any> => {
+  const res = await api.post('/analysis/ripple/simulate', {
+    target_id: targetId,
+    target_type: targetType,
+    change_type: changeType,
+  });
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;
@@ -457,4 +476,5 @@ export const getSamples = fetchSamples;
 export const getIngestStatus = fetchIngestStatus;
 
 export default api;
+
 

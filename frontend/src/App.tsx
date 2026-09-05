@@ -53,6 +53,7 @@ import { ExportModal } from './components/export/ExportModal';
 import { ExecutiveReportModal } from './components/report/ExecutiveReportModal';
 import { PlatformDocumentationModal } from './components/docs/PlatformDocumentationModal';
 import { ArchitectAIModal } from './components/ai/ArchitectAIModal';
+import { RippleSimulatorModal } from './components/ripple/RippleSimulatorModal';
 import './App.css';
 
 export function App() {
@@ -102,12 +103,22 @@ export function App() {
   const [isArchitectAIOpen, setIsArchitectAIOpen] = useState(false);
   const [architectAIFocusNodeId, setArchitectAIFocusNodeId] = useState<string | undefined>(undefined);
   const [architectAIInitialQuery, setArchitectAIInitialQuery] = useState<string | undefined>(undefined);
+  
+  const [isRippleOpen, setIsRippleOpen] = useState(false);
+  const [rippleTargetId, setRippleTargetId] = useState<string | undefined>(undefined);
+  const [rippleTargetType, setRippleTargetType] = useState<'file' | 'symbol'>('file');
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
   const handleOpenArchitectAI = (focusNodeId?: string, query?: string) => {
     setArchitectAIFocusNodeId(focusNodeId);
     setArchitectAIInitialQuery(query);
     setIsArchitectAIOpen(true);
+  };
+
+  const handleOpenRippleSimulator = (targetId?: string, targetType: 'file' | 'symbol' = 'file') => {
+    setRippleTargetId(targetId);
+    setRippleTargetType(targetType);
+    setIsRippleOpen(true);
   };
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -255,6 +266,7 @@ export function App() {
         onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
         onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
         onOpenArchitectAI={() => handleOpenArchitectAI()}
+        onOpenRippleSimulator={() => handleOpenRippleSimulator()}
         onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
       />
@@ -320,6 +332,7 @@ export function App() {
             onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
             onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
             onOpenArchitectAI={() => handleOpenArchitectAI()}
+            onOpenRippleSimulator={() => handleOpenRippleSimulator()}
           />
         ) : (
           <>
@@ -364,6 +377,7 @@ export function App() {
               onAskArchitectAI={(nodeId, label) =>
                 handleOpenArchitectAI(nodeId, `Explain the architectural role and dependencies of ${label}`)
               }
+              onSimulateRipple={(nodeId, nodeType) => handleOpenRippleSimulator(nodeId, nodeType)}
             />
           </>
         )}
@@ -398,6 +412,7 @@ export function App() {
           onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
           onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
           onOpenArchitectAI={() => handleOpenArchitectAI()}
+          onOpenRippleSimulator={() => handleOpenRippleSimulator()}
           onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
           onOpenPRImpact={() => setIsPRImpactOpen(true)}
           onOpenRules={() => setIsRulesOpen(true)}
@@ -655,6 +670,25 @@ export function App() {
           focusNodeId={architectAIFocusNodeId}
           onSelectNode={(nodeId) => {
             setIsArchitectAIOpen(false);
+            const targetNode = graphData?.nodes.find((n) => n.id === nodeId || n.data?.filePath === nodeId);
+            if (targetNode) {
+              setSelectedNode(targetNode.data);
+              setActiveScreen('graph');
+            }
+          }}
+        />
+
+        {/* Ripple Effect & Failure Cascade Simulator Modal */}
+        <RippleSimulatorModal
+          isOpen={isRippleOpen}
+          onClose={() => {
+            setIsRippleOpen(false);
+            setRippleTargetId(undefined);
+          }}
+          initialTargetId={rippleTargetId}
+          initialTargetType={rippleTargetType}
+          onSelectNode={(nodeId) => {
+            setIsRippleOpen(false);
             const targetNode = graphData?.nodes.find((n) => n.id === nodeId || n.data?.filePath === nodeId);
             if (targetNode) {
               setSelectedNode(targetNode.data);
