@@ -36,6 +36,7 @@ import {
   Play,
   Compass,
   FileCheck2,
+  Sparkles,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -86,6 +87,7 @@ interface RepositoryDashboardProps {
   onOpenMigration: () => void;
   onOpenExecutiveReport?: () => void;
   onOpenPlatformDocs?: () => void;
+  onOpenArchitectAI?: () => void;
 }
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
@@ -124,6 +126,7 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenMigration,
   onOpenExecutiveReport,
   onOpenPlatformDocs,
+  onOpenArchitectAI,
 }) => {
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
@@ -212,6 +215,17 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3 flex-shrink-0">
+            {onOpenArchitectAI && (
+              <button
+                onClick={onOpenArchitectAI}
+                className="px-4 py-3 rounded-2xl bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-950/30 flex-shrink-0"
+                title="Open Architect AI (Graph-RAG Q&A & Sequence Explainer)"
+              >
+                <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+                <span>Architect AI</span>
+              </button>
+            )}
+
             {onOpenExecutiveReport && (
               <button
                 onClick={onOpenExecutiveReport}

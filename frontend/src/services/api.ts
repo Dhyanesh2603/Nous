@@ -416,6 +416,32 @@ export const fetchExecutiveReport = async (): Promise<any> => {
   return res.data;
 };
 
+// 22. Architect AI (Graph-RAG Engine)
+export const fetchArchitectAIQuery = async (
+  query: string,
+  provider?: string,
+  model?: string,
+  focusNodeId?: string
+): Promise<any> => {
+  const res = await api.post('/ai/architect-query', {
+    query,
+    provider: provider || undefined,
+    model: model || undefined,
+    focus_node_id: focusNodeId || undefined,
+  });
+  return res.data;
+};
+
+export const fetchAIStatus = async (): Promise<any> => {
+  const res = await api.get('/ai/status');
+  return res.data;
+};
+
+export const fetchSuggestedAIQuestions = async (): Promise<{ questions: string[] }> => {
+  const res = await api.get<{ questions: string[] }>('/ai/suggested-questions');
+  return res.data;
+};
+
 // Aliases for compatibility
 export const getGraphStructure = fetchGraphStructure;
 export const getBlastRadius = fetchBlastRadius;
@@ -431,3 +457,4 @@ export const getSamples = fetchSamples;
 export const getIngestStatus = fetchIngestStatus;
 
 export default api;
+

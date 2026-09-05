@@ -1296,7 +1296,29 @@ export interface ExecutiveAuditReportResponse {
   full_markdown_report: string;
 }
 
+// 22. Architect AI (Graph-RAG Engine)
+export interface ReferencedSymbolItem {
+  name: string;
+  kind: string;
+  file_path: string;
+  start_line: number;
+  end_line: number;
+}
 
+export interface ArchitectAIResponse {
+  query: string;
+  summary: string;
+  execution_steps: string[];
+  sequence_diagram: string;
+  referenced_files: string[];
+  referenced_symbols: ReferencedSymbolItem[];
+  architectural_observations: string[];
+  provider: string;
+  model: string;
+  is_fallback: boolean;
+}
 
-
-
+export interface AIProviderStatus {
+  providers: Record<string, { available: boolean; default_model: string; url?: string }>;
+  active_default: string;
+}

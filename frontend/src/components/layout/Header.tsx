@@ -19,6 +19,7 @@ import {
   Share2,
   FileCheck2,
   BookOpen,
+  Sparkles,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
@@ -39,6 +40,7 @@ interface HeaderProps {
   onOpenExport?: () => void;
   onOpenExecutiveReport?: () => void;
   onOpenPlatformDocs?: () => void;
+  onOpenArchitectAI?: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
 }
@@ -58,6 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenExport,
   onOpenExecutiveReport,
   onOpenPlatformDocs,
+  onOpenArchitectAI,
   onRefreshGraph,
   currentRepoPath,
 }) => {
@@ -203,6 +206,18 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Tools Toolbar */}
         <div className="flex items-center gap-2 flex-shrink-0 font-mono">
+          {/* Architect AI */}
+          {onOpenArchitectAI && (
+            <button
+              onClick={onOpenArchitectAI}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition shadow-sm"
+              title="Architect AI (Graph-RAG Architecture Explainer & Q&A)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span>Architect AI</span>
+            </button>
+          )}
+
           {/* Executive Audit Report */}
           {onOpenExecutiveReport && (
             <button
@@ -393,6 +408,24 @@ export const Header: React.FC<HeaderProps> = ({
                     <div>
                       <span className="font-medium block text-slate-200 group-hover:text-indigo-300">Platform User Manual</span>
                       <span className="text-[10px] text-slate-500 block">Complete architecture & tool docs</span>
+                    </div>
+                  </button>
+                )}
+
+                {onOpenArchitectAI && (
+                  <button
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenArchitectAI();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group border-t border-slate-800/80 pt-2"
+                  >
+                    <div className="p-1 rounded-md bg-cyan-500/10 text-cyan-400 group-hover:scale-105 transition">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium block text-slate-200 group-hover:text-cyan-300">Architect AI Assistant</span>
+                      <span className="text-[10px] text-slate-500 block">Grounded Q&A & sequence diagrams</span>
                     </div>
                   </button>
                 )}

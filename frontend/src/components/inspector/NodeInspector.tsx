@@ -9,6 +9,7 @@ import {
   Check,
   Workflow,
   Database,
+  Sparkles,
 } from 'lucide-react';
 import type { GraphNodeData, FileContentResponse, SymbolFactsResponse } from '../../types';
 import { fetchFileContent, fetchSymbolFacts } from '../../services/api';
@@ -19,6 +20,7 @@ interface NodeInspectorProps {
   onClose: () => void;
   onCalculateBlastRadius: (nodeId: string) => void;
   onTraceSequence?: (symbolId: string) => void;
+  onAskArchitectAI?: (nodeId: string, label: string) => void;
 }
 
 export const NodeInspector: React.FC<NodeInspectorProps> = ({
@@ -26,6 +28,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   onClose,
   onCalculateBlastRadius,
   onTraceSequence,
+  onAskArchitectAI,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'code' | 'facts'>('overview');
   const [fileContent, setFileContent] = useState<FileContentResponse | null>(null);
@@ -130,6 +133,17 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           >
             <Workflow className="w-3.5 h-3.5" />
             Trace Flow
+          </button>
+        )}
+
+        {onAskArchitectAI && (
+          <button
+            onClick={() => onAskArchitectAI(node.id, node.label || node.id)}
+            className="py-2 px-3 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-semibold text-xs transition flex items-center justify-center gap-1.5"
+            title="Ask Architect AI to explain this component"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            Ask AI
           </button>
         )}
       </div>

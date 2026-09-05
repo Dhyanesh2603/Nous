@@ -52,6 +52,7 @@ import { MigrationPlannerModal } from './components/migration/MigrationPlannerMo
 import { ExportModal } from './components/export/ExportModal';
 import { ExecutiveReportModal } from './components/report/ExecutiveReportModal';
 import { PlatformDocumentationModal } from './components/docs/PlatformDocumentationModal';
+import { ArchitectAIModal } from './components/ai/ArchitectAIModal';
 import './App.css';
 
 export function App() {
@@ -98,7 +99,16 @@ export function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isExecutiveReportOpen, setIsExecutiveReportOpen] = useState(false);
   const [isPlatformDocsOpen, setIsPlatformDocsOpen] = useState(false);
+  const [isArchitectAIOpen, setIsArchitectAIOpen] = useState(false);
+  const [architectAIFocusNodeId, setArchitectAIFocusNodeId] = useState<string | undefined>(undefined);
+  const [architectAIInitialQuery, setArchitectAIInitialQuery] = useState<string | undefined>(undefined);
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
+
+  const handleOpenArchitectAI = (focusNodeId?: string, query?: string) => {
+    setArchitectAIFocusNodeId(focusNodeId);
+    setArchitectAIInitialQuery(query);
+    setIsArchitectAIOpen(true);
+  };
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
   const [status, setStatus] = useState<any>(null);
@@ -138,6 +148,10 @@ export function App() {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault();
+        setIsArchitectAIOpen((prev) => !prev);
       }
       if (e.key === 'Escape') {
         setIsSearchOpen(false);
@@ -240,6 +254,7 @@ export function App() {
         onOpenExport={() => setIsExportOpen(true)}
         onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
         onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
+        onOpenArchitectAI={() => handleOpenArchitectAI()}
         onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
       />
@@ -304,6 +319,7 @@ export function App() {
             onOpenMigration={() => setIsMigrationOpen(true)}
             onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
             onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
+            onOpenArchitectAI={() => handleOpenArchitectAI()}
           />
         ) : (
           <>
@@ -345,6 +361,9 @@ export function App() {
               onClose={() => setSelectedNode(null)}
               onCalculateBlastRadius={(nodeId) => handleCalculateBlastRadius(nodeId, 'file')}
               onTraceSequence={handleTraceSequence}
+              onAskArchitectAI={(nodeId, label) =>
+                handleOpenArchitectAI(nodeId, `Explain the architectural role and dependencies of ${label}`)
+              }
             />
           </>
         )}
@@ -378,6 +397,7 @@ export function App() {
           onOpenExport={() => setIsExportOpen(true)}
           onOpenExecutiveReport={() => setIsExecutiveReportOpen(true)}
           onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
+          onOpenArchitectAI={() => handleOpenArchitectAI()}
           onOpenTimeMachine={() => setIsTimeMachineOpen(true)}
           onOpenPRImpact={() => setIsPRImpactOpen(true)}
           onOpenRules={() => setIsRulesOpen(true)}
@@ -621,6 +641,26 @@ export function App() {
         <PlatformDocumentationModal
           isOpen={isPlatformDocsOpen}
           onClose={() => setIsPlatformDocsOpen(false)}
+        />
+
+        {/* Architect AI (Graph-RAG Engine) Assistant Modal */}
+        <ArchitectAIModal
+          isOpen={isArchitectAIOpen}
+          onClose={() => {
+            setIsArchitectAIOpen(false);
+            setArchitectAIFocusNodeId(undefined);
+            setArchitectAIInitialQuery(undefined);
+          }}
+          initialQuery={architectAIInitialQuery}
+          focusNodeId={architectAIFocusNodeId}
+          onSelectNode={(nodeId) => {
+            setIsArchitectAIOpen(false);
+            const targetNode = graphData?.nodes.find((n) => n.id === nodeId || n.data?.filePath === nodeId);
+            if (targetNode) {
+              setSelectedNode(targetNode.data);
+              setActiveScreen('graph');
+            }
+          }}
         />
 
         {/* Ingest Modal */}

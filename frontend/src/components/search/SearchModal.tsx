@@ -35,6 +35,7 @@ interface SearchModalProps {
   onOpenExport?: () => void;
   onOpenExecutiveReport?: () => void;
   onOpenPlatformDocs?: () => void;
+  onOpenArchitectAI?: () => void;
   onOpenTimeMachine?: () => void;
   onOpenPRImpact?: () => void;
   onOpenRules?: () => void;
@@ -43,7 +44,7 @@ interface SearchModalProps {
 
 interface CommandAction {
   id: string;
-  category: 'Navigation' | 'Diagnostics' | 'Export' | 'Repository' | 'Documentation';
+  category: 'Navigation' | 'Diagnostics' | 'Export' | 'Repository' | 'Documentation' | 'AI Intelligence';
   title: string;
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -64,6 +65,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onOpenExport,
   onOpenExecutiveReport,
   onOpenPlatformDocs,
+  onOpenArchitectAI,
   onOpenTimeMachine,
   onOpenPRImpact,
   onOpenRules,
@@ -144,6 +146,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       action: () => {
         onNavigateScreen?.('graph');
         onViewModeChange?.('symbol');
+        onClose();
+      },
+    },
+    {
+      id: 'action_architect_ai',
+      category: 'AI Intelligence',
+      title: 'Open Architect AI Assistant',
+      subtitle: 'Graph-RAG architectural explainer, Q&A, and sequence diagrams',
+      icon: Sparkles,
+      iconBg: 'bg-cyan-500/10',
+      iconColor: 'text-cyan-400',
+      action: () => {
+        onOpenArchitectAI?.();
         onClose();
       },
     },
