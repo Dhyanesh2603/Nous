@@ -40,6 +40,7 @@ from app.routers import (
     knowledge_graph_router,
     migration_planner_router,
     executive_report_router,
+    architect_ai_router,
 )
 from app.state import app_state
 
@@ -101,6 +102,7 @@ app.include_router(playback_router)
 app.include_router(knowledge_graph_router)
 app.include_router(migration_planner_router)
 app.include_router(executive_report_router)
+app.include_router(architect_ai_router)
 
 
 @app.get("/api/health")

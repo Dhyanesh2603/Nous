@@ -31,6 +31,7 @@ from app.routers.playback import router as playback_router
 from app.routers.knowledge_graph import router as knowledge_graph_router
 from app.routers.migration_planner import router as migration_planner_router
 from app.routers.executive_report import router as executive_report_router
+from app.routers.architect_ai import router as architect_ai_router
 
 __all__ = [
     "ingest_router",
@@ -66,4 +67,6 @@ __all__ = [
     "knowledge_graph_router",
     "migration_planner_router",
     "executive_report_router",
+    "architect_ai_router",
 ]
+
