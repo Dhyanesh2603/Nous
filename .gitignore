@@ -53,3 +53,8 @@ Thumbs.db
 .file_uploads/
 backend/.cloned_repos/
 backend/.file_uploads/
+
+# Environment variables & secrets
+.env
+*.env
+*.log

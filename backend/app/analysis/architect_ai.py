@@ -70,6 +70,7 @@ class ArchitectAIEngine:
         provider: Optional[str] = None,
         model: Optional[str] = None,
         focus_node_id: Optional[str] = None,
+        api_key: Optional[str] = None,
     ) -> ArchitectAIResponse:
         """Executes Graph-RAG retrieval and synthesizes structured architectural intelligence."""
         # 1. Build Grounded Graph-RAG Context
@@ -97,7 +98,7 @@ class ArchitectAIEngine:
             LLMMessage(role="system", content=system_prompt),
             LLMMessage(role="user", content=user_prompt),
         ]
-        llm_res = self.llm_client.generate(messages, provider=provider, model=model)
+        llm_res = self.llm_client.generate(messages, provider=provider, model=model, api_key=api_key)
 
         # 4. Generate Deterministic Mermaid Sequence Diagram from verified Call Chains
         sequence_diag = self._generate_sequence_diagram(ctx)

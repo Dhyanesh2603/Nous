@@ -6,6 +6,25 @@ from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
 
 
+from pathlib import Path
+
+def _load_env():
+    for p in [Path("D:/Nous/.env"), Path(".env"), Path("../.env")]:
+        if p.exists():
+            try:
+                for line in p.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k, v = k.strip(), v.strip().strip("'").strip('"')
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+            except Exception:
+                pass
+
+_load_env()
+
+
 class LLMMessage(BaseModel):
     role: str  # "system", "user", "assistant"
     content: str
@@ -23,6 +42,7 @@ class LLMClient:
     """
     Unified multi-provider LLM client for Nous.
     Supports:
+    - NVIDIA NIM / DeepSeek (NVIDIA_API_KEY / DEEPSEEK_API_KEY)
     - OpenAI (OPENAI_API_KEY)
     - Anthropic (ANTHROPIC_API_KEY)
     - Google Gemini (GEMINI_API_KEY)
@@ -31,25 +51,65 @@ class LLMClient:
     """
 
     def __init__(self):
+        _load_env()
+        self.nvidia_key = (
+            os.environ.get("NVIDIA_API_KEY", "").strip()
+            or os.environ.get("DEEPSEEK_API_KEY", "").strip()
+        )
+        self.nvidia_base_url = os.environ.get(
+            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+        ).rstrip("/")
+        self.nvidia_default_model = os.environ.get(
+            "NVIDIA_MODEL", "deepseek-ai/deepseek-v4-flash"
+        ).strip()
         self.openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
         self.anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
         self.gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
         self.ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
+
+    def set_api_key(self, provider: str, key: str):
+        """Dynamically updates an API key in-memory and in environment."""
+        clean_key = key.strip()
+        if provider in ("nvidia", "deepseek"):
+            self.nvidia_key = clean_key
+            os.environ["NVIDIA_API_KEY"] = clean_key
+        elif provider == "openai":
+            self.openai_key = clean_key
+            os.environ["OPENAI_API_KEY"] = clean_key
+        elif provider == "anthropic":
+            self.anthropic_key = clean_key
+            os.environ["ANTHROPIC_API_KEY"] = clean_key
+        elif provider == "gemini":
+            self.gemini_key = clean_key
+            os.environ["GEMINI_API_KEY"] = clean_key
 
     def get_available_providers(self) -> Dict[str, Any]:
         """Returns availability status and active defaults for all providers."""
         ollama_available = self._check_ollama_available()
         
         providers = {
+            "nvidia": {
+                "available": bool(self.nvidia_key),
+                "default_model": self.nvidia_default_model,
+                "supported_models": [
+                    "deepseek-ai/deepseek-v4-flash",
+                    "deepseek-ai/deepseek-r1",
+                    "deepseek-ai/deepseek-v3",
+                    "meta/llama-3.3-70b-instruct",
+                ],
+                "description": "NVIDIA NIM (DeepSeek V4 Flash / R1 / V3)",
+            },
             "openai": {"available": bool(self.openai_key), "default_model": "gpt-4o-mini"},
             "anthropic": {"available": bool(self.anthropic_key), "default_model": "claude-3-5-sonnet-20241022"},
             "gemini": {"available": bool(self.gemini_key), "default_model": "gemini-1.5-flash"},
             "ollama": {"available": ollama_available, "url": self.ollama_url, "default_model": "llama3.2"},
-            "offline": {"available": True, "default_model": "deterministic-ast-engine"}
+            "offline": {"available": True, "default_model": "deterministic-ast-engine"},
         }
         
         # Determine best available default
-        if self.openai_key:
+        if self.nvidia_key:
+            active = "nvidia"
+        elif self.openai_key:
             active = "openai"
         elif self.anthropic_key:
             active = "anthropic"
@@ -76,18 +136,26 @@ class LLMClient:
         provider: Optional[str] = None,
         model: Optional[str] = None,
         temperature: float = 0.2,
+        api_key: Optional[str] = None,
     ) -> LLMResponse:
         """Dispatches generation to requested or best-available provider."""
         status = self.get_available_providers()
         chosen_provider = provider or status["active_default"]
 
         try:
-            if chosen_provider == "openai" and self.openai_key:
-                return self._call_openai(messages, model or "gpt-4o-mini", temperature)
-            elif chosen_provider == "anthropic" and self.anthropic_key:
-                return self._call_anthropic(messages, model or "claude-3-5-sonnet-20241022", temperature)
-            elif chosen_provider == "gemini" and self.gemini_key:
-                return self._call_gemini(messages, model or "gemini-1.5-flash", temperature)
+            if chosen_provider in ("nvidia", "deepseek") and (api_key or self.nvidia_key):
+                return self._call_nvidia(
+                    messages,
+                    model=model or self.nvidia_default_model,
+                    temperature=temperature,
+                    api_key=api_key or self.nvidia_key,
+                )
+            elif chosen_provider == "openai" and (api_key or self.openai_key):
+                return self._call_openai(messages, model or "gpt-4o-mini", temperature, api_key=api_key or self.openai_key)
+            elif chosen_provider == "anthropic" and (api_key or self.anthropic_key):
+                return self._call_anthropic(messages, model or "claude-3-5-sonnet-20241022", temperature, api_key=api_key or self.anthropic_key)
+            elif chosen_provider == "gemini" and (api_key or self.gemini_key):
+                return self._call_gemini(messages, model or "gemini-1.5-flash", temperature, api_key=api_key or self.gemini_key)
             elif chosen_provider == "ollama":
                 return self._call_ollama(messages, model or "llama3.2", temperature)
         except Exception as e:
@@ -97,7 +165,61 @@ class LLMClient:
         # Fallback to deterministic offline synthesis
         return self._call_offline_fallback(messages)
 
-    def _call_openai(self, messages: List[LLMMessage], model: str, temperature: float) -> LLMResponse:
+    def _call_nvidia(
+        self,
+        messages: List[LLMMessage],
+        model: str,
+        temperature: float,
+        api_key: Optional[str] = None,
+    ) -> LLMResponse:
+        effective_key = (api_key or self.nvidia_key).strip()
+        if not effective_key:
+            raise ValueError("NVIDIA API key not provided")
+
+        url = f"{self.nvidia_base_url}/chat/completions"
+        payload = {
+            "model": model,
+            "messages": [{"role": m.role, "content": m.content} for m in messages],
+            "temperature": temperature,
+            "max_tokens": 4096,
+            "stream": False,
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {effective_key}",
+                "User-Agent": "Nous/1.0",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=60.0) as resp:
+            res_json = json.loads(resp.read().decode("utf-8"))
+            choices = res_json.get("choices", [])
+            if not choices:
+                raise ValueError("No completion choices returned by NVIDIA API")
+            content = choices[0]["message"]["content"]
+            
+            # Format DeepSeek reasoning tokens cleanly if present
+            if "<think>" in content and "</think>" in content:
+                parts = content.split("</think>", 1)
+                think_content = parts[0].replace("<think>", "").strip()
+                answer_content = parts[1].strip()
+                content = f"> [!TIP]\n> **DeepSeek Reasoning Process:**\n> {think_content}\n\n{answer_content}"
+            elif "<think>" in content:
+                content = content.replace("<think>", "").strip()
+
+            usage = res_json.get("usage", {})
+            return LLMResponse(
+                content=content,
+                provider="nvidia",
+                model=model,
+                is_fallback=False,
+                usage=usage,
+            )
+
+    def _call_openai(self, messages: List[LLMMessage], model: str, temperature: float, api_key: Optional[str] = None) -> LLMResponse:
         url = "https://api.openai.com/v1/chat/completions"
         payload = {
             "model": model,

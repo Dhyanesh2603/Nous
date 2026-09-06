@@ -421,13 +421,28 @@ export const fetchArchitectAIQuery = async (
   query: string,
   provider?: string,
   model?: string,
-  focusNodeId?: string
+  focusNodeId?: string,
+  apiKey?: string
 ): Promise<any> => {
   const res = await api.post('/ai/architect-query', {
     query,
     provider: provider || undefined,
     model: model || undefined,
     focus_node_id: focusNodeId || undefined,
+    api_key: apiKey || undefined,
+  });
+  return res.data;
+};
+
+export const setAIProviderKey = async (
+  provider: string,
+  apiKey: string,
+  model?: string
+): Promise<any> => {
+  const res = await api.post('/ai/set-key', {
+    provider,
+    api_key: apiKey,
+    model: model || undefined,
   });
   return res.data;
 };

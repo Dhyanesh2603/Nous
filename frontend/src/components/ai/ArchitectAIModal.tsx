@@ -10,12 +10,14 @@ import {
   Cpu,
   Layers,
   HelpCircle,
+  Key,
 } from 'lucide-react';
 import type { ArchitectAIResponse, AIProviderStatus } from '../../types';
 import {
   fetchArchitectAIQuery,
   fetchAIStatus,
   fetchSuggestedAIQuestions,
+  setAIProviderKey,
 } from '../../services/api';
 
 interface ArchitectAIModalProps {
@@ -39,7 +41,12 @@ export const ArchitectAIModal: React.FC<ArchitectAIModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [aiStatus, setAiStatus] = useState<AIProviderStatus | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [selectedProvider, setSelectedProvider] = useState<string>('nvidia');
+  const [selectedModel, setSelectedModel] = useState<string>('deepseek-ai/deepseek-v4-flash');
+  const [apiKeyInput, setApiKeyInput] = useState<string>('');
+  const [showKeyConfig, setShowKeyConfig] = useState<boolean>(false);
+  const [isSavingKey, setIsSavingKey] = useState<boolean>(false);
+  const [keySavedMessage, setKeySavedMessage] = useState<string>('');
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +54,12 @@ export const ArchitectAIModal: React.FC<ArchitectAIModalProps> = ({
       fetchAIStatus()
         .then((res) => {
           setAiStatus(res);
-          setSelectedProvider(res.active_default || 'offline');
+          if (res.providers?.nvidia?.available) {
+            setSelectedProvider('nvidia');
+            setSelectedModel(res.providers.nvidia.default_model || 'deepseek-ai/deepseek-v4-flash');
+          } else {
+            setSelectedProvider(res.active_default || 'offline');
+          }
         })
         .catch((err) => console.error('Failed to fetch AI status:', err));
 
@@ -73,14 +85,33 @@ export const ArchitectAIModal: React.FC<ArchitectAIModalProps> = ({
       const res = await fetchArchitectAIQuery(
         queryText.trim(),
         selectedProvider || undefined,
-        undefined,
-        nodeFocus || focusNodeId
+        selectedModel || undefined,
+        nodeFocus || focusNodeId,
+        apiKeyInput.trim() || undefined
       );
       setResponse(res);
     } catch (err) {
       console.error('Failed to execute Architect AI query:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveKey = async () => {
+    if (!apiKeyInput.trim()) return;
+    setIsSavingKey(true);
+    try {
+      const res = await setAIProviderKey('nvidia', apiKeyInput.trim(), selectedModel);
+      setAiStatus(res.active_status);
+      setKeySavedMessage('API Key saved & active!');
+      setTimeout(() => setKeySavedMessage(''), 3500);
+      setShowKeyConfig(false);
+    } catch (err) {
+      console.error('Failed to save API key:', err);
+      setKeySavedMessage('Failed to save API key.');
+      setTimeout(() => setKeySavedMessage(''), 3500);
+    } finally {
+      setIsSavingKey(false);
     }
   };
 
@@ -132,34 +163,84 @@ export const ArchitectAIModal: React.FC<ArchitectAIModalProps> = ({
                 <Cpu className="w-3.5 h-3.5 text-cyan-400" />
                 <select
                   value={selectedProvider}
-                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedProvider(e.target.value);
+                    if (e.target.value === 'nvidia') {
+                      setSelectedModel('deepseek-ai/deepseek-v4-flash');
+                    }
+                  }}
                   className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer"
                 >
+                  <option value="nvidia" className="bg-slate-900 text-emerald-400 font-semibold">
+                    ⚡ NVIDIA NIM (DeepSeek V4 Flash) {aiStatus.providers?.nvidia?.available ? '● Ready' : '○ Key Needed'}
+                  </option>
                   <option value="offline" className="bg-slate-900 text-slate-200">
                     Deterministic AST Engine (Offline)
                   </option>
-                  {aiStatus.providers.openai?.available && (
+                  {aiStatus.providers?.openai?.available && (
                     <option value="openai" className="bg-slate-900 text-slate-200">
                       OpenAI (GPT-4o-mini)
                     </option>
                   )}
-                  {aiStatus.providers.anthropic?.available && (
+                  {aiStatus.providers?.anthropic?.available && (
                     <option value="anthropic" className="bg-slate-900 text-slate-200">
                       Anthropic (Claude 3.5)
                     </option>
                   )}
-                  {aiStatus.providers.gemini?.available && (
+                  {aiStatus.providers?.gemini?.available && (
                     <option value="gemini" className="bg-slate-900 text-slate-200">
                       Google Gemini (1.5 Flash)
                     </option>
                   )}
-                  {aiStatus.providers.ollama?.available && (
+                  {aiStatus.providers?.ollama?.available && (
                     <option value="ollama" className="bg-slate-900 text-slate-200">
                       Local Ollama (llama3.2)
                     </option>
                   )}
                 </select>
               </div>
+            )}
+
+            {/* Model Selector for NVIDIA */}
+            {selectedProvider === 'nvidia' && (
+              <div className="hidden sm:flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-emerald-500/30 text-xs font-mono text-emerald-300">
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="bg-transparent text-xs text-emerald-300 focus:outline-none cursor-pointer"
+                >
+                  <option value="deepseek-ai/deepseek-v4-flash" className="bg-slate-900 text-slate-200">
+                    deepseek-v4-flash
+                  </option>
+                  <option value="deepseek-ai/deepseek-r1" className="bg-slate-900 text-slate-200">
+                    deepseek-r1 (Reasoning)
+                  </option>
+                  <option value="deepseek-ai/deepseek-v3" className="bg-slate-900 text-slate-200">
+                    deepseek-v3
+                  </option>
+                  <option value="meta/llama-3.3-70b-instruct" className="bg-slate-900 text-slate-200">
+                    llama-3.3-70b
+                  </option>
+                </select>
+              </div>
+            )}
+
+            {/* NVIDIA API Key Button */}
+            {selectedProvider === 'nvidia' && (
+              <button
+                onClick={() => setShowKeyConfig((prev) => !prev)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition ${
+                  aiStatus?.providers?.nvidia?.available
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 animate-pulse'
+                }`}
+                title="Configure NVIDIA API Key"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">
+                  {aiStatus?.providers?.nvidia?.available ? 'Key Active' : 'Enter Key'}
+                </span>
+              </button>
             )}
 
             <button
@@ -173,6 +254,52 @@ export const ArchitectAIModal: React.FC<ArchitectAIModalProps> = ({
 
         {/* Query Input Section */}
         <div className="p-4 border-b border-slate-800 bg-slate-950/40 space-y-3">
+          {/* Key Configuration Drawer */}
+          {(showKeyConfig || (selectedProvider === 'nvidia' && !aiStatus?.providers?.nvidia?.available)) && (
+            <div className="p-3 bg-slate-950 border border-emerald-500/40 rounded-xl space-y-2 text-xs font-sans animate-in fade-in duration-150 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-400 font-mono font-semibold">
+                  <Key className="w-4 h-4" />
+                  <span>NVIDIA NIM API Key Configuration</span>
+                </div>
+                {keySavedMessage && (
+                  <span className="text-xs text-emerald-400 font-mono font-semibold">{keySavedMessage}</span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 font-sans">
+                Paste your NVIDIA API key (<code className="text-emerald-300 font-mono">nvapi-...</code>) to connect directly to NVIDIA NIM DeepSeek V4 Flash. Key is saved locally to your <code className="text-slate-300 font-mono">.env</code> file.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="password"
+                  placeholder="nvapi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-100 font-mono focus:outline-none focus:border-emerald-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveKey}
+                  disabled={isSavingKey || !apiKeyInput.trim()}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition font-mono flex-shrink-0"
+                >
+                  {isSavingKey ? (
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Check className="w-3.5 h-3.5" />
+                  )}
+                  <span>Save Key</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowKeyConfig(false)}
+                  className="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition text-xs font-mono"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
