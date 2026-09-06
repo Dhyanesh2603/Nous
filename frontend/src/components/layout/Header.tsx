@@ -91,47 +91,57 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="h-14 bg-slate-950 border-b border-slate-800 px-6 flex items-center justify-between gap-4 select-none z-30 sticky top-0 font-mono text-xs w-full">
+      <header className="h-14 bg-slate-950 border-b border-slate-800 px-3 sm:px-5 lg:px-6 flex items-center justify-between gap-2 sm:gap-4 select-none z-30 sticky top-0 font-mono text-xs w-full max-w-full">
         {/* Left: Brand & Main Navigation Toggle */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
           <div
             onClick={() => onNavigateScreen('dashboard')}
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-2 cursor-pointer group flex-shrink-0"
           >
             <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 group-hover:scale-105 transition">
               <Brain className="w-5 h-5" />
             </div>
             <div>
               <span className="font-bold text-sm text-slate-100 tracking-tight font-sans">NOUS</span>
-              <span className="text-[10px] text-cyan-400 block font-mono leading-none">Software Intelligence</span>
+              <span className="text-[10px] text-cyan-400 block font-mono leading-none hidden lg:block">Software Intelligence</span>
             </div>
           </div>
 
           {/* Screen Switcher: Dashboard vs Architecture Graph */}
-          <div className="flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5 ml-2">
+          <div className="flex items-center rounded-lg bg-slate-900 border border-slate-800 p-0.5 ml-1 flex-shrink-0">
             <button
               onClick={() => onNavigateScreen('dashboard')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md transition ${
                 activeScreen === 'dashboard'
                   ? 'bg-cyan-600 text-white font-semibold shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Overview</span>
+              <span className="hidden sm:inline">Overview</span>
             </button>
             <button
               onClick={() => onNavigateScreen('graph')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md transition ${
                 activeScreen === 'graph'
                   ? 'bg-cyan-600 text-white font-semibold shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <Network className="w-3.5 h-3.5" />
-              <span>Graph</span>
+              <span className="hidden sm:inline">Graph</span>
             </button>
           </div>
+
+          {/* Open / Ingest Repository */}
+          <button
+            onClick={() => setIsIngestModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 font-semibold transition flex-shrink-0"
+            title="Open folder, ZIP archive, or Git repository dialog to analyze"
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Open Repo...</span>
+          </button>
 
           {/* View Mode Switcher (Visible when in Graph view) */}
           {activeScreen === 'graph' && (
@@ -195,20 +205,21 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Center: Open / Ingest Repository */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={() => setIsIngestModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 font-semibold transition"
-            title="Open folder, ZIP archive, or Git repository dialog to analyze"
-          >
-            <FolderOpen className="w-3.5 h-3.5" />
-            <span>Open Repo...</span>
-          </button>
-        </div>
-
         {/* Right Action Tools Toolbar */}
-        <div className="flex items-center gap-2 flex-shrink-0 font-mono">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 font-mono">
+          {/* Quick Search (Ctrl+K) */}
+          <button
+            onClick={onOpenSearch}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700 transition"
+            title="Search Codebase & Commands (Ctrl+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden md:inline">Search</span>
+            <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded bg-slate-950 text-[9px] text-slate-400 border border-slate-800 font-mono">
+              Ctrl+K
+            </kbd>
+          </button>
+
           {/* Architect AI */}
           {onOpenArchitectAI && (
             <button
@@ -217,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Architect AI (Graph-RAG Architecture Explainer & Q&A)"
             >
               <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>Architect AI</span>
+              <span className="hidden sm:inline">Architect AI</span>
             </button>
           )}
 
@@ -229,27 +240,27 @@ export const Header: React.FC<HeaderProps> = ({
               title="Interactive Ripple Effect & Failure Cascade Simulator"
             >
               <Activity className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-              <span>Ripple Effect</span>
+              <span className="hidden md:inline">Ripple Effect</span>
             </button>
           )}
 
-          {/* Executive Audit Report */}
+          {/* Executive Audit Report - Visible on xl+ */}
           {onOpenExecutiveReport && (
             <button
               onClick={onOpenExecutiveReport}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition"
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition"
               title="Executive Architecture & Security Audit Report"
             >
               <FileCheck2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Audit Report</span>
+              <span>Audit</span>
             </button>
           )}
 
-          {/* Platform Documentation & User Manual */}
+          {/* Platform Documentation & User Manual - Visible on 2xl+ */}
           {onOpenPlatformDocs && (
             <button
               onClick={onOpenPlatformDocs}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-500/50 transition"
+              className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-500/50 transition"
               title="Open Platform Documentation & User Manual"
             >
               <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
@@ -257,10 +268,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Security Audit */}
+          {/* Security Audit - Visible on 2xl+ */}
           <button
             onClick={onOpenSecurity}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-rose-300 hover:border-slate-700 transition"
+            className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-rose-300 hover:border-slate-700 transition"
             title="Security & Vulnerability Audit"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
@@ -465,18 +476,6 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
-
-          {/* Search */}
-          <button
-            onClick={onOpenSearch}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 hover:border-slate-700 transition"
-          >
-            <Search className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Search</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-slate-950 text-[9px] text-slate-400 border border-slate-800 font-mono">
-              Ctrl+K
-            </kbd>
-          </button>
         </div>
       </header>
 
