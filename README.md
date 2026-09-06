@@ -1,193 +1,349 @@
 # NOUS
-### Software Architecture Intelligence & Static Codebase Analysis Platform
+### Enterprise Software Architecture Intelligence & Static Codebase Analysis Platform
 
-Nous is an automated software architecture analysis and intelligence platform. It ingests polyglot source code repositories, constructs unified Abstract Syntax Tree (AST) representations, maps dependency and call graphs, and renders interactive, real-time architectural topology with integrated static analysis and diagnostics.
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.x-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Tree-sitter](https://img.shields.io/badge/Tree--sitter-Polyglot%20AST-28A745?style=flat-square)](https://tree-sitter.github.io)
+[![Tests](https://img.shields.io/badge/Tests-52%2F52%20Passing%20(100%25)-brightgreen?style=flat-square)](backend/tests)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![Local-First](https://img.shields.io/badge/Privacy-100%25%20Local--First-blueviolet?style=flat-square)](#core-design-principles)
+
+**Nous** is an automated software architecture intelligence and static codebase analysis platform. It ingests polyglot source code repositories, constructs unified Abstract Syntax Tree (AST) representations, maps relational dependency and call graphs, and renders an interactive, hardware-accelerated architectural topology with integrated diagnostics, AI-powered architectural reasoning, and failure cascade simulation.
 
 ---
 
-## Abstract
+## Executive Summary & System Philosophy
 
-Modern software repositories frequently suffer from architectural erosion, hidden circular dependencies, untracked blast radiuses, and unvalidated structural drift. As codebases scale, mental models degrade, leading to unintended module coupling, security vulnerabilities, and unmaintainable technical debt.
+As software systems scale, architectural drift, unvalidated circular dependencies, untracked blast radiuses, and hidden security vulnerabilities accumulate. Mental models degrade, making refactoring risky and cross-module impacts unpredictable.
 
-Nous provides a unified, local-first system to parse, index, and analyze complex codebases across multiple programming languages without requiring external cloud dependencies or third-party API keys. By integrating formal grammar parsing engines (Tree-sitter and language-specific AST libraries) with graph-theoretic algorithms (NetworkX, Dagre layout engines), Nous produces deterministic models of file-level dependencies, symbol-level call graphs, and architectural community clusters. These models drive an interactive visual canvas and a comprehensive suite of 20 diagnostic subsystems, enabling engineering teams to inspect system boundaries, trace execution pathways, detect code clones, enforce architectural rules, and evaluate the blast radius of proposed modifications.
+Nous solves this with a **100% local-first, deterministic intelligence engine**. By combining formal grammar parsing engines (Tree-sitter and language-native AST parsers) with graph-theoretic algorithms (NetworkX, Dagre, Tarjan's SCC, Louvain Community Modularity), Nous produces mathematical models of file-level dependencies, symbol-level call invocations, and architectural boundaries without sending your proprietary code to third-party cloud servers.
+
+For teams requiring deep architectural reasoning, Nous introduces **Architect AI**—a Graph-RAG assistant that grounds generative queries in your repository's exact AST facts and renders live sequence diagrams—alongside the **Interactive Ripple Effect Simulator**, which models the downstream blast radius and contract risks of proposed breaking or behavioral modifications.
 
 ---
 
-## System Architecture & Data Flow
+## High-Level System Architecture
 
 ```mermaid
 graph TD
-    A[Multi-Source Ingestion: Local Folder / Remote Git / ZIP / Single File] --> B[RepoScanner & Ingestion Pipeline]
-    B --> C[Polyglot AST Extractors Tree-sitter & Native ASTs]
-    C --> D[RipEx Fact Store & Symbol Resolver]
-    D --> E[GraphStore Modeling Engine]
-    
-    E --> F[Directed Dependency Graph]
-    E --> G[Cross-File Symbol Call Graph]
-    E --> H[Louvain Community Modularity Clusters]
-    
-    F & G & H --> I[FastAPI REST API Layer 30+ Routers / 65+ Endpoints]
-    
-    I --> J[Interactive Visual Canvas React Flow + Dagre DAG Layout]
-    I --> K[Diagnostic Subsystems 20+ Analysis Engines]
-    
-    K --> L[Executive Architecture & Security Audit Reports]
-    K --> M[SAST Security & Relational Database ERD]
-    K --> N[Refactoring, Test Advice & Migration Planning]
-    K --> O[Code Clone, Dead Code & Technical Debt Engines]
+    subgraph Ingestion ["1. Multi-Source Ingestion"]
+        A1[Local Directory]
+        A2[Remote Git Repo]
+        A3[ZIP Archive]
+        A4[Single Source File]
+    end
+
+    subgraph Parsing ["2. Polyglot AST Extraction"]
+        B1[Tree-sitter Parser Engine]
+        B2[Python ast / libcst]
+        B3[SQL DDL & Prisma Grammar]
+    end
+
+    subgraph Modeling ["3. GraphStore & Fact Relational Engine"]
+        C1[Directed Acyclic Dependency Graph]
+        C2[Cross-File Symbol Call Graph]
+        C3[Louvain Community Modularity]
+        C4[RipEx Relational Fact Store]
+    end
+
+    subgraph Diagnostics ["4. Analysis & Intelligence Subsystems"]
+        D1[Architect AI & Graph-RAG Engine]
+        D2[Interactive Ripple Effect Simulator]
+        D3[SAST Security & Data Flow Taint Engine]
+        D4[Relational Database ERD Reconstructor]
+        D5[Architecture Drift & Style Detector]
+        D6[Code Clones, Dead Code & Tech Debt]
+    end
+
+    subgraph Presentation ["5. Interactive User Interface"]
+        E1[React Flow Hardware-Accelerated Canvas]
+        E2[Omni-Command Palette Ctrl+K]
+        E3[Executive Audit Report & PDF Export]
+        E4[Mermaid & PlantUML Diagram Exporter]
+    end
+
+    Ingestion --> Parsing
+    Parsing --> Modeling
+    Modeling --> Diagnostics
+    Diagnostics --> Presentation
 ```
 
 ---
 
-## Core System Architecture & Foundations
+## Comprehensive Feature Breakdown
 
-### 1. Multi-Source Ingestion & Deterministic State Isolation
-- **Local Directory Scanning**: Direct traversal of local file systems with full `.gitignore` parsing and exclusion filtering.
-- **Real-Time Hot-Reloading Watch Mode**: Integrated background filesystem observers (`watchdog`) detect code changes, hot-recomputing ASTs and dynamically refreshing canvas topologies.
-- **Remote Git Repository Cloning**: Automated shallow cloning (`--depth 50`) and branch selection for remote GitHub, GitLab, and Bitbucket repositories into sandboxed working directories.
-- **Single Source Files & ZIP Archives**: Drag-and-drop parsing of individual source files and compressed archives into ephemeral inspection workspaces.
-- **Deterministic Zero-State Architecture**: Boots in a clean, unpopulated state (`has_active_repo: false`), requiring explicit user selection to prevent cross-repository data contamination.
+### 1. AI-Powered Architecture Intelligence & Graph-RAG
 
-### 2. Polyglot Grammar Parsing & AST Extraction
-- Leverages **Tree-sitter** grammars and language-specific AST engines to parse codebases across:
-  - **Python**: `ast`, `libcst`
-  - **TypeScript & JavaScript**: Tree-sitter TypeScript/TSX/JSX grammars
-  - **Go**: Tree-sitter Go grammar
-  - **Rust**: Tree-sitter Rust grammar
-  - **Java & Kotlin**: Tree-sitter Java/Kotlin grammars
-  - **Database Schemas**: SQL DDL (`CREATE TABLE`, foreign keys) and Prisma schema syntax
-  - **Component Frameworks**: Vue (`.vue`), Svelte (`.svelte`), and C/C++ (`.c`, `.cpp`, `.h`)
-- Extracts function definitions, class hierarchies, interface declarations, import/export bindings, call expressions, database relations, and HTTP route decorators.
+Nous bridges formal static analysis and generative AI through a privacy-centric, multi-provider architecture assistant:
 
-### 3. Graph Modeling & Graph-Theoretic Algorithms
-- **Directed Acyclic Graph (DAG) Layout**: Automated hierarchical topological sorting using Dagre layout engines.
-- **Strongly Connected Components (SCC)**: Tarjan's algorithm for isolating circular dependency cycles across modules.
-- **Community Modularity Clustering**: Louvain community detection to identify subsystem clusters and domain boundaries.
-- **Centrality & Complexity Analysis**: In-degree (fan-in), out-degree (fan-out), betweenness centrality, and McCabe's Cyclomatic Complexity $v(G)$ computations per module and symbol.
-- **Transitive Reachability Engine**: Graph traversal algorithms computing forward and backward blast radius cascades.
+* **Architect AI Assistant (`/api/architect-ai/query`)**:
+  * **Graph-RAG Grounding**: Generates queries against an AST knowledge sub-graph instead of relying on loose text embeddings. Queries are enriched with actual file dependencies, caller/callee bindings, imported symbols, and cyclic dependencies.
+  * **Interactive Architectural Q&A**: Answers deep structural questions (e.g., *"How does authentication flow from router to database?"*, *"Where are circular dependencies concentrated?"*).
+  * **Dynamic Question Prompts**: Automatically analyzes the active repository to generate 5 contextual, codebase-specific questions tailored to your modules.
+  * **Live Mermaid Sequence Diagrams**: Automatically synthesizes and renders interactive, step-by-step sequence diagrams showing runtime interactions between controllers, services, and repositories.
+  * **Multi-Provider LLM Integration**: Built-in support for **Google Gemini** (`gemini-2.5-flash`), **Anthropic Claude** (`claude-3-5-sonnet`), **OpenAI** (`gpt-4o`), **Groq** (`llama-3.3-70b`), and local offline **Ollama** (`deepseek-r1`, `llama3`).
+  * **Deterministic Offline Fallback**: Operates with a rule-based heuristic explainer even when no external API key is provided, ensuring zero external dependencies.
+
+* **Semantic Natural Language Search (`NLSearch`)**:
+  * Allows developers to query codebase architecture using natural language intent (e.g., *"Find database connection pooling logic"* or *"Show input validation middleware"*).
+  * Synthesizes AST symbol metadata, function signatures, and docstrings to match relevant code paths.
 
 ---
 
-## Interactive Architecture Visualization Canvas
+### 2. Failure Cascade & Blast Radius Simulation
 
-The Architecture Canvas renders dynamic, hardware-accelerated graph representations of the ingested codebase:
+Predict the exact downstream impact of source code changes before writing a single line of code:
 
-### Multi-Tier Visual Lenses
-- **File Dependencies Lens**: Complete file-level dependency topology with directed acyclic layout.
-- **Module Clusters Lens**: High-level structural communities grouped by architectural affinity and modularity.
-- **Symbol Call Graph Lens**: Cross-file functional invocation graph mapping caller-callee bindings.
-- **Frontend Architecture Lens**: Isolates user interface components, client routing, and state management hooks.
-- **Backend Architecture Lens**: Isolates API routes, controllers, domain services, middleware, and data access layers.
+* **Interactive Ripple Effect Simulator (`/api/ripple/simulate`)**:
+  * **Change Type Selectors**:
+    * **Breaking Change**: Models modified function signatures, deleted exports, or altered type contracts with high downstream propagation weight.
+    * **Behavioral / Logic Change**: Models internal implementation updates where contracts are preserved but runtime behavior changes.
+    * **Additive / Backward-Compatible**: Models non-breaking additions with localized impact radius.
+  * **Topological Distance Attenuation**: Computes cascading shockwaves using depth-bounded Breadth-First Search (BFS) weighted with exponential distance decay:
+    $$\text{Impact Score}(v) = \text{Weight}(\text{type}) \times 0.85^{\text{dist}(u, v)}$$
+  * **Contract Risk Matrix**: Flags critical upstream/downstream interface contracts threatened by the modification.
+  * **Targeted Test Recommendations**: Automatically generates a prioritized list of test files and test suites required to validate the change.
+  * **Blast Severity Gauge**: Displays a composite risk percentage (`0%` to `100%`) with clear Low, Medium, High, or Critical threat classifications.
 
-### Minimap Viewport Radar & Navigation Controls
-- **Interactive Viewport Frame**: Draggable and resizable bounding viewport slider providing real-time canvas navigation.
-- **Continuous Magnification Slider**: Smooth zoom scaling from `20%` to `200%` with automatic canvas recentering.
-- **Discrete Sector Controls**: Quick-jump presets targeting Ingress/Controllers (`Top`), Core Services (`Mid`), and Persistence/Storage (`Base`).
+* **Transitive Impact Simulator (`/api/impact`)**:
+  * Calculates forward and backward reachability across the directed call graph.
+  * Identifies all direct vs. transitive dependents for any selected file or symbol.
+  * Provides "What-If" mutation simulation to evaluate architectural impact before refactoring.
 
-### Node Inspector Drawer
-- Detailed metadata inspection displaying exact line counts, language type, and cyclomatic complexity.
-- Dependency statistics: In-degree (dependents) and out-degree (dependencies).
-- Import and export symbol catalogs.
-- Integrated syntax-highlighted source code preview with direct line jumping.
-- 1-click downstream transitive blast radius calculation.
+* **Pull Request (PR) Impact Analyzer (`/api/pr-analyzer`)**:
+  * Ingests Git diffs or pull requests, extracts modified symbols, and calculates PR blast radiuses.
+  * Flags high-risk merges, breaking interface changes, and untested critical execution paths.
 
 ---
 
-## Diagnostic Subsystems & Analysis Engines
+### 3. Interactive Architecture Canvas & Visual Lenses
 
-Nous incorporates 20 deterministic static analysis and diagnostic engines:
+An interactive, hardware-accelerated graph canvas powered by **React Flow** and **Dagre DAG layout**:
 
-| Subsystem | Description | Primary Capabilities |
+* **Multi-Tier Visual Lenses**:
+  * **All Files View**: Complete file-level dependency topology across the entire codebase.
+  * **Frontend Lens**: Isolates UI components, client-side routing, state stores, and hooks.
+  * **Backend Lens**: Isolates HTTP routers, controllers, domain services, middleware, and database layers.
+  * **Module Clusters Lens**: High-level structural communities grouped by Louvain modularity clustering.
+  * **Symbol Call Graph Lens**: Fine-grained, cross-file function, method, and class invocation graph.
+
+* **Minimap Radar & Viewport Controls**:
+  * Interactive draggable/resizable viewport frame for instant navigation across large codebases.
+  * Continuous zoom scaling (`20%` to `200%`) with automatic centering and bounding-box focus.
+  * Discrete sector presets targeting **Ingress/Controllers** (*Top*), **Core Services** (*Mid*), and **Persistence/Data Access** (*Base*).
+
+* **Node Inspector Drawer**:
+  * Displays file size, lines of code (LOC), language grammar, and cyclomatic complexity $v(G)$.
+  * In-degree (dependents/fan-in) and out-degree (dependencies/fan-out) metrics.
+  * Complete symbol catalog of classes, functions, interfaces, imports, and exports.
+  * Integrated syntax-highlighted source code preview with direct line jumping.
+  * One-click downstream transitive blast radius calculation.
+
+---
+
+### 4. Static Application Security Testing (SAST) & Data Flow
+
+* **Security SAST Vulnerability Scanner (`/api/security/scan`)**:
+  * Scans codebases for hardcoded secrets, private keys, API credentials, and JWT tokens using Shannon entropy and regex heuristics.
+  * Identifies unparameterized SQL queries susceptible to SQL injection (SQLi).
+  * Flags dangerous dynamic execution routines (`eval`, `exec`, `Function`, `os.system`, `subprocess(shell=True)`).
+  * Categorizes vulnerabilities with CWE (Common Weakness Enumeration) tags and actionable remediation advice.
+
+* **Source-to-Sink Taint & Data Flow Analyzer (`/api/data-flow`)**:
+  * Traces data flow from unvalidated input sources (HTTP query params, request bodies, route params) through transformation layers into sensitive sinks (database queries, shell executions, filesystem writes).
+  * Highlights missing sanitization, authorization bypasses, and data leak paths.
+
+* **Relational Database Schema & ERD Analyzer (`/api/database/schema`)**:
+  * Parsers for raw SQL DDL (`CREATE TABLE`, primary keys, foreign key constraints) and Prisma schemas.
+  * Reconstructs entity relationships, column data types, nullability, unique constraints, and cardinalities ($1:1$, $1:N$, $N:M$).
+  * Renders an interactive visual Entity-Relationship Diagram (ERD) directly within the UI.
+
+---
+
+### 5. Code Quality, Technical Debt & Refactoring Engines
+
+* **Executive Architecture & Security Audit Report (`/api/executive-report`)**:
+  * Synthesizes all static analysis, security findings, and structural metrics into a single executive briefing.
+  * Computes a holistic Software Health Scorecard with letter grading (**Grade A through F**).
+  * Provides a prioritized **P0–P3 remediation roadmap** with estimated engineering effort.
+  * Supports direct **Markdown export** and browser **Print-to-PDF** formatting.
+
+* **8-Dimension Technical Debt Engine (`/api/tech-debt`)**:
+  * Calculates technical debt using a weighted multi-variable matrix:
+    1. Cyclomatic Complexity ($v(G)$)
+    2. Code Churn Frequency
+    3. Circular Dependency Cycles
+    4. Code Clones & Duplication
+    5. Oversized File Footprints
+    6. Dead & Unused Code
+    7. Documentation Deficits
+    8. Maintainability Index
+  * Visualizes technical debt distribution across repository packages and submodules.
+
+* **AST Subtree Code Clone Detector (`/api/analysis/clones`)**:
+  * Utilizes normalized AST subtree hashing to identify structural duplication across files.
+  * Detects **Type-1** (exact duplicates with identical tokens) and **Type-2** (syntactically identical with renamed identifiers/literals) clones.
+  * Highlights refactoring opportunities for shared utility extraction.
+
+* **Dead Code & Orphaned Symbol Detector (`/api/dead-code`)**:
+  * Traverses the symbol call graph to identify zero-in-degree functions, unreferenced classes, and orphaned source files.
+  * Highlights unused imports and dead exports, reducing bundle footprint and maintenance overhead.
+
+* **Intelligent Refactoring Advisor (`/api/refactoring/advice`)**:
+  * Identifies code smells: God Classes, Feature Envy, Long Parameter Lists, Shotgun Surgery, and Circular Cycles.
+  * Generates actionable, step-by-step refactoring strategies with structural before/after code designs.
+
+* **Intelligent Test Advisor & Stub Generator (`/api/test-advisor`)**:
+  * Isolates high-complexity, high-risk functions lacking unit test coverage.
+  * Automatically generates ready-to-run unit test stubs formatted for `pytest`, `jest`, or `vitest`.
+
+* **Comparative Module Health Matrix (`/api/module-health`)**:
+  * Renders a comparative tabular matrix across all packages and directories.
+  * Measures lines of code, cyclomatic complexity, incoming fan-in, outgoing fan-out, and maintainability grades.
+
+---
+
+### 6. System Evolution, Drift & Reverse Engineering
+
+* **Architecture Drift & Entropy Detector (`/api/drift`)**:
+  * Compares current repository architecture against historical snapshots or defined baseline models.
+  * Detects architectural erosion: unintended cross-layer connections, violated layer boundaries, and structural decay over time.
+
+* **Repository Time Machine & Git Commit Scrubber (`/api/timemachine`, `/api/timeline`)**:
+  * Replays Git commit history sequentially to visualize how dependencies, module sizes, and file clusters evolved across commits.
+  * Correlates commit frequency and developer churn with architectural hot-spots.
+
+* **Architecture Style & Pattern Classifier (`/api/architecture/style`)**:
+  * Automatically classifies dominant architectural paradigms (e.g., **Layered / N-Tier**, **Hexagonal / Ports & Adapters**, **Clean Architecture**, **MVC**, **Event-Driven**, **Microservices**) with percentage confidence ratings.
+
+* **End-to-End API Route-to-Database Flow Mapper (`/api/api-mapper`, `/api/api-flow`)**:
+  * Maps every HTTP endpoint through its controller, middleware, service handler, repository, and database queries in an end-to-end trace diagram.
+
+* **Step-by-Step Execution Playback Simulator (`/api/playback`)**:
+  * Simulates runtime execution flows across functions and files with animated node pulses directly on the graph canvas.
+
+* **Semantic Knowledge Graph (`/api/knowledge-graph`)**:
+  * Reconstructs high-level domain entities, data models, concepts, and architectural relationships beyond raw syntax trees.
+
+* **Architecture Boundary Rules Linter (`/api/architecture/rules`)**:
+  * Enables teams to enforce strict architectural rules (e.g., *"Controllers cannot directly import Database Models"*, *"UI Components cannot import Repositories"*).
+  * Automatically flags rule violations during scans or CI/CD pipelines.
+
+* **Automated Documentation Generator (`/api/doc-gen`)**:
+  * Generates clean Markdown documentation of the system's architecture, package catalogs, and API endpoints.
+
+---
+
+### 7. Universal Developer Experience & Command Tools
+
+* **Omni-Command Palette (`Ctrl+K` / `Cmd+K`)**:
+  * Dual-mode universal launcher:
+    * Type `>` to access all platform modals, diagnostic tools, and visual lenses with keyboard navigation.
+    * Type any keyword to perform AST symbol hybrid search (BM25 + Reciprocal Rank Fusion) across all functions, classes, and files.
+
+* **Diagram & Code Export Suite**:
+  * Export visual canvas architectures to high-resolution **PNG** (`1x`, `2x`, `3x`), **Vector SVG**, **Mermaid.js Flowcharts**, **PlantUML Class Diagrams**, and raw **JSON Topology**.
+
+* **Platform User Manual**:
+  * Complete in-app interactive documentation viewer accessible directly from the top navigation bar.
+
+---
+
+## Supported Languages & Grammars
+
+Nous provides deep AST extraction across polyglot ecosystems via Tree-sitter and language-native parsers:
+
+| Language | Engine | Extracted Symbols & Relationships |
 |---|---|---|
-| **1. Executive Audit Report** | Executive architecture & security synthesizer | Composite health scorecard (Grade A–F), prioritized P0–P3 remediation matrix, Markdown export, and print-to-PDF formatting. |
-| **2. Omni-Command Palette (`Ctrl+K`)** | Universal keyboard action and symbol launcher | Dual-mode action launcher (`>`) and AST symbol hybrid search (BM25 + Reciprocal Rank Fusion) with keyboard navigation. |
-| **3. Diagram & Code Export Suite** | Architecture export engine | High-resolution PNG (`1x`, `2x`, `3x`), Vector SVG, Mermaid.js Markdown flowcharts, PlantUML class diagrams, and JSON topology export. |
-| **4. Architecture Boundary Linter** | Layer constraint verification engine | Enforces strict architectural layering rules (e.g., `Persistence` cannot import `UI`) and flags boundary violations. |
-| **5. Security SAST Scanner** | Static Application Security Testing | Detects hardcoded secrets, API tokens, unparameterized SQL injection vectors, and unsafe `eval`/`exec` execution routines. |
-| **6. Database & Relational ERD** | SQL DDL & Prisma schema analyzer | Reconstructs relational tables, primary keys, foreign keys, and cardinalities into interactive Entity-Relationship Diagrams. |
-| **7. Blast Radius & PR Impact** | Transitive impact and risk simulator | Quantifies downstream percentage impact and calculates commit diff blast radiuses for proposed pull requests. |
-| **8. Code Clone Detector** | Structural duplication analysis | Uses AST subtree hashing to identify Type-1 (exact) and Type-2 (parameterized) duplicated code blocks. |
-| **9. Dead Code Detector** | Unreachable symbol detection | Scans the call graph for zero-in-degree unused functions, unreferenced classes, and orphaned source files. |
-| **10. Intelligent Test Advisor** | Unit test coverage advisor | Identifies high-complexity, high-risk untested functions and synthesizes ready-to-run unit test stubs (`pytest`, `jest`, `vitest`). |
-| **11. Refactoring Advisor** | Automated clean code guidance | Detects code smells (God classes, long methods, circular cycles) and generates step-by-step refactoring transformations. |
-| **12. Technical Debt Engine** | 8-dimension weighted debt matrix | Quantifies architectural debt across complexity, churn, cycles, clones, file sizing, dead code, docs, and maintainability. |
-| **13. API Request Flow Tracer** | End-to-end request lifecycle tracer | Maps HTTP routes through controllers, middlewares, domain services, data layers, and database queries. |
-| **14. Architecture Drift Detector** | Structural entropy tracker | Compares current codebase against historical snapshots to detect architectural erosion and unauthorized cross-layer links. |
-| **15. Repository Time Machine** | Historical commit scrubber | Replays Git commit history sequentially, visualizing the structural evolution of the dependency graph over time. |
-| **16. Execution Playback** | Step-by-step call flow simulator | Simulates and animates runtime execution pathways across functions and files on the visual canvas. |
-| **17. Module Health Matrix** | Tabular package comparison | Compares Lines of Code, cyclomatic complexity, incoming callers, outgoing dependencies, and health grades across modules. |
-| **18. Documentation Generator** | Automated Markdown synthesizer | Generates architecture blueprints, module catalogs, API endpoint specs, and contributor onboarding guides. |
-| **19. Migration Planner** | Modernization roadmap engine | Produces phased migration roadmaps (e.g., JavaScript to TypeScript, Sync to Async) with file checklists and codemods. |
-| **20. Architecture Style Detector** | Design pattern classifier | Classifies dominant architectural patterns (Layered, Microservices, Hexagonal, MVC, Event-Driven) with confidence scores. |
-
-> For complete in-depth feature guides, workflows, and API specifications, see **[DOCUMENTATION.md](DOCUMENTATION.md)** or open the in-app documentation viewer in the UI.
+| **Python** | `ast`, `libcst` | Classes, functions, async coroutines, decorators, module imports (`from x import y`), call expressions, route decorators (`@app.get`) |
+| **TypeScript / TSX** | Tree-sitter TypeScript | Interfaces, types, classes, functions, JSX components, ES module imports/exports, React hooks, method calls |
+| **JavaScript / JSX** | Tree-sitter JavaScript | ES modules, CommonJS `require`, classes, functions, prototype calls, component tags |
+| **Go** | Tree-sitter Go | Package definitions, structs, interfaces, functions, methods, package imports, goroutines |
+| **Rust** | Tree-sitter Rust | Structs, traits, impl blocks, functions, `use` declarations, macro invocations |
+| **Java & Kotlin** | Tree-sitter Java/Kotlin | Classes, interfaces, methods, annotations, package imports, inheritance hierarchies |
+| **Database Schemas** | Custom SQL / Prisma Parsers | `CREATE TABLE`, column types, primary keys, foreign key constraints, Prisma model relations |
+| **C / C++** | Tree-sitter C/C++ | Header includes (`#include`), structs, classes, functions, namespaces |
+| **Svelte & Vue** | HTML/Svelte/Vue Parsers | Single-file components (SFC), script blocks, component dependencies |
 
 ---
 
-## Repository Structure
+## Project Directory Layout
 
 ```
 nous/
 ├── backend/
 │   ├── app/
-│   │   ├── analysis/       # 20+ specialized intelligence and diagnostic engines
-│   │   │   ├── executive_report.py    # Executive audit report synthesizer
-│   │   │   ├── health_scorecard.py    # Health scorecard calculation engine
-│   │   │   ├── tech_debt_engine.py    # 8-dimension technical debt analyzer
-│   │   │   ├── security_scanner.py    # Static application security (SAST)
-│   │   │   ├── database_analyzer.py   # SQL DDL & Prisma ERD analyzer
-│   │   │   ├── clone_detector.py      # AST subtree code clone detector
-│   │   │   ├── dead_code.py           # Unreferenced symbol & dead code detector
-│   │   │   ├── test_advisor.py        # Test coverage & stub synthesizer
-│   │   │   ├── refactoring_advisor.py # Code smell & refactoring engine
-│   │   │   ├── api_flow_tracer.py     # End-to-end API lifecycle tracer
-│   │   │   ├── drift_detector.py      # Architecture drift & entropy tracker
-│   │   │   ├── timeline_engine.py     # Git commit replay & churn analytics
-│   │   │   ├── doc_generator.py       # Markdown documentation synthesizer
-│   │   │   ├── migration_planner.py   # Modernization & migration roadmaps
-│   │   │   └── style_detector.py      # Architectural pattern classifier
-│   │   ├── graph/          # GraphStore, DependencyGraph, and CallGraph models
-│   │   ├── parsers/        # Tree-sitter grammar wrappers and AST extractors
-│   │   ├── routers/        # 30 modular FastAPI REST routers (67 API endpoints)
-│   │   ├── config.py       # Application settings and environment configuration
-│   │   ├── git_cloner.py   # Remote repository cloning and history extraction
-│   │   ├── scanner.py      # Repository scanner and AST orchestration engine
-│   │   ├── state.py        # Centralized in-memory application state store
-│   │   └── main.py         # FastAPI application entry point and static SPA serving
-│   ├── tests/              # 44 automated integration and unit tests
-│   └── pyproject.toml      # Python dependencies and build metadata
+│   │   ├── ai/                 # Architect AI & Graph-RAG context synthesis
+│   │   │   ├── graph_rag.py        # Graph-RAG context builder & prompt assembler
+│   │   │   └── llm_client.py       # Multi-provider LLM client (Gemini, Claude, GPT, Groq, Ollama)
+│   │   ├── analysis/           # 37 specialized intelligence and diagnostic engines
+│   │   │   ├── architect_ai.py     # AI architecture reasoning & sequence generator
+│   │   │   ├── ripple_simulator.py # Interactive cascading failure simulator
+│   │   │   ├── executive_report.py # Executive audit report synthesizer
+│   │   │   ├── health_scorecard.py # Composite health scorecard calculation
+│   │   │   ├── security_scanner.py # Static application security testing (SAST)
+│   │   │   ├── database_analyzer.py# SQL DDL & Prisma ERD reconstructor
+│   │   │   ├── data_flow.py        # Source-to-sink taint tracking engine
+│   │   │   ├── tech_debt_engine.py # 8-dimension technical debt analyzer
+│   │   │   ├── clone_detector.py   # AST subtree structural code clone detector
+│   │   │   ├── dead_code_detector.py # Zero-in-degree unreferenced symbol detector
+│   │   │   ├── refactoring_advisor.py # Code smell detection & refactoring plans
+│   │   │   ├── test_advisor.py     # Test gap advisor & test stub generator
+│   │   │   ├── architecture_drift.py # Architecture drift & entropy tracker
+│   │   │   ├── architecture_detector.py # Architectural pattern classifier
+│   │   │   ├── api_mapper.py       # End-to-end API lifecycle mapper
+│   │   │   ├── execution_playback.py # Step-by-step runtime playback simulator
+│   │   │   ├── timeline_engine.py  # Git commit replay & churn analytics
+│   │   │   ├── knowledge_graph.py  # Semantic knowledge graph generator
+│   │   │   └── rules_engine.py     # Architectural boundary rule enforcer
+│   │   ├── graph/              # GraphStore, DependencyGraph, CallGraph data structures
+│   │   ├── parsers/            # Tree-sitter polyglot grammar wrappers and AST extractors
+│   │   ├── routers/            # 36 modular FastAPI REST routers (70+ API endpoints)
+│   │   ├── config.py           # App settings, environment configs, and API key management
+│   │   ├── git_cloner.py       # Sandboxed remote Git cloning and branch resolution
+│   │   ├── scanner.py          # Master repository scanner and AST orchestration engine
+│   │   ├── state.py            # Centralized in-memory active repository state store
+│   │   └── main.py             # FastAPI entry point, CORS middleware, and static SPA serving
+│   ├── tests/                  # 52 automated integration and unit tests (100% passing)
+│   └── pyproject.toml          # Python package specifications and dependencies
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── canvas/     # React Flow canvas, Dagre DAG layout, MinimapRadarControl
-│   │   │   ├── dashboard/  # RepositoryDashboard telemetry and NoRepoWelcome onboarding
-│   │   │   ├── layout/     # Header, FilterBar, and navigation toolbars
-│   │   │   ├── search/     # Universal Omni-Command Palette (Ctrl+K)
-│   │   │   ├── export/     # Diagram & Code Export Suite (PNG, SVG, Mermaid, PlantUML)
-│   │   │   ├── report/     # Executive Architecture & Security Audit Report Modal
-│   │   │   ├── docs/       # In-App Platform Documentation & User Manual Modal
-│   │   │   └── [modals]/   # Specialized modals for each diagnostic subsystem
-│   │   ├── services/       # Typed HTTP client API services
-│   │   ├── types/          # Domain, AST, and graph TypeScript interfaces
-│   │   ├── App.tsx         # Main application controller, modal state, and hotkeys
-│   │   └── main.tsx        # React application entry point
-│   ├── index.html          # Application HTML shell
-│   ├── package.json        # Frontend dependencies and build scripts
-│   └── vite.config.ts      # Vite build configuration
-├── Dockerfile              # Production multi-stage Docker build
-├── docker-compose.yml      # Container orchestration configuration
-├── DOCUMENTATION.md        # Comprehensive platform user manual and API reference
-└── README.md               # Project abstract, architecture, and quickstart guide
+│   │   │   ├── ai/             # Architect AI Modal (Graph-RAG & Mermaid sequence diagrams)
+│   │   │   ├── ripple/         # Interactive Ripple Effect Simulator Modal
+│   │   │   ├── canvas/         # React Flow canvas, Dagre layout, Minimap Radar
+│   │   │   ├── dashboard/      # Repository Dashboard and zero-state welcome view
+│   │   │   ├── layout/         # Header navigation bar and FilterBar controls
+│   │   │   ├── search/         # Universal Omni-Command Palette (Ctrl+K)
+│   │   │   ├── export/         # High-resolution diagram and code export suite
+│   │   │   ├── report/         # Executive Audit Report Modal & PDF print view
+│   │   │   ├── database/       # Relational Database ERD Schema Modal
+│   │   │   ├── security/       # Security SAST Vulnerability Audit Modal
+│   │   │   ├── docs/           # In-App Platform User Manual & Documentation Modal
+│   │   │   └── [subsystems]/   # Modals for each diagnostic engine
+│   │   ├── services/           # Typed HTTP client API services
+│   │   ├── types/              # Complete TypeScript interfaces for AST, graph, and diagnostics
+│   │   ├── App.tsx             # Root application state, keyboard shortcuts, modal management
+│   │   └── main.tsx            # React entry point
+│   ├── package.json            # Client dependencies and build scripts
+│   └── vite.config.ts          # Vite build configuration
+├── Dockerfile                  # Multi-stage production container build
+├── docker-compose.yml          # Container orchestration configuration
+├── DOCUMENTATION.md            # Comprehensive user manual and detailed API guide
+└── README.md                   # Platform documentation and quickstart guide
 ```
 
 ---
 
-## Installation and Execution
+## Installation & Quickstart
 
-### Prerequisites
-- **Python**: Version `3.11` or higher
-- **Node.js**: Version `18.0` or higher (with `npm`)
-- **Git**: Installed and available in system `$PATH`
+### System Prerequisites
+* **Python**: `3.11` or higher
+* **Node.js**: `18.0` or higher (with `npm`)
+* **Git**: Installed and accessible in `$PATH`
 
 ---
 
@@ -195,102 +351,111 @@ nous/
 
 #### 1. Backend Service
 ```bash
-# Navigate to the backend directory
+# Navigate to backend
 cd backend
 
-# Initialize and activate Python virtual environment
+# Create and activate virtual environment
 python -m venv .venv
 
-# On Linux / macOS:
+# Linux / macOS:
 source .venv/bin/activate
-# On Windows (PowerShell):
+# Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
 
 # Install dependencies in editable mode
 pip install -e .
 
-# Start the FastAPI development server on port 8000
+# (Optional) Set an API key for live external LLMs in Architect AI:
+# export GEMINI_API_KEY="your-key"
+# export OPENAI_API_KEY="your-key"
+# export ANTHROPIC_API_KEY="your-key"
+# export GROQ_API_KEY="your-key"
+# Note: Nous functions 100% locally with built-in heuristic fallbacks if no key is set.
+
+# Start FastAPI server on port 8000
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-The REST API will be available at `http://127.0.0.1:8000`.  
-OpenAPI interactive documentation is accessible at `http://127.0.0.1:8000/docs`.
+* The REST API will be live at `http://127.0.0.1:8000`.
+* Interactive OpenAPI documentation is accessible at `http://127.0.0.1:8000/docs`.
 
 #### 2. Frontend Client
-In a separate terminal window:
+In a separate terminal:
 ```bash
-# Navigate to the frontend directory
+# Navigate to frontend
 cd frontend
 
 # Install client dependencies
 npm install
 
-# Start the Vite development server
+# Start Vite development server
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
-Open `http://localhost:5173` in your browser.
+Open **`http://localhost:5173`** in your browser to begin exploring.
 
 ---
 
-### Production Single-Binary Serving
+### Production Single-Port Serving
 
-The FastAPI backend is configured to serve the production-built React SPA bundle directly:
+The FastAPI backend can serve the compiled React SPA directly from a single port without a reverse proxy:
 
 ```bash
-# 1. Build the production frontend assets
+# 1. Compile frontend production bundle
 cd frontend
 npm run build
 
-# 2. Start the production backend server
+# 2. Start the unified production server
 cd ../backend
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
-Navigate to `http://127.0.0.1:8000` to access the full application from a single unified port.
+Open `http://localhost:8000` to access the entire platform.
 
 ---
 
-### Containerized Deployment (Docker)
+### Docker & Container Deployment
 
-Nous provides a multi-stage `Dockerfile` and `docker-compose.yml`:
+Deploy the entire stack with a single command via Docker Compose:
 
 ```bash
-# Build and launch the containerized application
+# Build and start containers in background
 docker compose up -d --build
 ```
 Access the application at `http://localhost:8000`.
 
-To stop the container:
+To stop the services:
 ```bash
 docker compose down
 ```
 
 ---
 
-## Quality Assurance & Verification
+## Verification & Quality Assurance
+
+Nous maintains strict verification standards across both backend and frontend layers:
 
 ### Backend Automated Test Suite
 ```bash
 cd backend
 pytest tests/ -v
 ```
-The backend test suite executes 44 automated integration and unit test modules validating AST parsing, graph algorithms, fact stores, and all analysis engines with `100%` pass rates.
+* **52 automated unit and integration tests** validating AST parsing, graph algorithms, fact stores, security rules, and all 37 diagnostic engines with **100% pass rates**.
 
 ### Frontend Type Safety & Production Build
 ```bash
 cd frontend
 npm run build
 ```
-The frontend build performs strict TypeScript type validation (`tsc -b`) and asset bundling via Vite with zero compilation errors.
+* Strict TypeScript compilation (`tsc -b`) and asset bundling via Vite with **zero type errors or lint warnings**.
 
 ---
 
-## Acknowledgements & Open-Source Ecosystem
+## Acknowledgements & Open-Source Foundations
 
-Nous is constructed upon foundational open-source technologies:
-- **Tree-sitter**: Incremental concrete syntax tree parsing and grammar ecosystem.
-- **NetworkX**: Comprehensive graph-theoretic data structures and network algorithms.
-- **React Flow (@xyflow/react) & Dagre**: Interactive node-based graph rendering and hierarchical DAG layout.
-- **FastAPI**: Modern, high-performance asynchronous web framework for REST API implementation.
-- **Tailwind CSS & Lucide Icons**: Modern styling and standardized technical iconography.
+Nous is built upon exceptional open-source software:
+* **[Tree-sitter](https://tree-sitter.github.io)**: Incremental concrete syntax tree parsing and grammar ecosystem.
+* **[NetworkX](https://networkx.org)**: Graph data structures, centrality metrics, and network algorithms.
+* **[React Flow (@xyflow/react)](https://reactflow.dev) & [Dagre](https://github.com/dagrejs/dagre)**: Interactive canvas rendering and hierarchical DAG layout.
+* **[FastAPI](https://fastapi.tiangolo.com)**: High-performance asynchronous REST API framework.
+* **[Tailwind CSS](https://tailwindcss.com) & [Lucide Icons](https://lucide.dev)**: Design system and technical iconography.
 
 ---
 
