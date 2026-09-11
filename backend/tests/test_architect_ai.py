@@ -32,7 +32,7 @@ def test_llm_client_status():
 
 def test_llm_client_offline_fallback():
     llm = LLMClient()
-    res = llm.generate([LLMMessage(role="user", content="Explain the architecture flow")])
+    res = llm.generate([LLMMessage(role="user", content="Explain the architecture flow")], provider="offline")
     assert res.is_fallback is True
     assert res.provider == "offline"
     assert "Architectural Analysis" in res.content
@@ -48,7 +48,7 @@ def test_graph_rag_context_extraction():
 
 def test_architect_ai_engine_ask():
     engine = ArchitectAIEngine(scanner=app_state.scanner)
-    res = engine.ask(query="Explain the overall system architecture")
+    res = engine.ask(query="Explain the overall system architecture", provider="offline")
     assert isinstance(res, ArchitectAIResponse)
     assert res.query == "Explain the overall system architecture"
     assert len(res.summary) > 0
@@ -73,7 +73,7 @@ def test_architect_ai_api_endpoints():
     # 3. Test architect query endpoint
     resp = client.post(
         "/api/ai/architect-query",
-        json={"query": "Explain the entry points and controllers"},
+        json={"query": "Explain the entry points and controllers", "provider": "offline"},
     )
     assert resp.status_code == 200
     res_data = resp.json()

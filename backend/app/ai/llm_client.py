@@ -60,7 +60,7 @@ class LLMClient:
             "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
         ).rstrip("/")
         self.nvidia_default_model = os.environ.get(
-            "NVIDIA_MODEL", "deepseek-ai/deepseek-v4-flash"
+            "NVIDIA_MODEL", "deepseek-ai/deepseek-v4-flash-0731"
         ).strip()
         self.openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
         self.anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
@@ -92,6 +92,7 @@ class LLMClient:
                 "available": bool(self.nvidia_key),
                 "default_model": self.nvidia_default_model,
                 "supported_models": [
+                    "deepseek-ai/deepseek-v4-flash-0731",
                     "deepseek-ai/deepseek-v4-flash",
                     "deepseek-ai/deepseek-r1",
                     "deepseek-ai/deepseek-v3",
@@ -176,12 +177,66 @@ class LLMClient:
         if not effective_key:
             raise ValueError("NVIDIA API key not provided")
 
+        chosen_model = model or self.nvidia_default_model
+        if chosen_model == "deepseek-ai/deepseek-v4-flash":
+            chosen_model = "deepseek-ai/deepseek-v4-flash-0731"
+
+        # 1. Primary: Use official OpenAI client SDK with NVIDIA base URL
+        try:
+            from openai import OpenAI
+            client = OpenAI(
+                base_url=self.nvidia_base_url,
+                api_key=effective_key,
+            )
+            completion = client.chat.completions.create(
+                model=chosen_model,
+                messages=[{"role": m.role, "content": m.content} for m in messages],
+                temperature=temperature if temperature is not None else 1.0,
+                top_p=0.95,
+                max_tokens=16384,
+                extra_body={"chat_template_kwargs": {"thinking": True, "reasoning_effort": "high"}},
+                stream=False,
+            )
+            choice = completion.choices[0]
+            content = choice.message.content or ""
+            reasoning = getattr(choice.message, "reasoning", None) or getattr(choice.message, "reasoning_content", None)
+            
+            if reasoning and not ("<think>" in content):
+                content = f"> [!TIP]\n> **DeepSeek Reasoning Process:**\n> {str(reasoning).strip()}\n\n{content}"
+            elif "<think>" in content and "</think>" in content:
+                parts = content.split("</think>", 1)
+                think_content = parts[0].replace("<think>", "").strip()
+                answer_content = parts[1].strip()
+                content = f"> [!TIP]\n> **DeepSeek Reasoning Process:**\n> {think_content}\n\n{answer_content}"
+
+            usage_dict = {}
+            if completion.usage:
+                usage_dict = {
+                    "prompt_tokens": completion.usage.prompt_tokens,
+                    "completion_tokens": completion.usage.completion_tokens,
+                    "total_tokens": completion.usage.total_tokens,
+                }
+
+            return LLMResponse(
+                content=content,
+                provider="nvidia",
+                model=chosen_model,
+                is_fallback=False,
+                usage=usage_dict,
+            )
+        except Exception:
+            # Fall back to direct HTTP request with thinking kwargs if OpenAI SDK raises
+            pass
+
+        # 2. Fallback: Direct urllib HTTP request to NVIDIA NIM
         url = f"{self.nvidia_base_url}/chat/completions"
         payload = {
-            "model": model,
+            "model": chosen_model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "temperature": temperature,
-            "max_tokens": 4096,
+            "temperature": temperature if temperature is not None else 1.0,
+            "top_p": 0.95,
+            "max_tokens": 16384,
+            "extra_body": {"chat_template_kwargs": {"thinking": True, "reasoning_effort": "high"}},
             "stream": False,
         }
         data = json.dumps(payload).encode("utf-8")
@@ -199,10 +254,13 @@ class LLMClient:
             choices = res_json.get("choices", [])
             if not choices:
                 raise ValueError("No completion choices returned by NVIDIA API")
-            content = choices[0]["message"]["content"]
-            
-            # Format DeepSeek reasoning tokens cleanly if present
-            if "<think>" in content and "</think>" in content:
+            msg = choices[0].get("message", {})
+            content = msg.get("content", "")
+            reasoning = msg.get("reasoning") or msg.get("reasoning_content")
+
+            if reasoning and not ("<think>" in content):
+                content = f"> [!TIP]\n> **DeepSeek Reasoning Process:**\n> {str(reasoning).strip()}\n\n{content}"
+            elif "<think>" in content and "</think>" in content:
                 parts = content.split("</think>", 1)
                 think_content = parts[0].replace("<think>", "").strip()
                 answer_content = parts[1].strip()
@@ -214,7 +272,7 @@ class LLMClient:
             return LLMResponse(
                 content=content,
                 provider="nvidia",
-                model=model,
+                model=chosen_model,
                 is_fallback=False,
                 usage=usage,
             )
