@@ -33,6 +33,7 @@ from app.routers.migration_planner import router as migration_planner_router
 from app.routers.executive_report import router as executive_report_router
 from app.routers.architect_ai import router as architect_ai_router
 from app.routers.ripple import router as ripple_router
+from app.routers.archaeology import router as archaeology_router
 
 __all__ = [
     "ingest_router",
@@ -70,5 +71,6 @@ __all__ = [
     "executive_report_router",
     "architect_ai_router",
     "ripple_router",
+    "archaeology_router",
 ]
 

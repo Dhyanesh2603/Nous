@@ -206,3 +206,237 @@ class ArchitectureDriftAnalyzer:
             degradation_alerts=alerts,
             checkpoints=checkpoints,
         )
+
+
+class CleanArchitectureLayer(BaseModel):
+    name: str  # 'Presentation', 'Application', 'Domain', 'Infrastructure'
+    tier: int  # 1 to 4
+    color: str
+    description: str
+    files: List[str] = Field(default_factory=list)
+
+
+class CleanArchitectureViolation(BaseModel):
+    id: str
+    source_file: str
+    target_file: str
+    source_layer: str
+    target_layer: str
+    violation_type: str  # 'reverse_dependency', 'layer_bypass', 'forbidden_coupling'
+    severity: str  # 'critical', 'high', 'medium'
+    rule: str
+    reason: str
+    suggested_fix: str
+
+
+class CleanArchitectureReport(BaseModel):
+    blueprint_name: str = "Clean Architecture 4-Tier Blueprint"
+    total_violations: int
+    critical_count: int
+    high_count: int
+    medium_count: int
+    compliance_score: float  # 0.0 to 100.0%
+    layers: List[CleanArchitectureLayer] = Field(default_factory=list)
+    violations: List[CleanArchitectureViolation] = Field(default_factory=list)
+
+
+class CleanArchitectureChecker:
+    """
+    Validates repository dependencies against Clean Architecture layer constraints:
+    Tier 1: Domain / Entities (must NOT import Application, Infrastructure, or Presentation)
+    Tier 2: Application / Use Cases (must NOT import Presentation, can import Domain)
+    Tier 3: Infrastructure / Repositories / DB (must NOT import Presentation, can import Domain & Application)
+    Tier 4: Presentation / Controllers / API (can import Application, should not bypass into Infrastructure)
+    """
+
+    def __init__(self, scanner: Any):
+        self.scanner = scanner
+
+    def resolve_layer(self, file_path: str) -> Optional[str]:
+        low = file_path.lower().replace("\\", "/")
+        # Domain layer check
+        if any(term in low for term in ["/domain/", "/models/", "/entities/", "/model.py", "/schemas/", "/schema.py", "types.ts", "types/"]):
+            return "Domain"
+        # Presentation layer check
+        if any(term in low for term in ["/controllers/", "/routes/", "/api/", "/endpoints/", "/views/", "/pages/", "/components/", "app/main.py", "server.ts", "index.html"]):
+            return "Presentation"
+        # Infrastructure layer check
+        if any(term in low for term in ["/db/", "/database/", "/repositories/", "/repo/", "/orm/", "/prisma/", "/sql/", "/adapters/", "/clients/", "/persistence/"]):
+            return "Infrastructure"
+        # Application layer check
+        if any(term in low for term in ["/services/", "/service/", "/use_cases/", "/usecases/", "/handlers/", "/workflows/", "/interactors/"]):
+            return "Application"
+        return None
+
+    def check(self) -> CleanArchitectureReport:
+        if not self.scanner or not hasattr(self.scanner, "file_asts"):
+            return CleanArchitectureReport(
+                total_violations=0,
+                critical_count=0,
+                high_count=0,
+                medium_count=0,
+                compliance_score=100.0,
+            )
+
+        layers_map: Dict[str, CleanArchitectureLayer] = {
+            "Domain": CleanArchitectureLayer(
+                name="Domain",
+                tier=1,
+                color="#34d399",
+                description="Core entities, business invariants, and immutable data contracts.",
+                files=[],
+            ),
+            "Application": CleanArchitectureLayer(
+                name="Application",
+                tier=2,
+                color="#c084fc",
+                description="Use cases, domain orchestration services, and application workflows.",
+                files=[],
+            ),
+            "Infrastructure": CleanArchitectureLayer(
+                name="Infrastructure",
+                tier=3,
+                color="#38bdf8",
+                description="Database adapters, external APIs, ORMs, and persistence repositories.",
+                files=[],
+            ),
+            "Presentation": CleanArchitectureLayer(
+                name="Presentation",
+                tier=4,
+                color="#fb7185",
+                description="HTTP route handlers, API controllers, CLI commands, and UI views.",
+                files=[],
+            ),
+        }
+
+        # Classify files
+        file_to_layer: Dict[str, str] = {}
+        for file_path, ast in self.scanner.file_asts.items():
+            rel = getattr(ast, "relative_path", file_path).replace("\\", "/")
+            assigned = self.resolve_layer(rel)
+            if assigned:
+                file_to_layer[rel] = assigned
+                layers_map[assigned].files.append(rel)
+
+        # Inspect edges for boundary violations
+        violations: List[CleanArchitectureViolation] = []
+        violation_idx = 1
+
+        # Use graph_store dep_graph or dep_builder
+        if hasattr(self.scanner, "graph_store") and self.scanner.graph_store:
+            graph_store = self.scanner.graph_store
+            dep_edges = []
+            if hasattr(graph_store, "dep_graph") and graph_store.dep_graph:
+                dep_edges = list(graph_store.dep_graph.edges)
+            elif hasattr(graph_store, "dep_builder") and graph_store.dep_builder:
+                dep_edges = [(e.source, e.target) for e in graph_store.dep_builder.edges]
+
+            for src, tgt in dep_edges:
+                src_clean = str(src).replace("\\", "/")
+                tgt_clean = str(tgt).replace("\\", "/")
+                src_layer = file_to_layer.get(src_clean) or self.resolve_layer(src_clean)
+                tgt_layer = file_to_layer.get(tgt_clean) or self.resolve_layer(tgt_clean)
+
+                if src_layer and tgt_layer and src_layer != tgt_layer:
+                    v = self._evaluate_dependency(violation_idx, src_clean, tgt_clean, src_layer, tgt_layer)
+                    if v:
+                        violations.append(v)
+                        violation_idx += 1
+
+        # Calculate counts and score
+        crit_count = sum(1 for v in violations if v.severity == "critical")
+        high_count = sum(1 for v in violations if v.severity == "high")
+        med_count = sum(1 for v in violations if v.severity == "medium")
+
+        penalty = (crit_count * 15.0) + (high_count * 8.0) + (med_count * 3.0)
+        score = max(0.0, min(100.0, round(100.0 - penalty, 1)))
+
+        return CleanArchitectureReport(
+            blueprint_name="Clean Architecture 4-Tier Blueprint",
+            total_violations=len(violations),
+            critical_count=crit_count,
+            high_count=high_count,
+            medium_count=med_count,
+            compliance_score=score,
+            layers=list(layers_map.values()),
+            violations=violations[:25],
+        )
+
+    def _evaluate_dependency(
+        self,
+        idx: int,
+        src: str,
+        tgt: str,
+        src_layer: str,
+        tgt_layer: str,
+    ) -> Optional[CleanArchitectureViolation]:
+        # 1. Domain importing anything outside Domain is forbidden
+        if src_layer == "Domain":
+            return CleanArchitectureViolation(
+                id=f"clean-viol-{idx:03d}",
+                source_file=src,
+                target_file=tgt,
+                source_layer=src_layer,
+                target_layer=tgt_layer,
+                violation_type="reverse_dependency",
+                severity="critical",
+                rule="Domain entities must not depend on outer layers.",
+                reason=f"Domain entity '{src}' imports {tgt_layer} module '{tgt}'. Business invariants must remain isolated from outer concerns.",
+                suggested_fix=f"Invert dependency using an abstract interface / Protocol in Domain, and implement it in {tgt_layer}.",
+            )
+        # 2. Application importing Presentation
+        if src_layer == "Application" and tgt_layer == "Presentation":
+            return CleanArchitectureViolation(
+                id=f"clean-viol-{idx:03d}",
+                source_file=src,
+                target_file=tgt,
+                source_layer=src_layer,
+                target_layer=tgt_layer,
+                violation_type="reverse_dependency",
+                severity="critical",
+                rule="Application services must not depend on Presentation / Controllers.",
+                reason=f"Service '{src}' imports Presentation layer '{tgt}'. Inward dependencies violate inversion of control.",
+                suggested_fix="Decouple service from HTTP/UI concerns; return raw domain DTOs instead of HTTP response objects.",
+            )
+        # 3. Infrastructure importing Presentation
+        if src_layer == "Infrastructure" and tgt_layer == "Presentation":
+            return CleanArchitectureViolation(
+                id=f"clean-viol-{idx:03d}",
+                source_file=src,
+                target_file=tgt,
+                source_layer=src_layer,
+                target_layer=tgt_layer,
+                violation_type="reverse_dependency",
+                severity="high",
+                rule="Persistence / Infrastructure must not depend on Presentation.",
+                reason=f"Repository '{src}' imports controller '{tgt}'.",
+                suggested_fix="Pass primitive parameters or domain DTOs into repository methods rather than presentation objects.",
+            )
+        # 4. Presentation bypassing Application directly to Infrastructure
+        if src_layer == "Presentation" and tgt_layer == "Infrastructure":
+            return CleanArchitectureViolation(
+                id=f"clean-viol-{idx:03d}",
+                source_file=src,
+                target_file=tgt,
+                source_layer=src_layer,
+                target_layer=tgt_layer,
+                violation_type="layer_bypass",
+                severity="medium",
+                rule="Presentation should route through Application services instead of direct DB access.",
+                reason=f"Controller '{src}' bypasses Application services to directly invoke database layer '{tgt}'.",
+                suggested_fix="Encapsulate database query logic in an Application service and call the service method from the controller.",
+            )
+        return None
+
+    def generate_fix_prompt(self, violation: CleanArchitectureViolation) -> str:
+        return (
+            f"### Refactoring Prompt: Resolve Clean Architecture Boundary Violation\n\n"
+            f"**File to Modify:** `{violation.source_file}`\n"
+            f"**Illegal Dependency:** `{violation.source_file}` ({violation.source_layer}) -> `{violation.target_file}` ({violation.target_layer})\n"
+            f"**Violation Type:** `{violation.violation_type}` (Severity: `{violation.severity.upper()}`)\n\n"
+            f"**Rule Violated:**\n{violation.rule}\n\n"
+            f"**Architectural Rationale:**\n{violation.reason}\n\n"
+            f"**Recommended Refactoring Strategy:**\n{violation.suggested_fix}\n\n"
+            f"Please refactor `{violation.source_file}` to remove this forbidden import while preserving functionality."
+        )
+

@@ -49,6 +49,7 @@ class PRImpactReport(BaseModel):
     impacted_routes: List[ImpactedRoute] = Field(default_factory=list)
     suggested_reviewers: List[SuggestedReviewer] = Field(default_factory=list)
     safety_checklist: List[str] = Field(default_factory=list)
+    github_markdown_review: str = ""
 
 
 class PRImpactAnalyzer:
@@ -219,6 +220,17 @@ class PRImpactAnalyzer:
             "Verify backwards compatibility on modified function signatures.",
         ]
 
+        # Synthesize GitHub Markdown Review Comment (Codemap feature)
+        github_md = self._compose_github_markdown(
+            risk_level=risk,
+            blast_score=blast_score,
+            changed_files=changed_files,
+            impacted_callers=impacted_callers,
+            impacted_routes=impacted_routes,
+            safety_checklist=safety_checklist,
+            suggested_reviewers=suggested_reviewers,
+        )
+
         return PRImpactReport(
             pr_title="Proposed Feature / Refactor Branch",
             base_branch="main",
@@ -233,4 +245,53 @@ class PRImpactAnalyzer:
             impacted_routes=impacted_routes[:8],
             suggested_reviewers=suggested_reviewers,
             safety_checklist=safety_checklist,
+            github_markdown_review=github_md,
         )
+
+    def _compose_github_markdown(
+        self,
+        risk_level: str,
+        blast_score: float,
+        changed_files: List[ChangedFile],
+        impacted_callers: List[ImpactedCaller],
+        impacted_routes: List[ImpactedRoute],
+        safety_checklist: List[str],
+        suggested_reviewers: List[SuggestedReviewer],
+    ) -> str:
+        badge = "🚨 **CRITICAL RISK**" if risk_level == "Critical" else (
+            "⚠️ **HIGH RISK**" if risk_level == "High" else (
+                "⚡ **MODERATE RISK**" if risk_level in ("Moderate", "Medium") else "✅ **LOW RISK**"
+            )
+        )
+        lines = [
+            "## 🛡️ Nous Architectural PR Review Guard",
+            f"\n**Assessment Status:** {badge} (Blast Radius: **`{blast_score}%`**)",
+            "\n### 📊 Change Summary",
+            f"- **Files Modified:** `{len(changed_files)}`",
+            f"- **Downstream Callers Impacted:** `{len(impacted_callers)}`",
+            f"- **API Routes Touched:** `{len(impacted_routes)}`",
+            "\n### 🎯 Downstream Impacted Components",
+        ]
+        if impacted_callers:
+            lines.append("| Component / Caller | Source File | Line |")
+            lines.append("|---|---|---|")
+            for c in impacted_callers[:6]:
+                lines.append(f"| `{c.caller_name}` | `{c.relative_path}` | `L{c.line_number}` |")
+        else:
+            lines.append("*No direct downstream callers impacted.*")
+
+        if impacted_routes:
+            lines.append("\n### 🌐 Affected API Endpoints")
+            for r in impacted_routes[:5]:
+                lines.append(f"- `{r.http_method}` **`{r.route_path}`** (`{r.handler_name}` in `{r.file_path}`)")
+
+        lines.append("\n### 📋 Architectural Safety Checklist")
+        for item in safety_checklist:
+            lines.append(f"- [ ] {item}")
+
+        if suggested_reviewers:
+            lines.append(f"\n**Recommended Reviewers:** {', '.join(f'@{r.name}' for r in suggested_reviewers)}")
+
+        lines.append("\n---\n*Automated architectural risk assessment powered by Nous Static Analysis Engine.*")
+        return "\n".join(lines)
+
