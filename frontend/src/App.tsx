@@ -54,6 +54,7 @@ import { ExecutiveReportModal } from './components/report/ExecutiveReportModal';
 import { PlatformDocumentationModal } from './components/docs/PlatformDocumentationModal';
 import { ArchitectAIModal } from './components/ai/ArchitectAIModal';
 import { RippleSimulatorModal } from './components/ripple/RippleSimulatorModal';
+import { ArchaeologyModal } from './components/archaeology/ArchaeologyModal';
 import './App.css';
 
 export function App() {
@@ -109,6 +110,9 @@ export function App() {
   const [rippleTargetType, setRippleTargetType] = useState<'file' | 'symbol'>('file');
   const [sequenceTargetSymbol, setSequenceTargetSymbol] = useState<string | undefined>(undefined);
 
+  const [isArchaeologyOpen, setIsArchaeologyOpen] = useState(false);
+  const [archaeologyTargetFile, setArchaeologyTargetFile] = useState<string | undefined>(undefined);
+
   const handleOpenArchitectAI = (focusNodeId?: string, query?: string) => {
     setArchitectAIFocusNodeId(focusNodeId);
     setArchitectAIInitialQuery(query);
@@ -119,6 +123,11 @@ export function App() {
     setRippleTargetId(targetId);
     setRippleTargetType(targetType);
     setIsRippleOpen(true);
+  };
+
+  const handleOpenArchaeology = (file?: string) => {
+    setArchaeologyTargetFile(file);
+    setIsArchaeologyOpen(true);
   };
 
   const [blastRadiusData, setBlastRadiusData] = useState<BlastRadiusResponse | null>(null);
@@ -267,6 +276,7 @@ export function App() {
         onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
         onOpenArchitectAI={() => handleOpenArchitectAI()}
         onOpenRippleSimulator={() => handleOpenRippleSimulator()}
+        onOpenArchaeology={handleOpenArchaeology}
         onRefreshGraph={() => loadGraph()}
         currentRepoPath={status?.current_repo_path}
       />
@@ -333,6 +343,7 @@ export function App() {
             onOpenPlatformDocs={() => setIsPlatformDocsOpen(true)}
             onOpenArchitectAI={() => handleOpenArchitectAI()}
             onOpenRippleSimulator={() => handleOpenRippleSimulator()}
+            onOpenArchaeology={handleOpenArchaeology}
           />
         ) : (
           <>
@@ -695,6 +706,16 @@ export function App() {
               setActiveScreen('graph');
             }
           }}
+        />
+
+        {/* Code Archaeology & Intent Forensics Modal */}
+        <ArchaeologyModal
+          isOpen={isArchaeologyOpen}
+          onClose={() => {
+            setIsArchaeologyOpen(false);
+            setArchaeologyTargetFile(undefined);
+          }}
+          initialFile={archaeologyTargetFile}
         />
 
         {/* Ingest Modal */}

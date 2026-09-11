@@ -38,6 +38,7 @@ import {
   FileCheck2,
   Sparkles,
   Activity,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type {
   GraphSummary,
@@ -90,7 +91,10 @@ interface RepositoryDashboardProps {
   onOpenPlatformDocs?: () => void;
   onOpenArchitectAI?: () => void;
   onOpenRippleSimulator?: () => void;
+  onOpenArchaeology?: (file?: string) => void;
 }
+
+type SegmentId = 'canvas' | 'ai' | 'drift' | 'archaeology' | 'quality' | 'pr';
 
 export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   currentRepoPath,
@@ -130,10 +134,13 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
   onOpenPlatformDocs,
   onOpenArchitectAI,
   onOpenRippleSimulator,
+  onOpenArchaeology,
 }) => {
   const [frameworks, setFrameworks] = useState<FrameworkOverviewReport | null>(null);
   const [gitChurn, setGitChurn] = useState<GitChurnReport | null>(null);
   const [isWatching, setIsWatching] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState<SegmentId>('canvas');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const repoName = currentRepoPath
     ? currentRepoPath.split(/[/\\]/).filter(Boolean).pop() || 'Repository'
@@ -161,6 +168,529 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
       console.error('Failed to toggle watch mode:', err);
     }
   };
+
+  // Segments Definition
+  const segments = [
+    {
+      id: 'canvas' as SegmentId,
+      name: 'Architecture Graph',
+      badge: '7 Views',
+      icon: Layers,
+      color: 'from-cyan-500/20 to-blue-500/20 text-cyan-400 border-cyan-500/30',
+      activeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-cyan-950/40',
+      description: 'System-wide topology, frontend/backend lenses, modules, and call graphs.',
+    },
+    {
+      id: 'ai' as SegmentId,
+      name: 'AI & Ripple Simulator',
+      badge: 'DeepSeek V4',
+      icon: Sparkles,
+      color: 'from-amber-500/20 to-rose-500/20 text-amber-400 border-amber-500/30',
+      activeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-amber-950/40',
+      description: 'Architect AI with DeepSeek V4 Flash, sequence generation, and failure cascade simulation.',
+    },
+    {
+      id: 'drift' as SegmentId,
+      name: 'Drift & Boundaries',
+      badge: 'Clean Arch',
+      icon: ShieldCheck,
+      color: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
+      activeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-emerald-950/40',
+      description: 'Clean Architecture 4-Tier Blueprint, coupling drift checkpoints, and style classification.',
+    },
+    {
+      id: 'archaeology' as SegmentId,
+      name: 'Archaeology & Forensics',
+      badge: 'Intent Forensics',
+      icon: Compass,
+      color: 'from-yellow-500/20 to-amber-500/20 text-yellow-400 border-yellow-500/30',
+      activeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40 shadow-yellow-950/40',
+      description: '"Why does this code exist?", origin commits, #HACK/#TODO debt flags, and time machine.',
+    },
+    {
+      id: 'quality' as SegmentId,
+      name: 'Quality & Tech Debt',
+      badge: 'Scorecard A-F',
+      icon: Scale,
+      color: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30',
+      activeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-purple-950/40',
+      description: 'Executive audit report, 8D tech debt matrix, dead code, code clones, and refactoring advisor.',
+    },
+    {
+      id: 'pr' as SegmentId,
+      name: 'PR Review & Security',
+      badge: 'Review Composer',
+      icon: GitPullRequest,
+      color: 'from-rose-500/20 to-pink-500/20 text-rose-400 border-rose-500/30',
+      activeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-rose-950/40',
+      description: 'Automated GitHub review comment composer, SAST security scanner, and data flow taint analyzer.',
+    },
+  ];
+
+  // Master Tools Catalog for Instant Universal Search
+  const allTools = [
+    // Canvas
+    {
+      id: 'overall-arch',
+      segment: 'canvas',
+      name: 'Overall Architecture Graph',
+      category: 'Architecture Graph',
+      description: 'Full-repository dependency graph with layout algorithms, circular cycle detection, and blast radius.',
+      icon: FileCode,
+      tag: 'Interactive Canvas',
+      action: () => onNavigateToGraph('file'),
+      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    },
+    {
+      id: 'frontend-lens',
+      segment: 'canvas',
+      name: 'Frontend Architecture Lens',
+      category: 'Architecture Graph',
+      description: 'Isolates UI components, React/Vue routing, layouts, and custom hooks.',
+      icon: Layers,
+      tag: 'Frontend Lens',
+      action: () => onNavigateToGraph('frontend'),
+      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    },
+    {
+      id: 'backend-lens',
+      segment: 'canvas',
+      name: 'Backend Architecture Lens',
+      category: 'Architecture Graph',
+      description: 'Isolates controllers, API routes, domain services, repositories, and middleware.',
+      icon: Boxes,
+      tag: 'Backend Lens',
+      action: () => onNavigateToGraph('backend'),
+      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    },
+    {
+      id: 'module-clusters',
+      segment: 'canvas',
+      name: 'Module Clusters',
+      category: 'Architecture Graph',
+      description: 'Coarse-grained architectural modules with afferent/efferent coupling & instability metrics.',
+      icon: Package,
+      tag: 'Modularity',
+      action: () => onNavigateToGraph('module'),
+      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    },
+    {
+      id: 'symbol-callgraph',
+      segment: 'canvas',
+      name: 'Symbol Topology & Call Graph',
+      category: 'Architecture Graph',
+      description: 'Fine-grained functions, classes, and method invocation chains across files.',
+      icon: Network,
+      tag: 'Symbol Graph',
+      action: () => onNavigateToGraph('symbol'),
+      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    },
+    {
+      id: 'database-erd',
+      segment: 'canvas',
+      name: 'Database Schema & ERD',
+      category: 'Architecture Graph',
+      description: 'Interactive entity-relationship diagrams, foreign keys, and SQL/Prisma schemas.',
+      icon: Database,
+      tag: 'Data Tier',
+      action: onOpenDatabase,
+      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    },
+    {
+      id: 'api-flow',
+      segment: 'canvas',
+      name: 'API Flow & Pipeline Mapper',
+      category: 'Architecture Graph',
+      description: 'End-to-end trace from HTTP route triggers through services to database calls.',
+      icon: Workflow,
+      tag: 'Route Trace',
+      action: onOpenApiFlow,
+      color: 'text-pink-400 bg-pink-500/10 border-pink-500/20',
+    },
+    {
+      id: 'cross-dependencies',
+      segment: 'canvas',
+      name: 'Cross-Module Dependencies',
+      category: 'Architecture Graph',
+      description: 'Coupling matrices, import hierarchies, and external third-party package dependencies.',
+      icon: Files,
+      tag: 'Coupling',
+      action: onOpenDependencies,
+      color: 'text-teal-400 bg-teal-500/10 border-teal-500/20',
+    },
+
+    // AI & Ripple
+    {
+      id: 'architect-ai',
+      segment: 'ai',
+      name: 'Architect AI (DeepSeek V4 Flash)',
+      category: 'AI & Simulation',
+      description: 'Graph-RAG architectural assistant powered by NVIDIA DeepSeek V4 Flash with offline fallback.',
+      icon: Sparkles,
+      tag: 'AI Reasoning',
+      action: onOpenArchitectAI || (() => {}),
+      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    },
+    {
+      id: 'ripple-simulator',
+      segment: 'ai',
+      name: 'Interactive Ripple Effect Simulator',
+      category: 'AI & Simulation',
+      description: 'Multi-level failure cascade simulator calculating blast radius and contract breakages.',
+      icon: Activity,
+      tag: 'Cascade Simulation',
+      action: onOpenRippleSimulator || (() => {}),
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+    },
+    {
+      id: 'impact-simulator',
+      segment: 'ai',
+      name: 'Change Impact & Blast Radius',
+      category: 'AI & Simulation',
+      description: 'Simulates file and symbol modifications to predict downstream breakages.',
+      icon: Zap,
+      tag: 'Impact Forecast',
+      action: onOpenImpact,
+      color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    },
+    {
+      id: 'sequence-diagram',
+      segment: 'ai',
+      name: 'Dynamic Sequence Diagrams',
+      category: 'AI & Simulation',
+      description: 'Renders step-by-step UML sequence diagrams for method execution chains.',
+      icon: GitBranch,
+      tag: 'Sequence UML',
+      action: onOpenSequence,
+      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    },
+    {
+      id: 'nl-search',
+      segment: 'ai',
+      name: 'Natural Language Code Search',
+      category: 'AI & Simulation',
+      description: 'Semantic query engine to search code intent like "Where is JWT authentication verified?".',
+      icon: Search,
+      tag: 'Semantic Search',
+      action: onOpenSearch,
+      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    },
+
+    // Drift & Clean Arch
+    {
+      id: 'clean-arch',
+      segment: 'drift',
+      name: 'Clean Architecture 4-Tier Blueprint',
+      category: 'Drift & Boundaries',
+      description: 'Enforces Domain → Application → Infrastructure → Presentation boundary constraints with AI fix prompts.',
+      icon: ShieldCheck,
+      tag: 'Boundary Enforcer',
+      action: onOpenDrift,
+      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    },
+    {
+      id: 'drift-timeline',
+      segment: 'drift',
+      name: 'Architecture Drift Timeline',
+      category: 'Drift & Boundaries',
+      description: 'Samples Git commit checkpoints to compute coupling growth and degradation alerts.',
+      icon: TrendingUp,
+      tag: 'Git Coupling',
+      action: onOpenDrift,
+      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    },
+    {
+      id: 'arch-style',
+      segment: 'drift',
+      name: 'Architecture Style Classifier',
+      category: 'Drift & Boundaries',
+      description: 'Detects layered, microservices, hexagonal, event-driven, or modular monolith architectures.',
+      icon: Building2,
+      tag: 'Style Detector',
+      action: onOpenArchitectureStyle,
+      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    },
+    {
+      id: 'arch-rules',
+      segment: 'drift',
+      name: 'Architecture Invariant Rules',
+      category: 'Drift & Boundaries',
+      description: 'Enforces custom import constraints and clean architectural boundaries.',
+      icon: ShieldAlert,
+      tag: 'Rule Checker',
+      action: onOpenRules,
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+    },
+    {
+      id: 'repo-compare',
+      segment: 'drift',
+      name: 'Repository Branch Diff',
+      category: 'Drift & Boundaries',
+      description: 'Side-by-side structural comparison of commits or branches to detect architecture changes.',
+      icon: GitCompare,
+      tag: 'Branch Diff',
+      action: onOpenCompare,
+      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    },
+
+    // Archaeology & Forensics
+    {
+      id: 'code-archaeology',
+      segment: 'archaeology',
+      name: 'Code Archaeology ("Why This Exists")',
+      category: 'Forensics',
+      description: 'Uncovers the historical provenance, original author intent, and birth commit of any file or symbol.',
+      icon: Compass,
+      tag: 'Origin Forensics',
+      action: onOpenArchaeology ? () => onOpenArchaeology() : onOpenTimeline,
+      color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
+    },
+    {
+      id: 'legacy-flags',
+      segment: 'archaeology',
+      name: 'Legacy Flags & Tech Debt Scanner',
+      category: 'Forensics',
+      description: 'Scans source code for #HACK, #FIXME, #TODO, #DO_NOT_REMOVE, and #WORKAROUND safety markers.',
+      icon: Flame,
+      tag: 'Debt Markers',
+      action: onOpenArchaeology ? () => onOpenArchaeology() : onOpenTechDebt,
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+    },
+    {
+      id: 'git-churn',
+      segment: 'archaeology',
+      name: 'Git Churn & Hotspot Velocity',
+      category: 'Forensics',
+      description: 'Detects high-churn, frequently rewritten files correlated with bug frequency.',
+      icon: Flame,
+      tag: 'Git Velocity',
+      action: onOpenAnalytics,
+      color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    },
+    {
+      id: 'time-machine',
+      segment: 'archaeology',
+      name: 'Repository Time Machine',
+      category: 'Forensics',
+      description: 'Step backward in repository Git history to view past code structure and symbol states.',
+      icon: History,
+      tag: 'Time Travel',
+      action: onOpenTimeMachine,
+      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    },
+    {
+      id: 'execution-playback',
+      segment: 'archaeology',
+      name: 'Execution Path Playback',
+      category: 'Forensics',
+      description: 'Step-by-step playback of function call trees and program flow across files.',
+      icon: Play,
+      tag: 'Flow Playback',
+      action: onOpenPlayback,
+      color: 'text-teal-400 bg-teal-500/10 border-teal-500/20',
+    },
+    {
+      id: 'timeline-replay',
+      segment: 'archaeology',
+      name: 'Timeline Replay',
+      category: 'Forensics',
+      description: 'Chronological replay of commit milestones and repository file growth.',
+      icon: Clock,
+      tag: 'Commit Replay',
+      action: onOpenTimeline,
+      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    },
+
+    // Quality & Debt
+    {
+      id: 'executive-report',
+      segment: 'quality',
+      name: 'Executive Architecture Audit Report',
+      category: 'Quality & Tech Debt',
+      description: 'Comprehensive A-F grade scorecard across maintainability, modularity, security, and coupling.',
+      icon: FileCheck2,
+      tag: 'Scorecard A-F',
+      action: onOpenExecutiveReport || (() => {}),
+      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    },
+    {
+      id: 'tech-debt',
+      segment: 'quality',
+      name: '8-Dimension Tech Debt Matrix',
+      category: 'Quality & Tech Debt',
+      description: 'Breaks down technical debt across complexity, test deficit, coupling, and churn.',
+      icon: Scale,
+      tag: 'Debt Breakdown',
+      action: onOpenTechDebt,
+      color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    },
+    {
+      id: 'dead-code',
+      segment: 'quality',
+      name: 'Dead Code & Unused Symbol Sweeper',
+      category: 'Quality & Tech Debt',
+      description: 'Identifies unreferenced functions, orphaned classes, and dead exports.',
+      icon: Trash2,
+      tag: 'Code Cleanup',
+      action: onOpenDeadCode,
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+    },
+    {
+      id: 'code-clones',
+      segment: 'quality',
+      name: 'AST Code Clone Detector',
+      category: 'Quality & Tech Debt',
+      description: 'Finds exact and near-miss duplicated logic across files using AST hash fingerprints.',
+      icon: Files,
+      tag: 'Duplicate Logic',
+      action: onOpenClones,
+      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    },
+    {
+      id: 'refactoring-advisor',
+      segment: 'quality',
+      name: 'AI Refactoring Advisor',
+      category: 'Quality & Tech Debt',
+      description: 'Detects God classes, feature envy, and proposes automated extraction patterns.',
+      icon: Wrench,
+      tag: 'Refactor AI',
+      action: onOpenRefactoring,
+      color: 'text-teal-400 bg-teal-500/10 border-teal-500/20',
+    },
+    {
+      id: 'test-advisor',
+      segment: 'quality',
+      name: 'Intelligent Test Advisor',
+      category: 'Quality & Tech Debt',
+      description: 'Identifies untested high-risk symbols and recommends critical test scenarios.',
+      icon: TestTube2,
+      tag: 'Test Gaps',
+      action: onOpenTestAdvisor,
+      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    },
+    {
+      id: 'module-health',
+      segment: 'quality',
+      name: 'Module Cohesion & Health Radar',
+      category: 'Quality & Tech Debt',
+      description: 'Evaluates Robert C. Martin stability, abstractness, and distance from main sequence.',
+      icon: HeartPulse,
+      tag: 'Cohesion',
+      action: onOpenModuleHealth,
+      color: 'text-pink-400 bg-pink-500/10 border-pink-500/20',
+    },
+
+    // PR Review & Security
+    {
+      id: 'pr-review-composer',
+      segment: 'pr',
+      name: 'Automated PR Review Comment Composer',
+      category: 'PR Review & Security',
+      description: 'Calculates blast radius, caller regressions, and synthesizes complete Markdown PR review comment ready to paste.',
+      icon: GitPullRequest,
+      tag: 'PR Composer',
+      action: onOpenPRImpact,
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+    },
+    {
+      id: 'code-review',
+      segment: 'pr',
+      name: 'Automated Code Review & Antipatterns',
+      category: 'PR Review & Security',
+      description: 'Reviews pull request changes against best practices, security standards, and modularity rules.',
+      icon: FileCheck2,
+      tag: 'Code Review',
+      action: onOpenReview,
+      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    },
+    {
+      id: 'security-scanner',
+      segment: 'pr',
+      name: 'SAST Security & Vulnerability Scanner',
+      category: 'PR Review & Security',
+      description: 'Detects OWASP Top 10 vulnerabilities, hardcoded secrets, injection vectors, and weak cryptos.',
+      icon: ShieldAlert,
+      tag: 'SAST Audit',
+      action: onOpenSecurity,
+      color: 'text-red-400 bg-red-500/10 border-red-500/20',
+    },
+    {
+      id: 'data-flow',
+      segment: 'pr',
+      name: 'Data Flow & Taint Analyzer',
+      category: 'PR Review & Security',
+      description: 'Traces untrusted user inputs through function arguments down into database or shell sinks.',
+      icon: Zap,
+      tag: 'Taint Analysis',
+      action: onOpenDataFlow,
+      color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    },
+    {
+      id: 'api-mapper',
+      segment: 'pr',
+      name: 'API Dependency & Contract Mapper',
+      category: 'PR Review & Security',
+      description: 'Maps REST endpoints, HTTP methods, controllers, and external API integrations.',
+      icon: Globe,
+      tag: 'API Contracts',
+      action: onOpenApiMapper,
+      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    },
+    {
+      id: 'knowledge-graph',
+      segment: 'pr',
+      name: 'Unified Repository Knowledge Graph',
+      category: 'PR Review & Security',
+      description: 'Unifies code ASTs, Git authors, documentation, and database tables into one graph.',
+      icon: Network,
+      tag: 'Knowledge Graph',
+      action: onOpenKnowledgeGraph,
+      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    },
+    {
+      id: 'migration-planner',
+      segment: 'pr',
+      name: 'Modernization & Migration Planner',
+      category: 'PR Review & Security',
+      description: 'Generates step-by-step roadmap for framework updates, typing upgrades, and async refactors.',
+      icon: Compass,
+      tag: 'Migration AI',
+      action: onOpenMigration,
+      color: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
+    },
+    {
+      id: 'framework-overview',
+      segment: 'pr',
+      name: 'Framework & Runtime Overview',
+      category: 'PR Review & Security',
+      description: 'Detects ecosystem frameworks, build tools, backend web engines, and UI libraries.',
+      icon: Package,
+      tag: 'Ecosystem',
+      action: onOpenFramework,
+      color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    },
+    {
+      id: 'platform-docs',
+      segment: 'pr',
+      name: 'Platform Documentation & Manual',
+      category: 'PR Review & Security',
+      description: 'Complete user manual and developer documentation for the Nous platform.',
+      icon: BookOpen,
+      tag: 'Documentation',
+      action: onOpenPlatformDocs || onOpenDocs,
+      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+    },
+  ];
+
+  const filteredTools = searchQuery.trim()
+    ? allTools.filter(
+        (t) =>
+          t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : allTools.filter((t) => t.segment === selectedSegment);
 
   return (
     <div className="flex-1 overflow-y-auto bg-slate-950 text-slate-100 font-sans p-6 lg:p-10 space-y-8 select-none">
@@ -206,25 +736,24 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               </p>
             </div>
 
-            {/* Deterministic Architecture Topology Status */}
-            <div className="p-3.5 bg-slate-950/70 border border-slate-800/80 rounded-2xl text-xs text-slate-300 flex items-start gap-2.5 leading-relaxed font-sans">
+            {/* Topology Status */}
+            <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl text-xs text-slate-300 flex items-start gap-2.5 leading-relaxed font-sans">
               <Network className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold text-cyan-300">Topology Status: </span>
-                <span>Deterministic AST dependency graphs, call hierarchies, and architectural boundaries active.</span>
+                <span className="font-semibold text-cyan-300">Deterministic Topology: </span>
+                <span>AST graph with Clean Architecture boundary checker and DeepSeek V4 AI active.</span>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Quick Action Chips */}
+          <div className="flex items-center gap-2.5 flex-wrap lg:flex-nowrap flex-shrink-0">
             {onOpenArchitectAI && (
               <button
                 onClick={onOpenArchitectAI}
-                className="px-4 py-3 rounded-2xl bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-950/30 flex-shrink-0"
-                title="Open Architect AI (Graph-RAG Q&A & Sequence Explainer)"
+                className="px-3.5 py-2.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-950/30"
               >
-                <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
                 <span>Architect AI</span>
               </button>
             )}
@@ -232,42 +761,39 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
             {onOpenRippleSimulator && (
               <button
                 onClick={onOpenRippleSimulator}
-                className="px-4 py-3 rounded-2xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-rose-950/30 flex-shrink-0"
-                title="Open Ripple Effect & Cascading Failure Simulator"
+                className="px-3.5 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-rose-950/30"
               >
-                <Activity className="w-4 h-4 text-rose-400 animate-pulse" />
+                <Activity className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
                 <span>Ripple Effect</span>
+              </button>
+            )}
+
+            {onOpenArchaeology && (
+              <button
+                onClick={() => onOpenArchaeology()}
+                className="px-3.5 py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-amber-950/30"
+              >
+                <Compass className="w-3.5 h-3.5 text-amber-400" />
+                <span>Archaeology</span>
               </button>
             )}
 
             {onOpenExecutiveReport && (
               <button
                 onClick={onOpenExecutiveReport}
-                className="px-4 py-3 rounded-2xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-950/30 flex-shrink-0"
-                title="Open comprehensive executive architecture and security audit report"
+                className="px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-950/30"
               >
-                <FileCheck2 className="w-4 h-4 text-emerald-400" />
-                <span>Audit Report</span>
-              </button>
-            )}
-
-            {onOpenPlatformDocs && (
-              <button
-                onClick={onOpenPlatformDocs}
-                className="px-4 py-3 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-indigo-950/30 flex-shrink-0"
-                title="Open comprehensive platform documentation and user manual"
-              >
-                <BookOpen className="w-4 h-4 text-indigo-400" />
-                <span>Docs</span>
+                <FileCheck2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Audit</span>
               </button>
             )}
 
             <button
               onClick={onOpenIngestModal}
-              className="px-4 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-900/30 flex-shrink-0"
+              className="px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-900/30"
             >
-              <FolderGit2 className="w-4 h-4" />
-              <span>Switch Repo</span>
+              <FolderGit2 className="w-3.5 h-3.5" />
+              <span>Switch</span>
             </button>
           </div>
         </div>
@@ -301,809 +827,295 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
         </div>
       </div>
 
-      {/* 2. ARCHITECTURE VISUALIZATION VIEWS SECTION */}
+      {/* 2. COMMAND CENTER SEGMENT CONTROLS & INSTANT SEARCH BAR */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-bold text-slate-100">Architecture & System Visualizations</h2>
-            <p className="text-xs text-slate-400">Choose a focused architectural lens or inspect the full system graph.</p>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <SlidersHorizontal className="w-5 h-5 text-cyan-400" />
+              <span>Feature Command Center</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Select a functional segment or type to instantly search across all 30+ intelligence tools.
+            </p>
+          </div>
+
+          {/* Instant Universal Search Filter */}
+          <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search features (e.g. Clean Arch, PR, Debt)..."
+              className="w-full pl-9 pr-8 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition shadow-inner"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs p-1"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Overall Architecture Graph */}
-          <div
-            onClick={() => onNavigateToGraph('file')}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group flex flex-col justify-between space-y-4 shadow-sm"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition">
-                <FileCode className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                Overall Architecture
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                Interactive full-file dependency graph with layout controls, cycle highlights, and blast radius.
-              </p>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs font-mono text-cyan-400">
-              <span>Explore Graph</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-            </div>
+        {/* SEGMENT TABS */}
+        {!searchQuery && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 p-1.5 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+            {segments.map((seg) => {
+              const Icon = seg.icon;
+              const isSelected = selectedSegment === seg.id;
+              return (
+                <button
+                  key={seg.id}
+                  onClick={() => setSelectedSegment(seg.id)}
+                  className={`p-3 rounded-xl transition flex flex-col items-start text-left border ${
+                    isSelected
+                      ? `${seg.activeColor} border`
+                      : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-slate-500'}`} />
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-slate-950/70 border border-slate-800/80 text-slate-300">
+                      {seg.badge}
+                    </span>
+                  </div>
+                  <span className={`text-xs font-bold mt-2 ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                    {seg.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-
-          {/* Card 2: Frontend Architecture */}
-          <div
-            onClick={() => onNavigateToGraph('frontend')}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-2xl transition cursor-pointer group flex flex-col justify-between space-y-4 shadow-sm"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-110 transition">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition">
-                Frontend Architecture
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                Focused graph isolating React/Vue components, page routing, layouts, and custom hook state.
-              </p>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs font-mono text-purple-400">
-              <span>View Frontend</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-
-          {/* Card 3: Backend Architecture */}
-          <div
-            onClick={() => onNavigateToGraph('backend')}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group flex flex-col justify-between space-y-4 shadow-sm"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition">
-                <Boxes className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Backend Architecture
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                Isolates controllers, API routes, domain services, repository patterns, and middleware pipelines.
-              </p>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs font-mono text-emerald-400">
-              <span>View Backend</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-
-          {/* Card 4: Database ERD */}
-          <div
-            onClick={onOpenDatabase}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl transition cursor-pointer group flex flex-col justify-between space-y-4 shadow-sm"
-          >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition">
-                <Database className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-blue-300 transition">
-                Database Schema & ERD
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                Entity-relationship diagrams, foreign key mappings, and SQL/Prisma/Drizzle schema tables.
-              </p>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs font-mono text-blue-400">
-              <span>Inspect Schema</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-        </div>
-
-        {/* Second Row of Visualizations */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Card 5: Timeline Replay */}
-          <div
-            onClick={onOpenTimeline}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">
-                Timeline Replay
-              </h4>
-              <p className="text-[11px] text-slate-400">Replay commit growth & history.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-
-          {/* Card 6: API Request Flow */}
-          <div
-            onClick={onOpenApiFlow}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
-              <Globe className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-emerald-300 transition">
-                API Request Lifecycle
-              </h4>
-              <p className="text-[11px] text-slate-400">Middleware & handler pipelines.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-
-          {/* Card 7: Supply Chain Packages */}
-          <div
-            onClick={onOpenDependencies}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
-              <Package className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition">
-                Supply Chain & Packages
-              </h4>
-              <p className="text-[11px] text-slate-400">Licenses & third-party packages.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-
-          {/* Card 8: Architecture Diff */}
-          <div
-            onClick={onOpenCompare}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
-              <GitCompare className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition">
-                Architecture Diff & Drift
-              </h4>
-              <p className="text-[11px] text-slate-400">Compare refs and PR changes.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-
-          {/* Card 9: Sequence Execution Tracer */}
-          <div
-            onClick={onOpenSequence}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <Workflow className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">
-                Sequence Diagram Tracer
-              </h4>
-              <p className="text-[11px] text-slate-400">Dynamic execution trace generator.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-
-          {/* Card 10: Framework & Architecture Layers */}
-          <div
-            onClick={onOpenFramework}
-            className="p-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/40 rounded-2xl transition cursor-pointer group flex items-center gap-3.5"
-          >
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
-              <Layers className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition">
-                Component & Layer Tree
-              </h4>
-              <p className="text-[11px] text-slate-400">Controllers, services, & components.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition" />
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* 3. SOFTWARE INTELLIGENCE & AUDITING TOOLS */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-base font-bold text-slate-100">Deep Intelligence & Quality Audits</h2>
-          <p className="text-xs text-slate-400">Automated static code diagnostics, security scanning, and reasoning tools.</p>
+      {/* 3. SPOTLIGHT HERO FOR ACTIVE SEGMENT (When not searching) */}
+      {!searchQuery && (
+        <>
+          {selectedSegment === 'canvas' && (
+            <div
+              onClick={() => onNavigateToGraph('file')}
+              className="p-6 bg-gradient-to-r from-cyan-950/40 via-slate-900 to-slate-950 border border-cyan-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group hover:border-cyan-500/60 transition shadow-xl"
+            >
+              <div className="space-y-2 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
+                    Interactive Canvas
+                  </span>
+                  <span className="text-xs text-slate-400">Primary System Topology View</span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition flex items-center gap-2">
+                  Interactive System Architecture Graph
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition text-cyan-400" />
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Full reactive canvas with Dagre hierarchical and Force-directed layouts, instant symbol blast radius isolation, circular cycle highlighter, and real-time inspector.
+                </p>
+              </div>
+              <button className="px-4 py-2.5 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 group-hover:bg-cyan-400 transition self-start md:self-auto shrink-0">
+                Launch Canvas →
+              </button>
+            </div>
+          )}
+
+          {selectedSegment === 'ai' && (
+            <div
+              onClick={onOpenArchitectAI}
+              className="p-6 bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-950 border border-amber-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group hover:border-amber-500/60 transition shadow-xl"
+            >
+              <div className="space-y-2 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                    NVIDIA DeepSeek V4 Flash
+                  </span>
+                  <span className="text-xs text-slate-400">Graph-RAG Architectural AI</span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition flex items-center gap-2">
+                  Architect AI Copilot & Sequence Explainer
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition text-amber-400" />
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Ask deep questions grounded in deterministic graph facts, extract UML sequence diagrams, and generate multi-step implementation plans for complex refactors.
+                </p>
+              </div>
+              <button className="px-4 py-2.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 group-hover:bg-amber-400 transition self-start md:self-auto shrink-0">
+                Open AI Copilot →
+              </button>
+            </div>
+          )}
+
+          {selectedSegment === 'drift' && (
+            <div
+              onClick={onOpenDrift}
+              className="p-6 bg-gradient-to-r from-emerald-950/30 via-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group hover:border-emerald-500/60 transition shadow-xl"
+            >
+              <div className="space-y-2 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                    4-Tier Blueprint
+                  </span>
+                  <span className="text-xs text-slate-400">Clean Architecture Boundary Enforcer</span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition flex items-center gap-2">
+                  Clean Architecture Drift & Automated Refactoring Fixes
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition text-emerald-400" />
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Validates Domain → Application → Infrastructure → Presentation layer constraints, flags reverse dependencies and layer bypasses, and synthesizes ready-to-use LLM fix prompts.
+                </p>
+              </div>
+              <button className="px-4 py-2.5 bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 group-hover:bg-emerald-400 transition self-start md:self-auto shrink-0">
+                Inspect Blueprint →
+              </button>
+            </div>
+          )}
+
+          {selectedSegment === 'archaeology' && (
+            <div
+              onClick={() => onOpenArchaeology && onOpenArchaeology()}
+              className="p-6 bg-gradient-to-r from-yellow-950/30 via-slate-900 to-slate-950 border border-yellow-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group hover:border-yellow-500/60 transition shadow-xl"
+            >
+              <div className="space-y-2 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 font-bold">
+                    Git Provenance & Debt
+                  </span>
+                  <span className="text-xs text-slate-400">Code Archaeology Engine</span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-yellow-300 transition flex items-center gap-2">
+                  "Why Does This Code Exist?" & Legacy Flags Forensics
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition text-yellow-400" />
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Investigate the birth of any code module, author intent, revision history, and line-by-line #HACK, #FIXME, #TODO, and #DO_NOT_REMOVE safety markers across your repository.
+                </p>
+              </div>
+              <button className="px-4 py-2.5 bg-yellow-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-yellow-500/20 group-hover:bg-yellow-400 transition self-start md:self-auto shrink-0">
+                Investigate Origin →
+              </button>
+            </div>
+          )}
+
+          {selectedSegment === 'quality' && (
+            <div
+              onClick={onOpenExecutiveReport}
+              className="p-6 bg-gradient-to-r from-purple-950/30 via-slate-900 to-slate-950 border border-purple-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group hover:border-purple-500/60 transition shadow-xl"
+            >
+              <div className="space-y-2 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                    Audit Grade A-F
+                  </span>
+                  <span className="text-xs text-slate-400">Executive Quality Scorecard</span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition flex items-center gap-2">
+                  Executive Architecture & Security Audit Report
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition text-purple-400" />
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Generates an enterprise-ready executive report with letter grades, risk breakdowns, technical debt estimates, test deficits, and automated remediation action plans.
+                </p>
+              </div>
+              <button className="px-4 py-2.5 bg-purple-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-purple-500/20 group-hover:bg-purple-400 transition self-start md:self-auto shrink-0">
+                View Audit Report →
+              </button>
+            </div>
+          )}
+
+          {selectedSegment === 'pr' && (
+            <div
+              onClick={onOpenPRImpact}
+              className="p-6 bg-gradient-to-r from-rose-950/30 via-slate-900 to-slate-950 border border-rose-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group hover:border-rose-500/60 transition shadow-xl"
+            >
+              <div className="space-y-2 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">
+                    Pre-Merge Safety
+                  </span>
+                  <span className="text-xs text-slate-400">Automated PR Review Comment</span>
+                </div>
+                <h3 className="text-lg font-bold text-white group-hover:text-rose-300 transition flex items-center gap-2">
+                  Automated GitHub PR Review Comment Composer
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition text-rose-400" />
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Simulates pull request changes to calculate blast radius, downstream caller regressions, affected API endpoints, and generates a ready-to-paste GitHub Markdown review comment.
+                </p>
+              </div>
+              <button className="px-4 py-2.5 bg-rose-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-rose-500/20 group-hover:bg-rose-400 transition self-start md:self-auto shrink-0">
+                Generate PR Review →
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* 4. STRUCTURED TOOLS GRID */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+            {searchQuery ? `Search Results (${filteredTools.length})` : `${segments.find((s) => s.id === selectedSegment)?.name} Tools`}
+          </span>
+          <span className="text-xs font-mono text-slate-500">
+            {filteredTools.length} {filteredTools.length === 1 ? 'tool' : 'tools'} available
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          {/* Tool 1: Architecture Rules & Layer Boundaries */}
-          <div
-            onClick={onOpenRules}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                Linter Engine
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Architecture Boundary Rules
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Enforce clean module boundaries and prevent layer-skipping dependencies.
-              </p>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredTools.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <div
+                key={tool.id}
+                onClick={tool.action}
+                className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl transition cursor-pointer group flex flex-col justify-between space-y-3.5 shadow-sm relative overflow-hidden"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-2.5 rounded-xl border ${tool.color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-slate-300">
+                      {tool.tag}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
+                      {tool.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-2">
+                      {tool.description}
+                    </p>
+                  </div>
+                </div>
 
-          {/* Tool 2: AI Automated Code Review */}
-          <div
-            onClick={onOpenReview}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <ShieldCheck className="w-5 h-5" />
+                <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-cyan-400 group-hover:text-cyan-300 transition">
+                  <span className="text-[11px]">Open Tool</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+                </div>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                PR Reviewer
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Automated Code Review
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Audit function size, complexity smells, and generate test plans.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 3: Security & SAST Audit */}
-          <div
-            onClick={onOpenSecurity}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <ShieldAlert className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
-                Static SAST
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-rose-300 transition">
-                Security & SAST Audit
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Scan for hardcoded credentials, SQL injection, and unsafe code eval.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 4: Database & ERD Schema */}
-          <div
-            onClick={onOpenDatabase}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <Database className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                Schema ERD
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition">
-                Database & Schema ERD
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Relational entity models, foreign key relationships, and table definitions.
-              </p>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* Second Row of Diagnostics Tools */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          {/* Tool 5: Architecture Boundary Linter */}
-          <div
-            onClick={onOpenRules}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                Clean Architecture
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Architecture Rules
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Enforce architectural layer boundaries and prevent cross-layer leaks.
-              </p>
-            </div>
+        {filteredTools.length === 0 && (
+          <div className="p-12 text-center bg-slate-900/40 border border-slate-800 rounded-2xl space-y-2">
+            <Search className="w-8 h-8 text-slate-600 mx-auto" />
+            <p className="text-xs font-mono text-slate-400">
+              No tools found matching "{searchQuery}".
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-xs text-cyan-400 hover:underline font-mono"
+            >
+              Clear search filter
+            </button>
           </div>
-
-          {/* Tool 6: AST Clone Detector */}
-          <div
-            onClick={onOpenClones}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                <Files className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">
-                AST Clones
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition">
-                Code Clones Explorer
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Identify duplicated code blocks, copy-pasted implementations, and clone groups.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 7: Git Churn & Hotspot Analysis */}
-          <div
-            onClick={onOpenAnalytics}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Flame className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                Hotspots
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
-                Git Churn & Hotspots
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Correlate commit frequency with code complexity to uncover high-risk files.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 8: Code Search */}
-          <div
-            onClick={onOpenSearch}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <Search className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                Ctrl+K
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                Hybrid Code Search
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Search functions, classes, interfaces, and keywords with BM25 fusion.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Third Row: Advanced Code Intelligence (Phase 1) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          {/* Tool 9: Dead Code Explorer */}
-          <div
-            onClick={onOpenDeadCode}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Trash2 className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                Dead Logic
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
-                Dead Code Explorer
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Detect unused functions, classes, orphan files, and dead exports with confidence scores.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 10: Change Impact Simulator */}
-          <div
-            onClick={onOpenImpact}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <Zap className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
-                Pre-Refactor
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-rose-300 transition">
-                Change Impact Simulator
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Simulate deletion, rename, and moves to preview broken callers and affected APIs.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 11: Data Flow Analysis */}
-          <div
-            onClick={onOpenDataFlow}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <GitBranch className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                Taint Tracker
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                Data Flow Analysis
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Trace variables, parameters, user inputs, database writes, and API responses.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 12: API Dependency Map */}
-          <div
-            onClick={onOpenApiMapper}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <Network className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                Protocols
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                API Dependency Map
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Map REST, GraphQL, gRPC, WebSockets, and internal cross-module client invocations.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Fourth Row: Architecture Intelligence (Phase 2) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 font-sans">
-          {/* Tool 13: Architecture Style Detection */}
-          <div
-            onClick={onOpenArchitectureStyle}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                <Building2 className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">
-                Style Classifier
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition">
-                Architecture Detection
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Identify MVC, Clean Architecture, Hexagonal, DDD, Onion, Layered, and Microservices.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 14: Architecture Drift Timeline */}
-          <div
-            onClick={onOpenDrift}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                Git Timeline
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-cyan-300 transition">
-                Architecture Drift
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Visualize structural evolution, coupling trends, and architectural degradation over Git history.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 15: Technical Debt Engine */}
-          <div
-            onClick={onOpenTechDebt}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Scale className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                8-Dimension Score
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
-                Technical Debt Engine
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Quantify technical debt across complexity, churn, cycles, clones, file sizing, and maintainability.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 16: Module Health Dashboard */}
-          <div
-            onClick={onOpenModuleHealth}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <HeartPulse className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                Package Metrics
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Module Health
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Analyze cohesion, coupling (Ca/Ce), instability (I), DAG depth, test, and doc coverage.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 17: Refactoring Advisor */}
-          <div
-            onClick={onOpenRefactoring}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-sky-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                <Wrench className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/30">
-                Advisor
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-sky-300 transition">
-                Refactoring Advisor
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Automated recommendations to extract methods, break cycles, split files, and reduce complexity.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Fifth Row: AI Engineering Assistant (Phase 3) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          {/* Tool 18: Automatic Documentation Generator */}
-          <div
-            onClick={onOpenDocs}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                Doc Synthesizer
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition">
-                Documentation Generator
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Live markdown onboarding guides, architecture blueprints, API catalogs, and model schemas.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 19: PR Blast Radius Analyzer */}
-          <div
-            onClick={onOpenPRImpact}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <GitPullRequest className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
-                Pre-Merge Safety
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-rose-300 transition">
-                PR Impact Analyzer
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Simulate PR diffs to calculate blast radius, downstream caller regressions, and reviewers.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 20: Executive Audit Report */}
-          <div
-            onClick={onOpenExecutiveReport}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <FileCheck2 className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                Audit Matrix
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Executive Audit Report
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Comprehensive health scorecard, SAST security vulnerabilities, and prioritized remediation matrix.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 21: Intelligent Test Advisor */}
-          <div
-            onClick={onOpenTestAdvisor}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <TestTube2 className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                Test Synthesizer
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition">
-                Test Advisor & Stubs
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Identify untested high-risk functions and synthesize unit test stubs with mocks and assertions.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Sixth Row: Enterprise & WOW Features (Phase 4) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          {/* Tool 22: Repository Time Machine */}
-          <div
-            onClick={onOpenTimeMachine}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-violet-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                <History className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/30">
-                Git Scrubber
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-violet-300 transition">
-                Repository Time Machine
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Scrub through git evolution history, velocity trajectory curves, and codebase LOC growth frames.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 23: Interactive Execution Playback */}
-          <div
-            onClick={onOpenPlayback}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Play className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                Call Stepper
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
-                Execution Flow Playback
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Step-by-step function call animation with runtime payloads, branch decisions, and stack traces.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 24: Unified Repository Knowledge Graph */}
-          <div
-            onClick={onOpenKnowledgeGraph}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
-                <Network className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/30">
-                Knowledge Graph
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-teal-300 transition">
-                Unified Knowledge Graph
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Interconnect files, modules, AST symbols, database entities, and HTTP routes into a unified graph.
-              </p>
-            </div>
-          </div>
-
-          {/* Tool 25: AI Refactoring & Migration Planner */}
-          <div
-            onClick={onOpenMigration}
-            className="p-5 bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-orange-500/50 rounded-2xl transition cursor-pointer group space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20">
-                <Compass className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-300 border border-orange-500/30">
-                Migration AI
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-orange-300 transition">
-                Migration & Modernization
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Modernization roadmaps for TypeScript adoption, Async concurrency, and type-safe API contracts.
-              </p>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

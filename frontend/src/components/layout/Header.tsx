@@ -21,6 +21,7 @@ import {
   BookOpen,
   Sparkles,
   Activity,
+  Compass,
 } from 'lucide-react';
 import type { ViewMode, SampleItem } from '../../types';
 import { fetchSamples } from '../../services/api';
@@ -43,6 +44,7 @@ interface HeaderProps {
   onOpenPlatformDocs?: () => void;
   onOpenArchitectAI?: () => void;
   onOpenRippleSimulator?: () => void;
+  onOpenArchaeology?: () => void;
   onRefreshGraph: () => void;
   currentRepoPath?: string;
 }
@@ -64,6 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPlatformDocs,
   onOpenArchitectAI,
   onOpenRippleSimulator,
+  onOpenArchaeology,
   onRefreshGraph,
   currentRepoPath,
 }) => {
@@ -319,6 +322,24 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="text-[10px] text-slate-500 block">ER diagrams & SQL models</span>
                   </div>
                 </button>
+
+                {onOpenArchaeology && (
+                  <button
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenArchaeology();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition text-left group"
+                  >
+                    <div className="p-1 rounded-md bg-amber-500/10 text-amber-400 group-hover:scale-105 transition">
+                      <Compass className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium block text-slate-200 group-hover:text-amber-300">Code Archaeology</span>
+                      <span className="text-[10px] text-slate-500 block">Origin intent & #HACK debt flags</span>
+                    </div>
+                  </button>
+                )}
 
                 <button
                   onClick={() => {
