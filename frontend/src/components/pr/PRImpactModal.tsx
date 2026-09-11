@@ -4,6 +4,9 @@ import {
   X,
   UserCheck,
   CheckCircle2,
+  Copy,
+  Check,
+  MessageSquare,
 } from 'lucide-react';
 import type { PRImpactReport } from '../../types';
 import { fetchPRImpactReport } from '../../services/api';
@@ -22,6 +25,7 @@ export const PRImpactModal: React.FC<PRImpactModalProps> = ({
   const [report, setReport] = useState<PRImpactReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [diffTarget, setDiffTarget] = useState<string>('HEAD~1');
+  const [copied, setCopied] = useState(false);
 
   const loadReport = (target: string) => {
     setLoading(true);
@@ -218,6 +222,43 @@ export const PRImpactModal: React.FC<PRImpactModalProps> = ({
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Automated GitHub Review Comment Composer */}
+              {report?.github_markdown_review && (
+                <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold font-mono text-rose-300 flex items-center gap-1.5">
+                      <MessageSquare className="w-4 h-4 text-rose-400" />
+                      Automated GitHub PR Review Comment (Ready to Paste)
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (report.github_markdown_review) {
+                          navigator.clipboard.writeText(report.github_markdown_review);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-mono font-medium flex items-center gap-1.5 transition"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          Copied to Clipboard!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          Copy Review Comment
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <pre className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap max-h-60 custom-scrollbar">
+                    {report.github_markdown_review}
+                  </pre>
                 </div>
               )}
             </>

@@ -21,6 +21,10 @@ import type {
   PerformanceReport,
   FrameworkOverviewReport,
   RepositoryHealthScorecard,
+  ArchaeologyResponse,
+  LegacyFlagItem,
+  CleanArchitectureReport,
+  CleanArchitectureViolation,
 } from '../types';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
@@ -473,6 +477,48 @@ export const fetchRippleSimulation = async (
     target_type: targetType,
     change_type: changeType,
   });
+  return res.data;
+};
+
+// 24. Code Archaeology & Legacy Flags Forensics
+export const fetchArchaeology = async (
+  file?: string,
+  symbol?: string
+): Promise<ArchaeologyResponse> => {
+  const params: Record<string, string> = {};
+  if (file) params.file = file;
+  if (symbol) params.symbol = symbol;
+  const res = await api.get<ArchaeologyResponse>('/archaeology', { params });
+  return res.data;
+};
+
+export const fetchArchaeologyFiles = async (): Promise<{ files: string[] }> => {
+  const res = await api.get<{ files: string[] }>('/archaeology/files');
+  return res.data;
+};
+
+export const fetchLegacyFlags = async (
+  filePath?: string
+): Promise<LegacyFlagItem[]> => {
+  const params: Record<string, string> = {};
+  if (filePath) params.file_path = filePath;
+  const res = await api.get<LegacyFlagItem[]>('/archaeology/legacy-flags', { params });
+  return res.data;
+};
+
+// 25. Clean Architecture 4-Tier Blueprint & Drift Fix Prompt
+export const fetchCleanArchitectureDrift = async (): Promise<CleanArchitectureReport> => {
+  const res = await api.get<CleanArchitectureReport>('/analysis/clean-architecture');
+  return res.data;
+};
+
+export const generateDriftFixPrompt = async (
+  violationId: string
+): Promise<{ prompt: string; violation: CleanArchitectureViolation }> => {
+  const res = await api.post<{ prompt: string; violation: CleanArchitectureViolation }>(
+    '/analysis/drift-fix-prompt',
+    { violation_id: violationId }
+  );
   return res.data;
 };
 

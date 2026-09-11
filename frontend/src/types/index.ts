@@ -1096,6 +1096,7 @@ export interface PRImpactReport {
   impacted_routes: ImpactedRoute[];
   suggested_reviewers: SuggestedReviewer[];
   safety_checklist: string[];
+  github_markdown_review?: string;
 }
 
 // 14. Natural Language Code Search
@@ -1357,5 +1358,70 @@ export interface RippleTarget {
   name: string;
   type: string;
   label: string;
+}
+
+// 24. Code Archaeology & Legacy Flags
+export interface LegacyFlagItem {
+  file: string;
+  line_number: number;
+  flag_type: string;
+  comment_text: string;
+  context: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+}
+
+export interface CommitInfo {
+  hash: string;
+  short_hash: string;
+  author: string;
+  timestamp: string;
+  message: string;
+}
+
+export interface ArchaeologyResponse {
+  target: string;
+  summary: string;
+  origin_commit?: CommitInfo | null;
+  recent_changes: CommitInfo[];
+  original_author: string;
+  total_revisions: number;
+  authors_involved: string[];
+  risk_level: string;
+  legacy_flags: LegacyFlagItem[];
+  primary_purpose: string;
+  suggested_refactor_priority: string;
+}
+
+// 25. Clean Architecture 4-Tier Blueprint
+export interface CleanArchitectureLayer {
+  name: string;
+  tier: number;
+  color: string;
+  description: string;
+  files: string[];
+}
+
+export interface CleanArchitectureViolation {
+  id: string;
+  source_file: string;
+  target_file: string;
+  source_layer: string;
+  target_layer: string;
+  violation_type: string;
+  severity: string;
+  rule: string;
+  reason: string;
+  suggested_fix: string;
+}
+
+export interface CleanArchitectureReport {
+  blueprint_name: string;
+  total_violations: number;
+  critical_count: number;
+  high_count: number;
+  medium_count: number;
+  compliance_score: number;
+  layers: CleanArchitectureLayer[];
+  violations: CleanArchitectureViolation[];
 }
 
