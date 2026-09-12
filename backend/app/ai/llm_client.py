@@ -236,7 +236,7 @@ class LLMClient:
             "temperature": temperature if temperature is not None else 1.0,
             "top_p": 0.95,
             "max_tokens": 16384,
-            "extra_body": {"chat_template_kwargs": {"thinking": True, "reasoning_effort": "high"}},
+            "chat_template_kwargs": {"thinking": True, "reasoning_effort": "high"},
             "stream": False,
         }
         data = json.dumps(payload).encode("utf-8")
